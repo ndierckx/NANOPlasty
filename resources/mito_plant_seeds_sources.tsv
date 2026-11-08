@@ -1,0 +1,590 @@
+gene	seed_id	accession	region	region_source	phylum	class	order	family	species	length_bp	non_ACGT	families_covered_75	note
+18S	18S_Fabaceae_Glycyrrhiza_glabra	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Fabales	Fabaceae	Glycyrrhiza glabra	1610	0	161	former built-in seed $Seed_mito_18S_spermatopsida_glycyrrhiza_glabra
+18S	18S_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	18051-19651(+)	homology to built-in	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	1601	0	25	
+18S	18S_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	27502-29109(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	1608	0	154	
+18S	18S_Tupiellaceae_Tupiella_akineta	NC_005926.1	8219-9836(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	1618	0	3	
+18S	18S_Volvocaceae_Gonium_pectorale	NC_020437.1	7665-9259(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Volvocaceae	Gonium pectorale	1595	0	2	
+18S	18S_Bracteacoccaceae_Bracteacoccus_aerius	NC_024755.1	18544-20147(-)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Bracteacoccaceae	Bracteacoccus aerius	1604	0	2	
+18S	18S_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	6198-7808(+)	annotation	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	1611	0	1	
+18S	18S_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	1962-3571(-)	homology to built-in	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	1610	0	4	
+18S	18S_Chlamydomonadaceae_Chlamydomonas_moewusii	NC_001872.1	3276-4886(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Chlamydomonadaceae	Chlamydomonas moewusii	1611	0	1	
+18S	18S_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	54847-56466(+)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	1620	0	161	
+18S	18S_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	10377-11995(-)	homology to built-in	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	1619	0	1	
+18S	18S_Dunaliellaceae_Dunaliella_salina	NC_012930.1	1211-2822(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Dunaliellaceae	Dunaliella salina	1612	0	1	
+18S	18S_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	19631-21197(+)	homology to built-in	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	1567	0	1	
+18S	18S_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	24320-25927(-)	homology to built-in	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	1608	0	1	
+18S	18S_Neochloridaceae_Chlorotetraedron_incus	NC_024757.1	11195-12802(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Neochloridaceae	Chlorotetraedron incus	1608	0	1	
+18S	18S_Chromochloridaceae_Chromochloris_zofingiensis	NC_024758.1	17344-18977(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Chromochloridaceae	Chromochloris zofingiensis	1634	0	1	
+18S	18S_Mychonastaceae_Mychonastes_homosphaera	NC_024760.1	1-977(-)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Mychonastaceae	Mychonastes homosphaera	977	0	1	
+18S	18S_Selenastraceae_Ourococcus_multisporus	NC_024762.1	3513-5133(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Selenastraceae	Ourococcus multisporus	1621	0	1	
+18S	18S_Viscaceae_Viscum_album	NC_029039.1	377533-379181(+)	homology to built-in	Streptophyta	Magnoliopsida	Santalales	Viscaceae	Viscum album	1649	0	8	
+18S	18S_Ulvaceae_Ulva_flexuosa	NC_035809.1	30198-31797(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva flexuosa	1600	0	1	
+18S	18S_Chlorosarcinaceae_Chlorosarcinopsis_eremi	NC_041430.1	4649-6259(+)	annotation	Chlorophyta	Chlorophyceae	Chlorosarcinales	Chlorosarcinaceae	Chlorosarcinopsis eremi	1611	0	1	
+18S	18S_Picocystaceae_Picocystis_salinarum	NC_042491.1	16970-18570(+)	homology to built-in	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	1601	0	1	
+18S	18S_Haematococcaceae_Haematococcus_lacustris	NC_044670.1	61990-63600(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Haematococcaceae	Haematococcus lacustris	1611	0	1	
+18S	18S_Caulerpaceae_Caulerpa_ashmeadii	NC_045849.1	22935-24499(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa ashmeadii	1565	0	1	
+18S	18S_Chlorophyceae_Jenufa_perforata	NC_046779.1	25096-26704(+)	homology to built-in	Chlorophyta	Chlorophyceae			Jenufa perforata	1609	0	1	
+18S	18S_Codiaceae_Codium_fragile	NC_048526.1	38238-39869(-)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	1632	0	1	
+18S	18S_Chaetopeltidaceae_Gormaniella_terricola	NC_066824.1	20142-21732(-)	homology to built-in	Chlorophyta	Chlorophyceae	Chaetopeltidales	Chaetopeltidaceae	Gormaniella terricola	1591	0	1	
+26S	26S_Orchidaceae_Cypripedium_henryi	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Cypripedium henryi	630	0	125	former built-in seed $Seed_mito_26S_spermatopsida_cypripedium_henryi
+26S	26S_Funariaceae_Physcomitrium_patens	NC_007945.1	34813-35510(+)	homology to built-in	Streptophyta	Bryopsida	Funariales	Funariaceae	Physcomitrium patens	698	0	134	
+26S	26S_Tupiellaceae_Tupiella_akineta	NC_005926.1	1442-2103(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	662	0	3	
+26S	26S_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	372-1033(+)	homology to built-in	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	662	0	3	
+26S	26S_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	193-854(+)	homology to built-in	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	662	0	2	
+26S	26S_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	18435-19058(+)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	624	0	2	
+26S	26S_Volvocaceae_Gonium_pectorale	NC_020437.1	8610-9268(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Volvocaceae	Gonium pectorale	659	0	2	
+26S	26S_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	124315-125241(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	927	0	3	
+26S	26S_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	1-1197(+)	annotation	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	1197	0	1	
+26S	26S_Chlamydomonadaceae_Chlamydomonas_moewusii	NC_001872.1	2638-3338(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Chlamydomonadaceae	Chlamydomonas moewusii	701	0	1	
+26S	26S_Mesostigmataceae_Mesostigma_viride	NC_008240.1	243-873(+)	homology to built-in	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	631	0	1	
+26S	26S_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	524-1130(+)	homology to built-in	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	607	0	1	
+26S	26S_Dunaliellaceae_Dunaliella_salina	NC_012930.1	22030-23716(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Dunaliellaceae	Dunaliella salina	1687	0	1	
+26S	26S_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	233-3235(+)	annotation	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	3003	0	1	
+26S	26S_Chlorellaceae_Helicosporidium_sp	NC_017841.1	137-766(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Helicosporidium sp. ex Simulium jonesi	630	0	1	
+26S	26S_Monomastigaceae_Monomastix_sp	NC_022797.1	165-804(+)	homology to built-in	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	640	0	1	
+26S	26S_Entransiaceae_Entransia_fimbriata	NC_022861.1	288-979(+)	homology to built-in	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	692	0	1	
+26S	26S_Microsporaceae_Microspora_stagnorum	NC_022862.1	335-960(+)	homology to built-in	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	626	0	1	
+26S	26S_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	25957-28013(-)	annotation	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	2057	0	1	
+26S	26S_Bracteacoccaceae_Bracteacoccus_aerius	NC_024755.1	29891-30523(-)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Bracteacoccaceae	Bracteacoccus aerius	633	0	1	
+26S	26S_Neochloridaceae_Chlorotetraedron_incus	NC_024757.1	24446-25070(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Neochloridaceae	Chlorotetraedron incus	625	0	1	
+26S	26S_Chromochloridaceae_Chromochloris_zofingiensis	NC_024758.1	38487-39150(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Chromochloridaceae	Chromochloris zofingiensis	664	0	1	
+26S	26S_Mychonastaceae_Mychonastes_homosphaera	NC_024760.1	7873-8478(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Mychonastaceae	Mychonastes homosphaera	606	0	1	
+26S	26S_Selenastraceae_Ourococcus_multisporus	NC_024762.1	576-1204(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Selenastraceae	Ourococcus multisporus	629	0	1	
+26S	26S_Pseudomuriellaceae_Pseudomuriella_schumacherensis	NC_024763.1	35636-36242(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Pseudomuriellaceae	Pseudomuriella schumacherensis	607	0	1	
+26S	26S_Welwitschiaceae_Welwitschia_mirabilis	NC_029130.1	658007-658621(+)	homology to built-in	Streptophyta	Gnetopsida	Welwitschiales	Welwitschiaceae	Welwitschia mirabilis	615	0	1	
+26S	26S_Ophioglossaceae_Ophioglossum_californicum	NC_030900.1	303886-304515(+)	homology to built-in	Streptophyta	Polypodiopsida	Ophioglossales	Ophioglossaceae	Ophioglossum californicum	630	0	1	
+26S	26S_Psilotaceae_Psilotum_nudum	NC_030952.1	121678-122337(+)	homology to built-in	Streptophyta	Polypodiopsida	Psilotales	Psilotaceae	Psilotum nudum	660	0	1	
+26S	26S_Pyramimonadaceae_Pyramimonas_parkeae	NC_031504.1	29928-30556(+)	homology to built-in	Chlorophyta	Pyramimonadophyceae	Pyramimonadales	Pyramimonadaceae	Pyramimonas parkeae	629	0	1	
+26S	26S_Ulvaceae_Ulva_flexuosa	NC_035809.1	35771-42967(+)	annotation	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva flexuosa	7197	0	1	
+26S	26S_Pinaceae_Pinus_taeda	NC_039746.1	612340-612969(-)	homology to built-in	Streptophyta	Pinopsida	Pinales	Pinaceae	Pinus taeda	630	0	1	
+26S	26S_Chlorosarcinaceae_Chlorosarcinopsis_eremi	NC_041430.1	3696-4396(+)	annotation	Chlorophyta	Chlorophyceae	Chlorosarcinales	Chlorosarcinaceae	Chlorosarcinopsis eremi	701	0	1	
+26S	26S_Chloropicaceae_Chloropicon_primus	NC_042490.1	71-718(+)	homology to built-in	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	648	0	1	
+26S	26S_Picocystaceae_Picocystis_salinarum	NC_042491.1	18999-19635(+)	homology to built-in	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	637	0	1	
+26S	26S_Haematococcaceae_Haematococcus_lacustris	NC_044670.1	23702-24452(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Haematococcaceae	Haematococcus lacustris	751	0	1	
+26S	26S_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	6436-7068(+)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	633	0	1	
+26S	26S_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	39851-40478(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	628	0	1	
+26S	26S_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	31146-31774(+)	homology to built-in	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	629	0	1	
+26S	26S_Caulerpaceae_Caulerpa_ashmeadii	NC_045849.1	7008-7644(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa ashmeadii	637	0	1	
+26S	26S_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	72406-73034(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	629	0	1	
+26S	26S_Chlorophyceae_Jenufa_perforata	NC_046779.1	300-955(+)	homology to built-in	Chlorophyta	Chlorophyceae			Jenufa perforata	656	0	1	
+26S	26S_Codiaceae_Codium_fragile	NC_048526.1	41892-42523(-)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	632	0	1	
+26S	26S_Celastraceae_Euonymus_alatus	NC_053921.1	199296-199996(+)	annotation	Streptophyta	Magnoliopsida	Celastrales	Celastraceae	Euonymus alatus	701	0	2	
+26S	26S_Loranthaceae_Tolypanthus_maclurei	NC_056836.1	227017-227646(-)	homology to built-in	Streptophyta	Magnoliopsida	Santalales	Loranthaceae	Tolypanthus maclurei	630	0	1	
+26S	26S_Chaetopeltidaceae_Gormaniella_terricola	NC_066824.1	38506-39160(-)	homology to built-in	Chlorophyta	Chlorophyceae	Chaetopeltidales	Chaetopeltidaceae	Gormaniella terricola	655	0	1	
+26S	26S_Taxaceae_Taxus_chinensis	NC_069591.1	343724-344353(-)	homology to built-in	Streptophyta	Pinopsida	Cupressales	Taxaceae	Taxus chinensis	630	0	1	
+26S	26S_Plantaginaceae_Plantago_ovata	NC_072975.1	119226-122136(-)	annotation	Streptophyta	Magnoliopsida	Lamiales	Plantaginaceae	Plantago ovata	2911	0	1	
+atp6	atp6_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	426	0	15	former built-in seed $Seed_mito_atp6_spermatopsida_paphiopedilum_micranthum
+atp6	atp6_Buxbaumiaceae_Buxbaumia_aphylla	NC_024518.1	59182-60568(-)	annotation	Streptophyta	Bryopsida	Buxbaumiales	Buxbaumiaceae	Buxbaumia aphylla	1387	0	33	
+atp6	atp6_Marchantiaceae_Marchantia_paleacea	NC_001660.1	24408-24833(+)	homology to built-in	Streptophyta	Marchantiopsida	Marchantiales	Marchantiaceae	Marchantia paleacea	426	0	19	
+atp6	atp6_Funariaceae_Physcomitrium_patens	NC_007945.1	58781-59206(-)	homology to built-in	Streptophyta	Bryopsida	Funariales	Funariaceae	Physcomitrium patens	426	0	10	
+atp6	atp6_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	57220-57970(+)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	751	0	4	
+atp6	atp6_Ericaceae_Rhododendron_simsii	NC_053763.1	165164-165589(-)	homology to built-in	Streptophyta	Magnoliopsida	Ericales	Ericaceae	Rhododendron simsii	426	0	3	
+atp6	atp6_Cycadaceae_Cycas_taitungensis	NC_010303.1	36354-36779(-)	homology to built-in	Streptophyta	Cycadopsida	Cycadales	Cycadaceae	Cycas taitungensis	426	0	2	
+atp6	atp6_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	23151-23901(+)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	751	0	2	
+atp6	atp6_Chromochloridaceae_Chromochloris_zofingiensis	NC_024758.1	27894-28814(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Chromochloridaceae	Chromochloris zofingiensis	921	0	2	
+atp6	atp6_Rhamnaceae_Ziziphus_jujuba	NC_029809.1	122611-123036(-)	homology to built-in	Streptophyta	Magnoliopsida	Rosales	Rhamnaceae	Ziziphus jujuba	426	0	2	
+atp6	atp6_Nepenthaceae_Nepenthes_ventricosa	NC_039531.1	488928-489353(+)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Nepenthaceae	Nepenthes ventricosa x Nepenthes alata	426	0	2	
+atp6	atp6_Gayraliaceae_Gayralia_brasiliensis	NC_072925.1	88411-88836(-)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Gayraliaceae	Gayralia brasiliensis	426	0	2	
+atp6	atp6_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	5053-5797(+)	annotation	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	745	0	1	
+atp6	atp6_Scenedesmaceae_Tetradesmus_obliquus	NC_002254.1	17782-18544(-)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Scenedesmaceae	Tetradesmus obliquus	763	0	1	
+atp6	atp6_Amaranthaceae_Beta_vulgaris	NC_002511.2	201591-202016(-)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Amaranthaceae	Beta vulgaris	426	0	1	
+atp6	atp6_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	29253-29678(+)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	426	0	1	
+atp6	atp6_Characeae_Chara_vulgaris	NC_005255.1	40265-40690(-)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	426	0	1	
+atp6	atp6_Tupiellaceae_Tupiella_akineta	NC_005926.1	55841-56266(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	426	0	1	
+atp6	atp6_Mesostigmataceae_Mesostigma_viride	NC_008240.1	8803-9561(-)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	759	0	2	
+atp6	atp6_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	42699-43475(+)	annotation	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	777	0	1	
+atp6	atp6_Brassicaceae_Brassica_napus	NC_008285.1	37281-37706(-)	homology to built-in	Streptophyta	Magnoliopsida	Brassicales	Brassicaceae	Brassica napus	426	0	1	
+atp6	atp6_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	25195-25620(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	426	0	1	
+atp6	atp6_Caricaceae_Carica_papaya	NC_012116.1	120950-121375(-)	homology to built-in	Streptophyta	Magnoliopsida	Brassicales	Caricaceae	Carica papaya	426	0	1	
+atp6	atp6_Vitaceae_Vitis_vinifera	NC_012119.1	229256-229681(-)	homology to built-in	Streptophyta	Magnoliopsida	Vitales	Vitaceae	Vitis vinifera	426	0	1	
+atp6	atp6_Mamiellaceae_Micromonas_commoda	NC_012643.1	11874-12299(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Mamiellaceae	Micromonas commoda	426	0	1	
+atp6	atp6_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	14947-15697(+)	annotation	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	751	0	1	
+atp6	atp6_Cucurbitaceae_Citrullus_lanatus	NC_014043.1	42699-43124(-)	homology to built-in	Streptophyta	Magnoliopsida	Cucurbitales	Cucurbitaceae	Citrullus lanatus	426	0	1	
+atp6	atp6_Caryophyllaceae_Silene_latifolia	NC_014487.1	65259-65687(+)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Caryophyllaceae	Silene latifolia	429	0	1	
+atp6	atp6_Fabaceae_Vigna_radiata	NC_015121.1	232031-232456(-)	homology to built-in	Streptophyta	Magnoliopsida	Fabales	Fabaceae	Vigna radiata	426	0	1	
+atp6	atp6_Euphorbiaceae_Ricinus_communis	NC_015141.1	347623-348027(+)	homology to built-in	Streptophyta	Magnoliopsida	Malpighiales	Euphorbiaceae	Ricinus communis	405	0	16	
+atp6	atp6_Gesneriaceae_Dorcoceras_hygrometricum	NC_016741.1	53181-53606(+)	homology to built-in	Streptophyta	Magnoliopsida	Lamiales	Gesneriaceae	Dorcoceras hygrometricum	426	0	1	
+atp6	atp6_Araceae_Spirodela_polyrhiza	NC_017840.1	138116-138541(-)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Araceae	Spirodela polyrhiza	426	0	1	
+atp6	atp6_Rosaceae_Malus_domestica	NC_018554.1	324266-324688(+)	homology to built-in	Streptophyta	Magnoliopsida	Rosales	Rosaceae	Malus domestica	423	0	1	
+atp6	atp6_Magnoliaceae_Liriodendron_tulipifera	NC_021152.1	234796-235221(+)	homology to built-in	Streptophyta	Magnoliopsida	Magnoliales	Magnoliaceae	Liriodendron tulipifera	426	0	1	
+atp6	atp6_Butomaceae_Butomus_umbellatus	NC_021399.1	136286-136705(+)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Butomaceae	Butomus umbellatus	420	0	2	
+atp6	atp6_Apocynaceae_Asclepias_syriaca	NC_022796.1	480827-481252(-)	homology to built-in	Streptophyta	Magnoliopsida	Gentianales	Apocynaceae	Asclepias syriaca	426	0	1	
+atp6	atp6_Monomastigaceae_Monomastix_sp	NC_022797.1	22202-22936(-)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	735	0	1	
+atp6	atp6_Entransiaceae_Entransia_fimbriata	NC_022861.1	45359-45785(+)	homology to built-in	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	427	0	1	
+atp6	atp6_Lamiaceae_Ajuga_reptans	NC_023103.1	481-906(+)	homology to built-in	Streptophyta	Magnoliopsida	Lamiales	Lamiaceae	Ajuga reptans	426	0	1	
+atp6	atp6_Asteraceae_Helianthus_annuus	NC_023337.1	268900-269325(+)	homology to built-in	Streptophyta	Magnoliopsida	Asterales	Asteraceae	Helianthus annuus	426	0	1	
+atp6	atp6_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	28338-29202(+)	annotation	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	865	0	1	
+atp6	atp6_Tetraphidaceae_Tetraphis_pellucida	NC_024290.1	102880-103305(-)	homology to built-in	Streptophyta	Tetraphidopsida	Tetraphidales	Tetraphidaceae	Tetraphis pellucida	426	0	1	
+atp6	atp6_Bataceae_Batis_maritima	NC_024429.1	360843-361268(+)	homology to built-in	Streptophyta	Magnoliopsida	Brassicales	Bataceae	Batis maritima	426	0	1	
+atp6	atp6_Bracteacoccaceae_Bracteacoccus_aerius	NC_024755.1	20889-21779(-)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Bracteacoccaceae	Bracteacoccus aerius	891	0	1	
+atp6	atp6_Neochloridaceae_Chlorotetraedron_incus	NC_024757.1	9812-10700(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Neochloridaceae	Chlorotetraedron incus	889	0	1	
+atp6	atp6_Mychonastaceae_Mychonastes_homosphaera	NC_024760.1	3862-4740(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Mychonastaceae	Mychonastes homosphaera	879	0	1	
+atp6	atp6_Pseudomuriellaceae_Pseudomuriella_schumacherensis	NC_024763.1	14134-15024(-)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Pseudomuriellaceae	Pseudomuriella schumacherensis	891	0	1	
+atp6	atp6_Geraniaceae_Geranium_maderense	NC_027000.1	733399-733824(+)	homology to built-in	Streptophyta	Magnoliopsida	Geraniales	Geraniaceae	Geranium maderense	426	0	1	
+atp6	atp6_Malvaceae_Gossypium_hirsutum	NC_027406.1	384716-385141(+)	homology to built-in	Streptophyta	Magnoliopsida	Malvales	Malvaceae	Gossypium hirsutum	426	0	1	
+atp6	atp6_Ulvaceae_Ulva_fasciata	NC_028081.1	10955-11383(-)	homology to built-in	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	429	0	1	
+atp6	atp6_Salicaceae_Populus_tremula	NC_028096.1	490239-490664(+)	homology to built-in	Streptophyta	Magnoliopsida	Malpighiales	Salicaceae	Populus tremula	426	0	1	
+atp6	atp6_Welwitschiaceae_Welwitschia_mirabilis	NC_029130.1	271908-272333(+)	homology to built-in	Streptophyta	Gnetopsida	Welwitschiales	Welwitschiaceae	Welwitschia mirabilis	426	0	1	
+atp6	atp6_Cannabaceae_Cannabis_sativa	NC_029855.1	87422-87841(+)	homology to built-in	Streptophyta	Magnoliopsida	Rosales	Cannabaceae	Cannabis sativa	420	0	1	
+atp6	atp6_Amaryllidaceae_Allium_cepa	NC_030100.1	82126-82551(+)	homology to built-in	Streptophyta	Magnoliopsida	Asparagales	Amaryllidaceae	Allium cepa	426	0	1	
+atp6	atp6_Nelumbonaceae_Nelumbo_nucifera	NC_030753.1	180276-180701(+)	homology to built-in	Streptophyta	Magnoliopsida	Proteales	Nelumbonaceae	Nelumbo nucifera	426	0	1	
+atp6	atp6_Convolvulaceae_Ipomoea_nil	NC_031158.1	111827-112249(-)	homology to built-in	Streptophyta	Magnoliopsida	Solanales	Convolvulaceae	Ipomoea nil	423	0	1	
+atp6	atp6_Oleaceae_Hesperelaea_palmeri	NC_031323.1	654295-654720(-)	homology to built-in	Streptophyta	Magnoliopsida	Lamiales	Oleaceae	Hesperelaea palmeri	426	0	1	
+atp6	atp6_Lentibulariaceae_Utricularia_reniformis	NC_034982.1	810497-810922(-)	homology to built-in	Streptophyta	Magnoliopsida	Lamiales	Lentibulariaceae	Utricularia reniformis	426	0	1	
+atp6	atp6_Hydrocharitaceae_Stratiotes_aloides	NC_035317.1	170873-171298(+)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Hydrocharitaceae	Stratiotes aloides	426	0	1	
+atp6	atp6_Zosteraceae_Zostera_marina	NC_035345.1	32485-32910(-)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Zosteraceae	Zostera marina	426	0	1	
+atp6	atp6_Lythraceae_Lagerstroemia_indica	NC_035616.1	191230-191655(-)	homology to built-in	Streptophyta	Magnoliopsida	Myrtales	Lythraceae	Lagerstroemia indica	426	0	1	
+atp6	atp6_Campanulaceae_Platycodon_grandiflorus	NC_035958.1	233035-233460(-)	homology to built-in	Streptophyta	Magnoliopsida	Asterales	Campanulaceae	Platycodon grandiflorus	426	0	1	
+atp6	atp6_Apiaceae_Bupleurum_falcatum	NC_035962.1	30408-30833(+)	homology to built-in	Streptophyta	Magnoliopsida	Apiales	Apiaceae	Bupleurum falcatum	426	0	1	
+atp6	atp6_Rutaceae_Citrus_sinensis	NC_037463.1	412239-412664(+)	homology to built-in	Streptophyta	Magnoliopsida	Sapindales	Rutaceae	Citrus sinensis	426	0	1	
+atp6	atp6_Nymphaeaceae_Nymphaea_colorata	NC_037468.1	351802-352215(+)	homology to built-in	Streptophyta	Magnoliopsida	Nymphaeales	Nymphaeaceae	Nymphaea colorata	414	0	1	
+atp6	atp6_Caulerpaceae_Caulerpa_lentillifera	NC_038217.1	26676-35796(-)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa lentillifera	9121	0	1	
+atp6	atp6_Pinaceae_Pinus_taeda	NC_039746.1	715656-716081(-)	homology to built-in	Streptophyta	Pinopsida	Pinales	Pinaceae	Pinus taeda	426	0	1	
+atp6	atp6_Chloropicaceae_Chloropicon_primus	NC_042490.1	18059-18833(+)	annotation	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	775	0	1	
+atp6	atp6_Picocystaceae_Picocystis_salinarum	NC_042491.1	25878-26636(-)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	759	0	1	
+atp6	atp6_Schisandraceae_Schisandra_sphenanthera	NC_042758.1	744607-745032(-)	homology to built-in	Streptophyta	Magnoliopsida	Austrobaileyales	Schisandraceae	Schisandra sphenanthera	426	0	1	
+atp6	atp6_Aquifoliaceae_Ilex_pubescens	NC_045078.1	343874-344299(-)	homology to built-in	Streptophyta	Magnoliopsida	Aquifoliales	Aquifoliaceae	Ilex pubescens	426	0	1	
+atp6	atp6_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	200247-203701(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	3455	0	1	
+atp6	atp6_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	62176-62938(-)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	763	0	1	
+atp6	atp6_Chlorophyceae_Jenufa_perforata	NC_046779.1	18264-19152(+)	annotation	Chlorophyta	Chlorophyceae			Jenufa perforata	889	0	1	
+atp6	atp6_Codiaceae_Codium_fragile	NC_048526.1	8786-9544(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	759	0	1	
+atp6	atp6_Nyctaginaceae_Mirabilis_himalaica	NC_048974.1	107425-107850(+)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Nyctaginaceae	Mirabilis himalaica	426	0	1	
+atp6	atp6_Sapindaceae_Sapindus_mukorossi	NC_050850.1	361369-361794(-)	homology to built-in	Streptophyta	Magnoliopsida	Sapindales	Sapindaceae	Sapindus mukorossi	426	0	1	
+atp6	atp6_Fagaceae_Fagus_sylvatica	NC_050960.1	460496-460921(+)	homology to built-in	Streptophyta	Magnoliopsida	Fagales	Fagaceae	Fagus sylvatica	426	0	1	
+atp6	atp6_Scapaniaceae_Scapania_ampliata	NC_052751.1	22646-23071(+)	homology to built-in	Streptophyta	Jungermanniopsida	Jungermanniales	Scapaniaceae	Scapania ampliata	426	0	1	
+atp6	atp6_Ranunculaceae_Hepatica_maxima	NC_053368.1	1115147-1115572(+)	homology to built-in	Streptophyta	Magnoliopsida	Ranunculales	Ranunculaceae	Hepatica maxima	426	0	1	
+atp6	atp6_Asparagaceae_Asparagus_officinalis	NC_053642.1	370328-370753(+)	homology to built-in	Streptophyta	Magnoliopsida	Asparagales	Asparagaceae	Asparagus officinalis	426	0	1	
+atp6	atp6_Celastraceae_Euonymus_alatus	NC_053921.1	703337-703762(+)	homology to built-in	Streptophyta	Magnoliopsida	Celastrales	Celastraceae	Euonymus alatus	426	0	1	
+atp6	atp6_Rhizophoraceae_Bruguiera_sexangula	NC_056359.1	111772-112197(-)	homology to built-in	Streptophyta	Magnoliopsida	Malpighiales	Rhizophoraceae	Bruguiera sexangula	426	0	1	
+atp6	atp6_Cyperaceae_Cyperus_esculentus	NC_058697.1	826255-826678(-)	homology to built-in	Streptophyta	Magnoliopsida	Poales	Cyperaceae	Cyperus esculentus	424	0	1	
+atp6	atp6_Proteaceae_Macadamia_integrifolia	NC_058888.1	405249-405674(+)	homology to built-in	Streptophyta	Magnoliopsida	Proteales	Proteaceae	Macadamia integrifolia	426	0	1	
+atp6	atp6_Cephaloziaceae_Nowellia_curvifolia	NC_063925.1	21543-21968(+)	homology to built-in	Streptophyta	Jungermanniopsida	Jungermanniales	Cephaloziaceae	Nowellia curvifolia	426	0	1	
+atp6	atp6_Caprifoliaceae_Triosteum_pinnatifidum	NC_064333.1	756401-756826(+)	homology to built-in	Streptophyta	Magnoliopsida	Dipsacales	Caprifoliaceae	Triosteum pinnatifidum	426	0	1	
+atp6	atp6_Meliaceae_Toona_ciliata	NC_065060.1	474229-474654(-)	homology to built-in	Streptophyta	Magnoliopsida	Sapindales	Meliaceae	Toona ciliata	426	0	1	
+atp6	atp6_Crassulaceae_Sedum_plumbizincicola	NC_069572.1	33180-33605(-)	homology to built-in	Streptophyta	Magnoliopsida	Saxifragales	Crassulaceae	Sedum plumbizincicola	426	0	1	
+atp6	atp6_Juncaceae_Luzula_sylvatica	NC_069587.1	578491-578916(-)	homology to built-in	Streptophyta	Magnoliopsida	Poales	Juncaceae	Luzula sylvatica	426	0	1	
+atp6	atp6_Taxaceae_Taxus_chinensis	NC_069591.1	172499-172924(-)	homology to built-in	Streptophyta	Pinopsida	Cupressales	Taxaceae	Taxus chinensis	426	0	1	
+atp6	atp6_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	44536-44961(+)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	426	0	1	
+atp6	atp6_Calophyllaceae_Calophyllum_soulattri	NC_079842.1	149538-149963(+)	homology to built-in	Streptophyta	Magnoliopsida	Malpighiales	Calophyllaceae	Calophyllum soulattri	426	0	1	
+atp6	atp6_Pelliaceae_Apopellia_endiviifolia	NC_080360.1	15110-15535(+)	homology to built-in	Streptophyta	Jungermanniopsida	Pelliales	Pelliaceae	Apopellia endiviifolia	426	0	1	
+atp6	atp6_Pandanaceae_Pandanus_odorifer	NC_080521.1	126020-126445(-)	homology to built-in	Streptophyta	Magnoliopsida	Pandanales	Pandanaceae	Pandanus odorifer	426	0	1	
+atp6	atp6_Surianaceae_Suriana_maritima	NC_081511.1	211548-211973(-)	homology to built-in	Streptophyta	Magnoliopsida	Fabales	Surianaceae	Suriana maritima	426	0	1	
+atp6	atp6_Papaveraceae_Corydalis_pauciovulata	NC_081934.1	54695-55120(+)	homology to built-in	Streptophyta	Magnoliopsida	Ranunculales	Papaveraceae	Corydalis pauciovulata	426	0	1	
+atp6	atp6_Polygonaceae_Rheum_palmatum	NC_082039.1	226797-227222(+)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Polygonaceae	Rheum palmatum	426	0	1	
+atp6	atp6_Chloranthaceae_Hedyosmum_orientale	NC_082064.1	220091-220516(-)	homology to built-in	Streptophyta	Magnoliopsida	Chloranthales	Chloranthaceae	Hedyosmum orientale	426	0	1	
+atp6	atp6_Grossulariaceae_Ribes_nigrum	NC_082306.1	324777-325202(+)	homology to built-in	Streptophyta	Magnoliopsida	Saxifragales	Grossulariaceae	Ribes nigrum	426	0	1	
+atp6	atp6_Eucommiaceae_Eucommia_ulmoides	NC_082539.1	81572-81994(+)	homology to built-in	Streptophyta	Magnoliopsida	Garryales	Eucommiaceae	Eucommia ulmoides	423	0	1	
+atp6	atp6_Menispermaceae_Stephania_japonica	NC_083965.1	122489-122914(-)	homology to built-in	Streptophyta	Magnoliopsida	Ranunculales	Menispermaceae	Stephania japonica	426	0	1	
+atp6	atp6_Pontederiaceae_Pontederia_crassipes	NC_084342.1	293782-294207(-)	homology to built-in	Streptophyta	Magnoliopsida	Commelinales	Pontederiaceae	Pontederia crassipes	426	0	1	
+atp6	atp6_Linderniaceae_Picria_felterrae	NC_086551.1	64628-65053(+)	homology to built-in	Streptophyta	Magnoliopsida	Lamiales	Linderniaceae	Picria felterrae	426	0	1	
+atp6	atp6_Zygophyllaceae_Tetraena_mongolica	NC_086675.1	303634-304059(+)	homology to built-in	Streptophyta	Magnoliopsida	Zygophyllales	Zygophyllaceae	Tetraena mongolica	426	0	1	
+atp6	atp6_Cymodoceaceae_Ruppia_sinensis	NC_088727.1	209035-209460(-)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Cymodoceaceae	Ruppia sinensis	426	0	1	
+atp8	atp8_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	980	0	96	former built-in seed $Seed_mito_atp8_spermatopsida_paphiopedilum_micranthum
+atp8	atp8_Anthocerotaceae_Anthoceros_angustus	NC_037476.1	143930-144906(-)	homology to built-in	Streptophyta	Anthocerotopsida	Anthocerotales	Anthocerotaceae	Anthoceros angustus	977	0	50	
+atp8	atp8_Cycadaceae_Cycas_taitungensis	NC_010303.1	345370-346364(+)	homology to built-in	Streptophyta	Cycadopsida	Cycadales	Cycadaceae	Cycas taitungensis	995	0	96	
+atp8	atp8_Closteriaceae_Closterium_baillyanum	NC_022860.1	56968-57933(-)	homology to built-in	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	966	0	2	
+atp8	atp8_Gayraliaceae_Gayralia_brasiliensis	NC_072925.1	57432-58412(+)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Gayraliaceae	Gayralia brasiliensis	981	0	2	
+atp8	atp8_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	2438-3418(+)	annotation	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	981	0	1	
+atp8	atp8_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	19933-20913(-)	annotation	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	981	0	1	
+atp8	atp8_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	44733-45712(+)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	980	0	1	
+atp8	atp8_Characeae_Chara_vulgaris	NC_005255.1	55370-56349(+)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	980	0	2	
+atp8	atp8_Tupiellaceae_Tupiella_akineta	NC_005926.1	44320-45300(+)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	981	0	1	
+atp8	atp8_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	26526-27506(+)	annotation	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	981	0	1	
+atp8	atp8_Mesostigmataceae_Mesostigma_viride	NC_008240.1	9727-10707(-)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	981	0	1	
+atp8	atp8_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	43483-44463(+)	annotation	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	981	0	1	
+atp8	atp8_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	31246-32226(-)	annotation	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	981	0	1	
+atp8	atp8_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	14167-15147(+)	annotation	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	981	0	1	
+atp8	atp8_Caryophyllaceae_Silene_latifolia	NC_014487.1	14827-15830(-)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Caryophyllaceae	Silene latifolia	1004	0	97	
+atp8	atp8_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	41554-42534(+)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	981	0	1	
+atp8	atp8_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	46289-47269(+)	annotation	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	981	0	1	
+atp8	atp8_Monomastigaceae_Monomastix_sp	NC_022797.1	26190-27170(+)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	981	0	1	
+atp8	atp8_Entransiaceae_Entransia_fimbriata	NC_022861.1	47964-48944(-)	annotation	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	981	0	1	
+atp8	atp8_Microsporaceae_Microspora_stagnorum	NC_022862.1	45279-46259(-)	annotation	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	981	0	1	
+atp8	atp8_Mesotaeniaceae_Roya_obtusa	NC_022863.1	25976-26979(-)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	1004	0	1	
+atp8	atp8_Bathycoccaceae_Bathycoccus_prasinos	NC_023273.1	20586-21566(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Bathycoccus prasinos	981	0	1	
+atp8	atp8_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	10-990(-)	annotation	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	981	0	1	
+atp8	atp8_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	8824-9804(+)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	981	0	1	
+atp8	atp8_Ulvaceae_Ulva_fasciata	NC_028081.1	19582-20562(+)	annotation	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	981	0	1	
+atp8	atp8_Ophioglossaceae_Ophioglossum_californicum	NC_030900.1	57881-58861(+)	annotation	Streptophyta	Polypodiopsida	Ophioglossales	Ophioglossaceae	Ophioglossum californicum	981	0	1	
+atp8	atp8_Psilotaceae_Psilotum_nudum	NC_030952.1	295891-296861(+)	homology to built-in	Streptophyta	Polypodiopsida	Psilotales	Psilotaceae	Psilotum nudum	971	0	1	
+atp8	atp8_Pyramimonadaceae_Pyramimonas_parkeae	NC_031504.1	24410-25390(+)	annotation	Chlorophyta	Pyramimonadophyceae	Pyramimonadales	Pyramimonadaceae	Pyramimonas parkeae	981	0	1	
+atp8	atp8_Caulerpaceae_Caulerpa_lentillifera	NC_038217.1	139958-141828(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa lentillifera	1871	0	1	
+atp8	atp8_Myrtaceae_Eucalyptus_grandis	NC_040010.1	17873-18861(-)	homology to built-in	Streptophyta	Magnoliopsida	Myrtales	Myrtaceae	Eucalyptus grandis	989	0	1	
+atp8	atp8_Chloropicaceae_Chloropicon_primus	NC_042490.1	27924-28904(+)	annotation	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	981	0	1	
+atp8	atp8_Picocystaceae_Picocystis_salinarum	NC_042491.1	1948-2928(-)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	981	0	1	
+atp8	atp8_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	120726-121699(-)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	974	0	1	
+atp8	atp8_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	80997-84231(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	3235	0	1	
+atp8	atp8_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	41632-42612(-)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	981	0	1	
+atp8	atp8_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	45793-46773(+)	annotation	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	981	0	1	
+atp8	atp8_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	17864-18831(+)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	968	0	1	
+ccmB	ccmB_Orchidaceae_Paphiopedilum_gratrixianum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum gratrixianum	1330	0	127	former built-in seed $Seed_mito_ccmB_spermatopsida_paphiopedilum_gratrixianum
+ccmB	ccmB_Marchantiaceae_Marchantia_paleacea	NC_001660.1	175488-176814(+)	homology to built-in	Streptophyta	Marchantiopsida	Marchantiales	Marchantiaceae	Marchantia paleacea	1327	0	143	
+ccmB	ccmB_Characeae_Chara_vulgaris	NC_005255.1	53205-54535(-)	annotation	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	1331	0	1	
+ccmB	ccmB_Closteriaceae_Closterium_baillyanum	NC_022860.1	33245-34575(-)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	1331	0	1	
+ccmB	ccmB_Microsporaceae_Microspora_stagnorum	NC_022862.1	16307-17637(+)	annotation	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	1331	0	1	
+ccmB	ccmB_Mesotaeniaceae_Roya_obtusa	NC_022863.1	28675-30005(+)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	1331	0	1	
+ccmB	ccmB_Gonatozygaceae_Gonatozygon_brebissonii	NC_046951.1	83349-84679(+)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Gonatozygaceae	Gonatozygon brebissonii	1331	0	1	
+ccmB	ccmB_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	7158-8488(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	1331	0	1	
+ccmC	ccmC_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	770	0	136	former built-in seed $Seed_mito_ccmC_spermatopsida_paphiopedilum_micranthum
+ccmC	ccmC_Polytrichaceae_Atrichum_angustatum	NC_024520.1	17135-17904(+)	homology to built-in	Streptophyta	Polytrichopsida	Polytrichales	Polytrichaceae	Atrichum angustatum	770	0	143	
+ccmC	ccmC_Microsporaceae_Microspora_stagnorum	NC_022862.1	17819-18588(-)	homology to built-in	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	770	0	1	
+ccmC	ccmC_Viscaceae_Viscum_album	NC_029039.1	418393-419168(+)	homology to built-in	Streptophyta	Magnoliopsida	Santalales	Viscaceae	Viscum album	776	0	1	
+ccmFc	ccmFc_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	1050	0	98	former built-in seed $Seed_mito_ccmFc_spermatopsida_paphiopedilum_micranthum
+ccmFc	ccmFc_Fossombroniaceae_Fossombronia_foveolata	NC_043887.1	169091-170138(+)	homology to built-in	Streptophyta	Jungermanniopsida	Fossombroniales	Fossombroniaceae	Fossombronia foveolata	1048	0	30	
+ccmFc	ccmFc_Tetraphidaceae_Tetraphis_pellucida	NC_024290.1	57950-59008(+)	homology to built-in	Streptophyta	Tetraphidopsida	Tetraphidales	Tetraphidaceae	Tetraphis pellucida	1059	0	77	
+ccmFc	ccmFc_Notothyladaceae_Phaeoceros_laevis	NC_013765.1	13173-14235(-)	homology to built-in	Streptophyta	Anthocerotopsida	Notothyladales	Notothyladaceae	Phaeoceros laevis	1063	0	3	
+ccmFc	ccmFc_Characeae_Chara_vulgaris	NC_005255.1	50880-51926(-)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	1047	0	1	
+ccmFc	ccmFc_Treubiaceae_Treubia_lacunosa	NC_016122.1	147107-148157(+)	annotation	Streptophyta	Haplomitriopsida	Treubiales	Treubiaceae	Treubia lacunosa	1051	0	1	
+ccmFc	ccmFc_Microsporaceae_Microspora_stagnorum	NC_022862.1	46686-49110(+)	annotation	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	2425	0	1	
+ccmFc	ccmFc_Mesotaeniaceae_Roya_obtusa	NC_022863.1	31187-33833(+)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	2647	0	1	
+ccmFc	ccmFc_Ginkgoaceae_Ginkgo_biloba	NC_027976.1	298268-299391(+)	homology to built-in	Streptophyta	Ginkgoopsida	Ginkgoales	Ginkgoaceae	Ginkgo biloba	1124	0	111	
+ccmFc	ccmFc_Welwitschiaceae_Welwitschia_mirabilis	NC_029130.1	772861-773910(+)	homology to built-in	Streptophyta	Gnetopsida	Welwitschiales	Welwitschiaceae	Welwitschia mirabilis	1050	0	1	
+ccmFc	ccmFc_Leiosporocerotaceae_Leiosporoceros_dussii	NC_039751.1	48333-49415(+)	homology to built-in	Streptophyta	Leiosporocerotopsida	Leiosporocerotales	Leiosporocerotaceae	Leiosporoceros dussii	1083	0	1	
+ccmFc	ccmFc_Gonatozygaceae_Gonatozygon_brebissonii	NC_046951.1	85583-88475(+)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Gonatozygaceae	Gonatozygon brebissonii	2893	0	1	
+ccmFc	ccmFc_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	21243-22290(+)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	1048	0	1	
+ccmFc	ccmFc_Pelliaceae_Apopellia_endiviifolia	NC_080360.1	105431-106480(+)	homology to built-in	Streptophyta	Jungermanniopsida	Pelliales	Pelliaceae	Apopellia endiviifolia	1050	0	4	
+matR	matR_Orchidaceae_Apostasia_shenzhenica	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Apostasia shenzhenica	1190	0	98	former built-in seed $Seed_mito_matR_spermatopsida_apostasia_shenzhenica
+matR	matR_Cycadaceae_Cycas_taitungensis	NC_010303.1	363756-364977(-)	homology to built-in	Streptophyta	Cycadopsida	Cycadales	Cycadaceae	Cycas taitungensis	1222	0	99	
+matR	matR_Zosteraceae_Zostera_marina	NC_035345.1	140775-141949(-)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Zosteraceae	Zostera marina	1175	0	97	
+matR	matR_Mesotaeniaceae_Roya_anglica	NC_046950.1	15195-16385(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya anglica	1191	0	1	
+matR	matR_Taxaceae_Taxus_chinensis	NC_069591.1	318046-319226(+)	homology to built-in	Streptophyta	Pinopsida	Cupressales	Taxaceae	Taxus chinensis	1181	0	2	
+matR	matR_Zygnemataceae_Zygnema_cf	NC_088772.1	25737-29229(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema cf. cylindricum	3493	0	1	
+mttB	mttB_Ranunculaceae_Anemone_patens	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Ranunculales	Ranunculaceae	Anemone patens	840	0	114	former built-in seed $Seed_mito_mttB_spermatopsida_anemone_patens
+mttB	mttB_Marchantiaceae_Marchantia_paleacea	NC_001660.1	79830-80667(+)	homology to built-in	Streptophyta	Marchantiopsida	Marchantiales	Marchantiaceae	Marchantia paleacea	838	0	147	
+mttB	mttB_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	14415-15255(+)	annotation	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	841	0	1	
+mttB	mttB_Characeae_Chara_vulgaris	NC_005255.1	9365-10204(+)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	840	0	1	
+mttB	mttB_Tupiellaceae_Tupiella_akineta	NC_005926.1	71986-73096(-)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	1111	0	1	
+mttB	mttB_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	35336-36176(-)	annotation	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	841	0	1	
+mttB	mttB_Mesostigmataceae_Mesostigma_viride	NC_008240.1	16583-17423(-)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	841	0	1	
+mttB	mttB_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	19349-20189(-)	annotation	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	841	0	1	
+mttB	mttB_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	598-1438(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	841	0	1	
+mttB	mttB_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	150315-151155(+)	annotation	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	841	0	1	
+mttB	mttB_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	34713-35553(-)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	841	0	1	
+mttB	mttB_Chlorellaceae_Helicosporidium_sp	NC_017841.1	13155-13995(-)	annotation	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Helicosporidium sp. ex Simulium jonesi	841	0	1	
+mttB	mttB_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	40067-40907(-)	annotation	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	841	0	1	
+mttB	mttB_Monomastigaceae_Monomastix_sp	NC_022797.1	32397-33237(-)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	841	0	1	
+mttB	mttB_Closteriaceae_Closterium_baillyanum	NC_022860.1	144255-145095(-)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	841	0	1	
+mttB	mttB_Entransiaceae_Entransia_fimbriata	NC_022861.1	54352-55210(-)	annotation	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	859	0	1	
+mttB	mttB_Microsporaceae_Microspora_stagnorum	NC_022862.1	19152-19992(-)	annotation	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	841	0	1	
+mttB	mttB_Mesotaeniaceae_Roya_obtusa	NC_022863.1	9006-9960(+)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	955	0	1	
+mttB	mttB_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	4742-5582(+)	annotation	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	841	0	1	
+mttB	mttB_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	34414-35254(+)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	841	0	1	
+mttB	mttB_Welwitschiaceae_Welwitschia_mirabilis	NC_029130.1	62299-63132(+)	homology to built-in	Streptophyta	Gnetopsida	Welwitschiales	Welwitschiaceae	Welwitschia mirabilis	834	0	37	
+mttB	mttB_Pyramimonadaceae_Pyramimonas_parkeae	NC_031504.1	27536-28376(+)	annotation	Chlorophyta	Pyramimonadophyceae	Pyramimonadales	Pyramimonadaceae	Pyramimonas parkeae	841	0	1	
+mttB	mttB_Chloropicaceae_Chloropicon_primus	NC_042490.1	33958-34798(+)	annotation	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	841	0	1	
+mttB	mttB_Picocystaceae_Picocystis_salinarum	NC_042491.1	4435-5275(-)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	841	0	1	
+mttB	mttB_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	234046-234940(+)	annotation	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	895	0	1	
+mttB	mttB_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	216518-217514(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	997	0	1	
+mttB	mttB_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	24485-25325(+)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	841	0	1	
+mttB	mttB_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	18653-19643(+)	annotation	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	991	0	1	
+mttB	mttB_Gonatozygaceae_Gonatozygon_brebissonii	NC_046951.1	95235-96075(-)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Gonatozygaceae	Gonatozygon brebissonii	841	0	1	
+mttB	mttB_Codiaceae_Codium_fragile	NC_048526.1	16190-17030(-)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	841	0	1	
+mttB	mttB_Ulvaceae_Ulva_meridionalis	NC_065202.1	72306-73146(+)	annotation	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva meridionalis	841	0	1	
+mttB	mttB_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	58877-59717(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	841	0	1	
+nad1	nad1_Orchidaceae_Paphiopedilum_henryanum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum henryanum	1050	0	100	former built-in seed $Seed_mito_nad1_spermatopsida_paphiopedilum_henryanum
+nad1	nad1_Characeae_Chara_vulgaris	NC_005255.1	44894-45943(-)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	1050	0	130	
+nad1	nad1_Funariaceae_Physcomitrium_patens	NC_007945.1	71929-72978(+)	homology to built-in	Streptophyta	Bryopsida	Funariales	Funariaceae	Physcomitrium patens	1050	0	27	
+nad1	nad1_Tupiellaceae_Tupiella_akineta	NC_005926.1	80400-81449(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	1050	0	4	
+nad1	nad1_Mychonastaceae_Mychonastes_homosphaera	NC_024760.1	6439-7485(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Mychonastaceae	Mychonastes homosphaera	1047	0	4	
+nad1	nad1_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	36271-37320(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	1050	0	11	
+nad1	nad1_Chlamydomonadaceae_Chlamydomonas_reinhardtii	NC_001638.1	10260-11303(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Chlamydomonadaceae	Chlamydomonas reinhardtii	1044	0	3	
+nad1	nad1_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	14223-15265(+)	homology to built-in	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	1043	0	2	
+nad1	nad1_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	12158-13207(+)	homology to built-in	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	1050	0	1	
+nad1	nad1_Scenedesmaceae_Tetradesmus_obliquus	NC_002254.1	16066-17118(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Scenedesmaceae	Tetradesmus obliquus	1053	0	1	
+nad1	nad1_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	28124-29173(-)	homology to built-in	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	1050	0	12	
+nad1	nad1_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	54867-55916(+)	homology to built-in	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	1050	0	1	
+nad1	nad1_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	23113-24162(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	1050	0	2	
+nad1	nad1_Dunaliellaceae_Dunaliella_salina	NC_012930.1	9436-10487(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Dunaliellaceae	Dunaliella salina	1052	0	1	
+nad1	nad1_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	16562-17611(+)	homology to built-in	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	1050	0	1	
+nad1	nad1_Monomastigaceae_Monomastix_sp	NC_022797.1	30655-31715(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	1061	0	1	
+nad1	nad1_Entransiaceae_Entransia_fimbriata	NC_022861.1	13903-14952(+)	homology to built-in	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	1050	0	3	
+nad1	nad1_Microsporaceae_Microspora_stagnorum	NC_022862.1	50642-51691(-)	homology to built-in	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	1050	0	2	
+nad1	nad1_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	30101-31150(+)	homology to built-in	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	1050	0	1	
+nad1	nad1_Neochloridaceae_Chlorotetraedron_incus	NC_024757.1	32943-33989(-)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Neochloridaceae	Chlorotetraedron incus	1047	0	3	
+nad1	nad1_Selenastraceae_Ourococcus_multisporus	NC_024762.1	43844-44890(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Selenastraceae	Ourococcus multisporus	1047	0	1	
+nad1	nad1_Ophioglossaceae_Ophioglossum_californicum	NC_030900.1	158077-159126(-)	homology to built-in	Streptophyta	Polypodiopsida	Ophioglossales	Ophioglossaceae	Ophioglossum californicum	1050	0	1	
+nad1	nad1_Psilotaceae_Psilotum_nudum	NC_030952.1	11247-12296(+)	homology to built-in	Streptophyta	Polypodiopsida	Psilotales	Psilotaceae	Psilotum nudum	1050	0	1	
+nad1	nad1_Caulerpaceae_Caulerpa_lentillifera	NC_038217.1	78764-79813(-)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa lentillifera	1050	0	1	
+nad1	nad1_Chlorosarcinaceae_Chlorosarcinopsis_eremi	NC_041430.1	16943-17977(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlorosarcinales	Chlorosarcinaceae	Chlorosarcinopsis eremi	1035	0	1	
+nad1	nad1_Chloropicaceae_Chloropicon_primus	NC_042490.1	25182-26231(+)	homology to built-in	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	1050	0	1	
+nad1	nad1_Picocystaceae_Picocystis_salinarum	NC_042491.1	24249-25301(-)	homology to built-in	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	1053	0	1	
+nad1	nad1_Haematococcaceae_Haematococcus_lacustris	NC_044670.1	74456-75506(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Haematococcaceae	Haematococcus lacustris	1051	0	1	
+nad1	nad1_Chlorophyceae_Jenufa_perforata	NC_046779.1	23782-24818(+)	homology to built-in	Chlorophyta	Chlorophyceae			Jenufa perforata	1037	0	1	
+nad1	nad1_Codiaceae_Codium_fragile	NC_048526.1	14851-15900(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	1050	0	1	
+nad1	nad1_Chaetopeltidaceae_Gormaniella_terricola	NC_066824.1	12253-13301(-)	homology to built-in	Chlorophyta	Chlorophyceae	Chaetopeltidales	Chaetopeltidaceae	Gormaniella terricola	1049	0	1	
+nad2E2	nad2E2_Orchidaceae_Paphiopedilum_henryanum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum henryanum	840	0	145	former built-in seed $Seed_mito_nad2E2_spermatopsida_paphiopedilum_henryanum
+nad2E2	nad2E2_Funariaceae_Physcomitrium_patens	NC_007945.1	52415-53257(+)	homology to built-in	Streptophyta	Bryopsida	Funariales	Funariaceae	Physcomitrium patens	843	0	152	
+nad2E2	nad2E2_Chlamydomonadaceae_Chlamydomonas_reinhardtii	NC_001638.1	6707-7855(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Chlamydomonadaceae	Chlamydomonas reinhardtii	1149	0	3	
+nad2E2	nad2E2_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	33088-33924(-)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	837	0	52	
+nad2E2	nad2E2_Gayraliaceae_Gayralia_brasiliensis	NC_072925.1	59284-60123(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Gayraliaceae	Gayralia brasiliensis	840	0	2	
+nad2E2	nad2E2_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	10690-12012(+)	annotation	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	1323	0	1	
+nad2E2	nad2E2_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	41857-42696(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	840	0	1	
+nad2E2	nad2E2_Scenedesmaceae_Tetradesmus_obliquus	NC_002254.1	18971-20641(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Scenedesmaceae	Tetradesmus obliquus	1671	0	1	
+nad2E2	nad2E2_Tupiellaceae_Tupiella_akineta	NC_005926.1	47008-47847(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	840	0	1	
+nad2E2	nad2E2_Mesostigmataceae_Mesostigma_viride	NC_008240.1	14761-15600(-)	homology to built-in	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	840	0	1	
+nad2E2	nad2E2_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	33931-34791(+)	homology to built-in	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	861	0	1	
+nad2E2	nad2E2_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	28687-29526(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	840	0	1	
+nad2E2	nad2E2_Mamiellaceae_Micromonas_commoda	NC_012643.1	15631-16470(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Mamiellaceae	Micromonas commoda	840	0	1	
+nad2E2	nad2E2_Dunaliellaceae_Dunaliella_salina	NC_012930.1	16565-17873(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Dunaliellaceae	Dunaliella salina	1309	0	1	
+nad2E2	nad2E2_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	8077-9585(+)	annotation	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	1509	0	1	
+nad2E2	nad2E2_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	44140-44979(+)	homology to built-in	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	840	0	1	
+nad2E2	nad2E2_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	49399-50238(+)	homology to built-in	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	840	0	1	
+nad2E2	nad2E2_Monomastigaceae_Monomastix_sp	NC_022797.1	48205-49044(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	840	0	1	
+nad2E2	nad2E2_Entransiaceae_Entransia_fimbriata	NC_022861.1	38890-39729(-)	homology to built-in	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	840	0	1	
+nad2E2	nad2E2_Microsporaceae_Microspora_stagnorum	NC_022862.1	43686-44525(-)	homology to built-in	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	840	0	1	
+nad2E2	nad2E2_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	34673-36301(-)	annotation	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	1629	0	1	
+nad2E2	nad2E2_Bracteacoccaceae_Bracteacoccus_aerius	NC_024755.1	22711-24247(-)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Bracteacoccaceae	Bracteacoccus aerius	1537	0	1	
+nad2E2	nad2E2_Neochloridaceae_Chlorotetraedron_incus	NC_024757.1	34230-36024(-)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Neochloridaceae	Chlorotetraedron incus	1795	0	1	
+nad2E2	nad2E2_Chromochloridaceae_Chromochloris_zofingiensis	NC_024758.1	12402-14228(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Chromochloridaceae	Chromochloris zofingiensis	1827	0	1	
+nad2E2	nad2E2_Mychonastaceae_Mychonastes_homosphaera	NC_024760.1	17380-18904(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Mychonastaceae	Mychonastes homosphaera	1525	0	1	
+nad2E2	nad2E2_Selenastraceae_Ourococcus_multisporus	NC_024762.1	45372-47118(+)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Selenastraceae	Ourococcus multisporus	1747	0	1	
+nad2E2	nad2E2_Pseudomuriellaceae_Pseudomuriella_schumacherensis	NC_024763.1	21132-22770(-)	annotation	Chlorophyta	Chlorophyceae	Sphaeropleales	Pseudomuriellaceae	Pseudomuriella schumacherensis	1639	0	1	
+nad2E2	nad2E2_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	11768-12607(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	840	0	1	
+nad2E2	nad2E2_Ulvaceae_Ulva_fasciata	NC_028081.1	13705-14544(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	840	0	1	
+nad2E2	nad2E2_Caulerpaceae_Caulerpa_lentillifera	NC_038217.1	115431-116270(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa lentillifera	840	0	1	
+nad2E2	nad2E2_Chlorosarcinaceae_Chlorosarcinopsis_eremi	NC_041430.1	19411-20739(+)	annotation	Chlorophyta	Chlorophyceae	Chlorosarcinales	Chlorosarcinaceae	Chlorosarcinopsis eremi	1329	0	1	
+nad2E2	nad2E2_Chloropicaceae_Chloropicon_primus	NC_042490.1	13921-14760(+)	homology to built-in	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	840	0	1	
+nad2E2	nad2E2_Picocystaceae_Picocystis_salinarum	NC_042491.1	29438-30926(-)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	1489	0	1	
+nad2E2	nad2E2_Haematococcaceae_Haematococcus_lacustris	NC_044670.1	30637-32251(+)	annotation	Chlorophyta	Chlorophyceae	Chlamydomonadales	Haematococcaceae	Haematococcus lacustris	1615	0	1	
+nad2E2	nad2E2_Anacardiaceae_Spondias_mombin	NC_045035.1	177878-178718(-)	annotation	Streptophyta	Magnoliopsida	Sapindales	Anacardiaceae	Spondias mombin	841	0	1	
+nad2E2	nad2E2_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	229599-230438(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	840	0	1	
+nad2E2	nad2E2_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	6748-7587(+)	homology to built-in	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	840	0	1	
+nad2E2	nad2E2_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	50739-51578(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	840	0	1	
+nad2E2	nad2E2_Chlorophyceae_Jenufa_perforata	NC_046779.1	19951-21465(-)	annotation	Chlorophyta	Chlorophyceae			Jenufa perforata	1515	0	1	
+nad2E2	nad2E2_Codiaceae_Codium_fragile	NC_048526.1	32268-33104(-)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	837	0	1	
+nad2E2	nad2E2_Chaetopeltidaceae_Gormaniella_terricola	NC_066824.1	3231-4707(-)	annotation	Chlorophyta	Chlorophyceae	Chaetopeltidales	Chaetopeltidaceae	Gormaniella terricola	1477	0	1	
+nad4E2	nad4E2_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	1050	0	154	former built-in seed $Seed_mito_nad4E2_spermatopsida_paphiopedilum_micranthum
+nad4E2	nad4E2_Characeae_Chara_vulgaris	NC_005255.1	33730-34768(+)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	1039	0	167	
+nad4E2	nad4E2_Chlamydomonadaceae_Chlamydomonas_reinhardtii	NC_001638.1	1646-2695(-)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Chlamydomonadaceae	Chlamydomonas reinhardtii	1050	0	3	
+nad4E2	nad4E2_Tupiellaceae_Tupiella_akineta	NC_005926.1	65724-66773(-)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	1050	0	3	
+nad4E2	nad4E2_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	15973-17022(+)	homology to built-in	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	1050	0	2	
+nad4E2	nad4E2_Pedinomonadaceae_Pedinomonas_minor	NC_000892.1	9638-10687(+)	homology to built-in	Chlorophyta	Pedinophyceae	Pedinomonadales	Pedinomonadaceae	Pedinomonas minor	1050	0	1	
+nad4E2	nad4E2_Scenedesmaceae_Tetradesmus_obliquus	NC_002254.1	24718-25767(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Scenedesmaceae	Tetradesmus obliquus	1050	0	1	
+nad4E2	nad4E2_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	8523-9572(+)	homology to built-in	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	1050	0	1	
+nad4E2	nad4E2_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	29491-30540(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	1050	0	2	
+nad4E2	nad4E2_Dunaliellaceae_Dunaliella_salina	NC_012930.1	11177-12226(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Dunaliellaceae	Dunaliella salina	1050	0	1	
+nad4E2	nad4E2_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	6992-8041(+)	homology to built-in	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	1050	0	1	
+nad4E2	nad4E2_Closteriaceae_Closterium_baillyanum	NC_022860.1	92929-93978(-)	homology to built-in	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	1050	0	1	
+nad4E2	nad4E2_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	36541-37590(-)	homology to built-in	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	1050	0	1	
+nad4E2	nad4E2_Bracteacoccaceae_Bracteacoccus_aerius	NC_024755.1	36320-37368(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Bracteacoccaceae	Bracteacoccus aerius	1049	0	1	
+nad4E2	nad4E2_Neochloridaceae_Chlorotetraedron_incus	NC_024757.1	4757-5806(-)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Neochloridaceae	Chlorotetraedron incus	1050	0	1	
+nad4E2	nad4E2_Chromochloridaceae_Chromochloris_zofingiensis	NC_024758.1	34467-35516(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Chromochloridaceae	Chromochloris zofingiensis	1050	0	1	
+nad4E2	nad4E2_Mychonastaceae_Mychonastes_homosphaera	NC_024760.1	5306-6354(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Mychonastaceae	Mychonastes homosphaera	1049	0	1	
+nad4E2	nad4E2_Selenastraceae_Ourococcus_multisporus	NC_024762.1	33607-34656(-)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Selenastraceae	Ourococcus multisporus	1050	0	1	
+nad4E2	nad4E2_Pseudomuriellaceae_Pseudomuriella_schumacherensis	NC_024763.1	3160-4209(+)	homology to built-in	Chlorophyta	Chlorophyceae	Sphaeropleales	Pseudomuriellaceae	Pseudomuriella schumacherensis	1050	0	1	
+nad4E2	nad4E2_Ulvaceae_Ulva_fasciata	NC_028081.1	45133-46185(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	1053	0	1	
+nad4E2	nad4E2_Caulerpaceae_Caulerpa_lentillifera	NC_038217.1	88205-89254(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa lentillifera	1050	0	1	
+nad4E2	nad4E2_Chlorosarcinaceae_Chlorosarcinopsis_eremi	NC_041430.1	12581-13630(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlorosarcinales	Chlorosarcinaceae	Chlorosarcinopsis eremi	1050	0	1	
+nad4E2	nad4E2_Chloropicaceae_Chloropicon_primus	NC_042490.1	12933-13982(+)	homology to built-in	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	1050	0	1	
+nad4E2	nad4E2_Picocystaceae_Picocystis_salinarum	NC_042491.1	31005-32054(-)	homology to built-in	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	1050	0	1	
+nad4E2	nad4E2_Haematococcaceae_Haematococcus_lacustris	NC_044670.1	42760-43810(+)	homology to built-in	Chlorophyta	Chlorophyceae	Chlamydomonadales	Haematococcaceae	Haematococcus lacustris	1051	0	1	
+nad4E2	nad4E2_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	97670-98719(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	1050	0	1	
+nad4E2	nad4E2_Chlorophyceae_Jenufa_perforata	NC_046779.1	16100-17149(-)	homology to built-in	Chlorophyta	Chlorophyceae			Jenufa perforata	1050	0	1	
+nad4E2	nad4E2_Codiaceae_Codium_fragile	NC_048526.1	24271-25320(-)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	1050	0	1	
+nad4E2	nad4E2_Chaetopeltidaceae_Gormaniella_terricola	NC_066824.1	14834-15883(-)	homology to built-in	Chlorophyta	Chlorophyceae	Chaetopeltidales	Chaetopeltidaceae	Gormaniella terricola	1050	0	1	
+rpl5	rpl5_Asteraceae_Lactuca_sativa	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asterales	Asteraceae	Lactuca sativa	490	0	78	former built-in seed $Seed_mito_rpl5_spermatopsida_lactuca_sativa
+rpl5	rpl5_Characeae_Chara_vulgaris	NC_005255.1	15576-16052(-)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	477	0	24	
+rpl5	rpl5_Marchantiaceae_Marchantia_paleacea	NC_001660.1	66739-67220(+)	homology to built-in	Streptophyta	Marchantiopsida	Marchantiales	Marchantiaceae	Marchantia paleacea	482	0	23	
+rpl5	rpl5_Closteriaceae_Closterium_baillyanum	NC_022860.1	136120-136597(+)	homology to built-in	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	478	0	2	
+rpl5	rpl5_Gayraliaceae_Gayralia_brasiliensis	NC_072925.1	55486-56186(+)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Gayraliaceae	Gayralia brasiliensis	701	0	2	
+rpl5	rpl5_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	23197-23897(-)	annotation	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	701	0	1	
+rpl5	rpl5_Amaranthaceae_Beta_vulgaris	NC_002511.2	181484-181964(-)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Amaranthaceae	Beta vulgaris	481	0	1	
+rpl5	rpl5_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	18593-19068(-)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	476	0	1	
+rpl5	rpl5_Tupiellaceae_Tupiella_akineta	NC_005926.1	41581-42355(+)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	775	0	1	
+rpl5	rpl5_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	17561-18261(-)	annotation	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	701	0	1	
+rpl5	rpl5_Mesostigmataceae_Mesostigma_viride	NC_008240.1	11991-12691(-)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	701	0	1	
+rpl5	rpl5_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	4030-4730(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	701	0	1	
+rpl5	rpl5_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	146704-147404(-)	annotation	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	701	0	1	
+rpl5	rpl5_Mamiellaceae_Micromonas_commoda	NC_012643.1	40963-41663(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Mamiellaceae	Micromonas commoda	701	0	1	
+rpl5	rpl5_Dendrocerotaceae_Nothoceros_aenigmaticus	NC_012651.1	47710-48223(-)	homology to built-in	Streptophyta	Anthocerotopsida	Dendrocerotales	Dendrocerotaceae	Nothoceros aenigmaticus	514	0	1	
+rpl5	rpl5_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	29083-29783(+)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	701	0	1	
+rpl5	rpl5_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	34103-34803(+)	annotation	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	701	0	1	
+rpl5	rpl5_Apocynaceae_Asclepias_syriaca	NC_022796.1	91226-91709(+)	homology to built-in	Streptophyta	Magnoliopsida	Gentianales	Apocynaceae	Asclepias syriaca	484	0	1	
+rpl5	rpl5_Monomastigaceae_Monomastix_sp	NC_022797.1	39212-39912(+)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	701	0	1	
+rpl5	rpl5_Entransiaceae_Entransia_fimbriata	NC_022861.1	25062-25762(+)	annotation	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	701	0	1	
+rpl5	rpl5_Microsporaceae_Microspora_stagnorum	NC_022862.1	70202-70902(+)	annotation	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	701	0	1	
+rpl5	rpl5_Mesotaeniaceae_Roya_obtusa	NC_022863.1	15980-16460(-)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	481	0	1	
+rpl5	rpl5_Asteraceae_Helianthus_annuus	NC_023337.1	42660-43146(-)	homology to built-in	Streptophyta	Magnoliopsida	Asterales	Asteraceae	Helianthus annuus	487	0	6	
+rpl5	rpl5_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	10269-10969(-)	annotation	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	701	0	1	
+rpl5	rpl5_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	50761-51819(+)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	1059	0	1	
+rpl5	rpl5_Malvaceae_Gossypium_hirsutum	NC_027406.1	345546-346246(+)	annotation	Streptophyta	Magnoliopsida	Malvales	Malvaceae	Gossypium hirsutum	701	0	1	
+rpl5	rpl5_Ulvaceae_Ulva_fasciata	NC_028081.1	17240-17940(+)	annotation	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	701	0	1	
+rpl5	rpl5_Ophioglossaceae_Ophioglossum_californicum	NC_030900.1	187745-188445(-)	annotation	Streptophyta	Polypodiopsida	Ophioglossales	Ophioglossaceae	Ophioglossum californicum	701	0	1	
+rpl5	rpl5_Pyramimonadaceae_Pyramimonas_parkeae	NC_031504.1	20739-21439(+)	annotation	Chlorophyta	Pyramimonadophyceae	Pyramimonadales	Pyramimonadaceae	Pyramimonas parkeae	701	0	1	
+rpl5	rpl5_Chloropicaceae_Chloropicon_primus	NC_042490.1	21767-22467(+)	annotation	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	701	0	1	
+rpl5	rpl5_Picocystaceae_Picocystis_salinarum	NC_042491.1	7907-8607(-)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	701	0	1	
+rpl5	rpl5_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	153431-153910(-)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	480	0	1	
+rpl5	rpl5_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	100541-101245(-)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	705	0	1	
+rpl5	rpl5_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	2845-3545(-)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	701	0	1	
+rpl5	rpl5_Polygalaceae_Epirixanthes_elongata	NC_046014.1	160040-160535(-)	homology to built-in	Streptophyta	Magnoliopsida	Fabales	Polygalaceae	Epirixanthes elongata	496	0	1	
+rpl5	rpl5_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	81640-82488(+)	annotation	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	849	0	1	
+rpl5	rpl5_Codiaceae_Codium_fragile	NC_048526.1	14020-14720(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	701	0	1	
+rpl5	rpl5_Nyctaginaceae_Bougainvillea_spectabilis	NC_056281.1	307369-307849(+)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Nyctaginaceae	Bougainvillea spectabilis	481	0	1	
+rpl5	rpl5_Taxaceae_Taxus_chinensis	NC_069591.1	456680-457169(-)	homology to built-in	Streptophyta	Pinopsida	Cupressales	Taxaceae	Taxus chinensis	490	0	1	
+rpl5	rpl5_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	163439-163915(-)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	477	0	1	
+rpl5	rpl5_Calophyllaceae_Calophyllum_soulattri	NC_079842.1	200873-201362(-)	homology to built-in	Streptophyta	Magnoliopsida	Malpighiales	Calophyllaceae	Calophyllum soulattri	490	0	1	
+rpl5	rpl5_Aizoaceae_Mesembryanthemum_crystallinum	NC_086673.1	797419-797908(+)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Aizoaceae	Mesembryanthemum crystallinum	490	0	1	
+rps10	rps10_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	420	0	20	former built-in seed $Seed_mito_rps10_spermatopsida_paphiopedilum_micranthum
+rps10	rps10_Bataceae_Batis_maritima	NC_024429.1	166376-166789(-)	homology to built-in	Streptophyta	Magnoliopsida	Brassicales	Bataceae	Batis maritima	414	0	32	
+rps10	rps10_Pallaviciniaceae_Pallavicinia_lyellii	NC_080362.1	49934-50634(+)	annotation	Streptophyta	Jungermanniopsida	Pallaviciniales	Pallaviciniaceae	Pallavicinia lyellii	701	0	19	
+rps10	rps10_Ericaceae_Vaccinium_macrocarpon	NC_023338.1	62488-63188(-)	annotation	Streptophyta	Magnoliopsida	Ericales	Ericaceae	Vaccinium macrocarpon	701	0	10	
+rps10	rps10_Magnoliaceae_Liriodendron_tulipifera	NC_021152.1	1751-2170(+)	homology to built-in	Streptophyta	Magnoliopsida	Magnoliales	Magnoliaceae	Liriodendron tulipifera	420	0	4	
+rps10	rps10_Scapaniaceae_Scapania_ampliata	NC_052751.1	141881-142581(+)	annotation	Streptophyta	Jungermanniopsida	Jungermanniales	Scapaniaceae	Scapania ampliata	701	0	3	
+rps10	rps10_Anomodontaceae_Anomodon_rugelii	NC_016121.1	91250-91950(+)	annotation	Streptophyta	Bryopsida	Hypnales	Anomodontaceae	Anomodon rugelii	701	0	2	
+rps10	rps10_Nepenthaceae_Nepenthes_ventricosa	NC_039531.1	377234-377934(-)	annotation	Streptophyta	Magnoliopsida	Caryophyllales	Nepenthaceae	Nepenthes ventricosa x Nepenthes alata	701	0	4	
+rps10	rps10_Gayraliaceae_Gayralia_brasiliensis	NC_072925.1	28505-29205(-)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Gayraliaceae	Gayralia brasiliensis	701	0	2	
+rps10	rps10_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	43409-44109(+)	annotation	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	701	0	1	
+rps10	rps10_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	21479-22179(-)	annotation	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	701	0	1	
+rps10	rps10_Characeae_Chara_vulgaris	NC_005255.1	20151-20851(-)	annotation	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	701	0	1	
+rps10	rps10_Tupiellaceae_Tupiella_akineta	NC_005926.1	85111-86245(+)	annotation	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	1135	0	1	
+rps10	rps10_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	20555-21255(-)	annotation	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	701	0	1	
+rps10	rps10_Mesostigmataceae_Mesostigma_viride	NC_008240.1	39241-39941(+)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	701	0	1	
+rps10	rps10_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	6492-7192(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	701	0	1	
+rps10	rps10_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	132503-133203(+)	annotation	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	701	0	1	
+rps10	rps10_Vitaceae_Vitis_vinifera	NC_012119.1	489208-489621(+)	homology to built-in	Streptophyta	Magnoliopsida	Vitales	Vitaceae	Vitis vinifera	414	0	1	
+rps10	rps10_Mamiellaceae_Micromonas_commoda	NC_012643.1	43621-44321(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Mamiellaceae	Micromonas commoda	701	0	1	
+rps10	rps10_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	58952-59652(+)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	701	0	1	
+rps10	rps10_Lycopodiaceae_Phlegmariurus_squarrosus	NC_017755.1	377948-378377(+)	homology to built-in	Streptophyta	Lycopodiopsida	Lycopodiales	Lycopodiaceae	Phlegmariurus squarrosus	430	0	1	
+rps10	rps10_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	69358-70058(+)	annotation	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	701	0	1	
+rps10	rps10_Monomastigaceae_Monomastix_sp	NC_022797.1	35651-36351(+)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	701	0	1	
+rps10	rps10_Closteriaceae_Closterium_baillyanum	NC_022860.1	130152-130852(+)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	701	0	1	
+rps10	rps10_Mesotaeniaceae_Roya_obtusa	NC_022863.1	21559-22259(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	701	0	1	
+rps10	rps10_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	67069-67769(-)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	701	0	1	
+rps10	rps10_Ulvaceae_Ulva_fasciata	NC_028081.1	60484-61306(+)	annotation	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	823	0	1	
+rps10	rps10_Nelumbonaceae_Nelumbo_nucifera	NC_030753.1	199809-200223(-)	homology to built-in	Streptophyta	Magnoliopsida	Proteales	Nelumbonaceae	Nelumbo nucifera	415	0	1	
+rps10	rps10_Ophioglossaceae_Ophioglossum_californicum	NC_030900.1	28941-29641(-)	annotation	Streptophyta	Polypodiopsida	Ophioglossales	Ophioglossaceae	Ophioglossum californicum	701	0	1	
+rps10	rps10_Pyramimonadaceae_Pyramimonas_parkeae	NC_031504.1	18011-18711(+)	annotation	Chlorophyta	Pyramimonadophyceae	Pyramimonadales	Pyramimonadaceae	Pyramimonas parkeae	701	0	1	
+rps10	rps10_Lythraceae_Lagerstroemia_indica	NC_035616.1	125544-125957(+)	homology to built-in	Streptophyta	Magnoliopsida	Myrtales	Lythraceae	Lagerstroemia indica	414	0	1	
+rps10	rps10_Pinaceae_Pinus_taeda	NC_039746.1	1111857-1112296(-)	homology to built-in	Streptophyta	Pinopsida	Pinales	Pinaceae	Pinus taeda	440	0	2	
+rps10	rps10_Leiosporocerotaceae_Leiosporoceros_dussii	NC_039751.1	191657-192357(+)	annotation	Streptophyta	Leiosporocerotopsida	Leiosporocerotales	Leiosporocerotaceae	Leiosporoceros dussii	701	0	1	
+rps10	rps10_Chloropicaceae_Chloropicon_primus	NC_042490.1	32807-33507(+)	annotation	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	701	0	1	
+rps10	rps10_Picocystaceae_Picocystis_salinarum	NC_042491.1	10362-11062(-)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	701	0	1	
+rps10	rps10_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	159228-159928(-)	annotation	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	701	0	1	
+rps10	rps10_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	97649-98349(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	701	0	1	
+rps10	rps10_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	28780-29480(+)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	701	0	1	
+rps10	rps10_Gonatozygaceae_Gonatozygon_brebissonii	NC_046951.1	121567-122267(+)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Gonatozygaceae	Gonatozygon brebissonii	701	0	1	
+rps10	rps10_Codiaceae_Codium_fragile	NC_048526.1	30262-30962(-)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	701	0	1	
+rps10	rps10_Loranthaceae_Tolypanthus_maclurei	NC_056836.1	69191-69606(+)	homology to built-in	Streptophyta	Magnoliopsida	Santalales	Loranthaceae	Tolypanthus maclurei	416	0	1	
+rps10	rps10_Proteaceae_Macadamia_integrifolia	NC_058888.1	154149-154563(-)	homology to built-in	Streptophyta	Magnoliopsida	Proteales	Proteaceae	Macadamia integrifolia	415	0	1	
+rps10	rps10_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	171682-172382(-)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	701	0	1	
+rps10	rps10_Pelliaceae_Apopellia_endiviifolia	NC_080360.1	29639-30339(+)	annotation	Streptophyta	Jungermanniopsida	Pelliales	Pelliaceae	Apopellia endiviifolia	701	0	1	
+rps10	rps10_Papaveraceae_Corydalis_pauciovulata	NC_081934.1	152251-152665(-)	homology to built-in	Streptophyta	Magnoliopsida	Ranunculales	Papaveraceae	Corydalis pauciovulata	415	0	1	
+rps12	rps12_Orchidaceae_Paphiopedilum_micranthum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum micranthum	490	0	137	former built-in seed $Seed_mito_rps12_spermatopsida_paphiopedilum_micranthum
+rps12	rps12_Funariaceae_Physcomitrium_patens	NC_007945.1	55652-56144(+)	homology to built-in	Streptophyta	Bryopsida	Funariales	Funariaceae	Physcomitrium patens	493	0	150	
+rps12	rps12_Tupiellaceae_Tupiella_akineta	NC_005926.1	84336-84822(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulotrichales	Tupiellaceae	Tupiella akineta	487	0	3	
+rps12	rps12_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	66863-67352(+)	homology to built-in	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	490	0	2	
+rps12	rps12_Closteriaceae_Closterium_baillyanum	NC_022860.1	88493-88982(-)	homology to built-in	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	490	0	141	
+rps12	rps12_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	40068-40557(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	490	0	1	
+rps12	rps12_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	21080-21569(-)	homology to built-in	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	490	0	1	
+rps12	rps12_Mesostigmataceae_Mesostigma_viride	NC_008240.1	33210-33702(+)	homology to built-in	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	493	0	1	
+rps12	rps12_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	12530-13022(-)	homology to built-in	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	493	0	1	
+rps12	rps12_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	22168-22651(+)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	484	0	1	
+rps12	rps12_Mamiellaceae_Micromonas_commoda	NC_012643.1	21458-21947(-)	homology to built-in	Chlorophyta	Mamiellophyceae	Mamiellales	Mamiellaceae	Micromonas commoda	490	0	1	
+rps12	rps12_Dendrocerotaceae_Nothoceros_aenigmaticus	NC_012651.1	146067-146524(+)	homology to built-in	Streptophyta	Anthocerotopsida	Dendrocerotales	Dendrocerotaceae	Nothoceros aenigmaticus	458	0	4	
+rps12	rps12_Pycnococcaceae_Pycnococcus_provasolii	NC_013935.1	15653-16145(+)	homology to built-in	Chlorophyta	Pseudoscourfieldiophyceae	Pseudoscourfieldiales	Pycnococcaceae	Pycnococcus provasolii	493	0	1	
+rps12	rps12_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	17389-17878(+)	homology to built-in	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	490	0	1	
+rps12	rps12_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	23203-23692(+)	homology to built-in	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	490	0	1	
+rps12	rps12_Monomastigaceae_Monomastix_sp	NC_022797.1	7792-8281(+)	homology to built-in	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	490	0	1	
+rps12	rps12_Entransiaceae_Entransia_fimbriata	NC_022861.1	15146-15641(+)	homology to built-in	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	496	0	1	
+rps12	rps12_Prasinodermaceae_Prasinoderma_coloniale	NC_023355.1	20082-20571(+)	homology to built-in	Prasinodermophyta	Prasinodermophyceae	Prasinodermales	Prasinodermaceae	Prasinoderma coloniale	490	0	1	
+rps12	rps12_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	38263-38752(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	490	0	1	
+rps12	rps12_Ulvaceae_Ulva_fasciata	NC_028081.1	59893-60382(+)	homology to built-in	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva fasciata	490	0	1	
+rps12	rps12_Viscaceae_Viscum_album	NC_029039.1	177719-178419(+)	annotation	Streptophyta	Magnoliopsida	Santalales	Viscaceae	Viscum album	701	0	1	
+rps12	rps12_Chloropicaceae_Chloropicon_primus	NC_042490.1	4489-4978(+)	homology to built-in	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	490	0	1	
+rps12	rps12_Picocystaceae_Picocystis_salinarum	NC_042491.1	23329-23818(+)	homology to built-in	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	490	0	1	
+rps12	rps12_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	137981-138470(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	490	0	1	
+rps12	rps12_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	10352-10841(-)	homology to built-in	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	490	0	1	
+rps12	rps12_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	6567-7056(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	490	0	1	
+rps12	rps12_Codiaceae_Codium_fragile	NC_048526.1	12710-13199(+)	homology to built-in	Chlorophyta	Ulvophyceae	Bryopsidales	Codiaceae	Codium fragile	490	0	1	
+rps7	rps7_Orchidaceae_Paphiopedilum_concolor	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum concolor	840	0	89	former built-in seed $Seed_mito_rps7_spermatopsida_paphiopedilum_concolor
+rps7	rps7_Marchantiaceae_Marchantia_paleacea	NC_001660.1	23097-23936(+)	homology to built-in	Streptophyta	Marchantiopsida	Marchantiales	Marchantiaceae	Marchantia paleacea	840	0	114	
+rps7	rps7_Gesneriaceae_Dorcoceras_hygrometricum	NC_016741.1	266462-267302(+)	annotation	Streptophyta	Magnoliopsida	Lamiales	Gesneriaceae	Dorcoceras hygrometricum	841	0	7	
+rps7	rps7_Closteriaceae_Closterium_baillyanum	NC_022860.1	87616-88455(-)	homology to built-in	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	840	0	3	
+rps7	rps7_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	40735-41571(+)	homology to built-in	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	837	0	1	
+rps7	rps7_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	31535-32395(+)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	861	0	1	
+rps7	rps7_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	34529-35369(+)	annotation	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	841	0	1	
+rps7	rps7_Mesostigmataceae_Mesostigma_viride	NC_008240.1	33430-34270(+)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	841	0	1	
+rps7	rps7_Bathycoccaceae_Ostreococcus_tauri	NC_008290.1	22405-23245(+)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Bathycoccaceae	Ostreococcus tauri	841	0	1	
+rps7	rps7_Chlorokybaceae_Chlorokybus_atmophyticus	NC_009630.1	68315-69373(+)	annotation	Streptophyta	Chlorokybophyceae	Chlorokybales	Chlorokybaceae	Chlorokybus atmophyticus	1059	0	1	
+rps7	rps7_Mamiellaceae_Micromonas_commoda	NC_012643.1	20814-21654(-)	annotation	Chlorophyta	Mamiellophyceae	Mamiellales	Mamiellaceae	Micromonas commoda	841	0	1	
+rps7	rps7_Dendrocerotaceae_Nothoceros_aenigmaticus	NC_012651.1	146527-147354(+)	homology to built-in	Streptophyta	Anthocerotopsida	Dendrocerotales	Dendrocerotaceae	Nothoceros aenigmaticus	828	0	2	
+rps7	rps7_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	19546-20386(+)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	841	0	1	
+rps7	rps7_Fabaceae_Pongamia_pinnata	NC_016742.1	263440-264277(-)	homology to built-in	Streptophyta	Magnoliopsida	Fabales	Fabaceae	Pongamia pinnata	838	0	1	
+rps7	rps7_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	24565-25405(+)	annotation	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	841	0	1	
+rps7	rps7_Monomastigaceae_Monomastix_sp	NC_022797.1	8115-8955(+)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	841	0	1	
+rps7	rps7_Entransiaceae_Entransia_fimbriata	NC_022861.1	15421-16261(+)	annotation	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	841	0	1	
+rps7	rps7_Microsporaceae_Microspora_stagnorum	NC_022862.1	52206-53046(-)	annotation	Chlorophyta	Chlorophyceae		Microsporaceae	Microspora stagnorum	841	0	1	
+rps7	rps7_Mesotaeniaceae_Roya_obtusa	NC_022863.1	44649-45488(-)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	840	0	1	
+rps7	rps7_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	39003-40613(+)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	1611	0	1	
+rps7	rps7_Pyramimonadaceae_Pyramimonas_parkeae	NC_031504.1	33804-34644(-)	annotation	Chlorophyta	Pyramimonadophyceae	Pyramimonadales	Pyramimonadaceae	Pyramimonas parkeae	841	0	1	
+rps7	rps7_Anthocerotaceae_Anthoceros_angustus	NC_037476.1	185549-186346(+)	homology to built-in	Streptophyta	Anthocerotopsida	Anthocerotales	Anthocerotaceae	Anthoceros angustus	798	0	48	
+rps7	rps7_Chloropicaceae_Chloropicon_primus	NC_042490.1	4791-5631(+)	annotation	Chlorophyta	Chloropicophyceae	Chloropicales	Chloropicaceae	Chloropicon primus	841	0	1	
+rps7	rps7_Picocystaceae_Picocystis_salinarum	NC_042491.1	23550-24390(+)	annotation	Chlorophyta	Picocystophyceae	Picocystales	Picocystaceae	Picocystis salinarum	841	0	1	
+rps7	rps7_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	173118-173957(-)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	840	0	1	
+rps7	rps7_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	218387-219403(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	1017	0	1	
+rps7	rps7_Watanabeaceae_Jaagichlorella_roystonensis	NC_046060.1	7458-8492(+)	annotation	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella roystonensis	1035	0	1	
+rps7	rps7_Chlorodendraceae_Tetraselmis_marina	NC_066039.1	13484-14324(+)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Tetraselmis marina	841	0	1	
+rrn5	rrn5_Orchidaceae_Paphiopedilum_gratrixianum	NANOPlasty built-in		built-in	Streptophyta	Magnoliopsida	Asparagales	Orchidaceae	Paphiopedilum gratrixianum	1050	0	0	former built-in seed $Seed_mito_rrn5_spermatopsida_paphiopedilum_gratrixianum
+rrn5	rrn5_Lauraceae_Cinnamomum_chekiangense	NC_082065.1	28491-29541(-)	annotation	Streptophyta	Magnoliopsida	Laurales	Lauraceae	Cinnamomum chekiangense	1051	0	48	
+rrn5	rrn5_Marchantiaceae_Marchantia_paleacea	NC_001660.1	150882-151935(-)	homology to built-in	Streptophyta	Marchantiopsida	Marchantiales	Marchantiaceae	Marchantia paleacea	1054	0	21	
+rrn5	rrn5_Ptychomniaceae_Ptychomnion_cygnisetum	NC_024514.1	33549-34602(+)	homology to built-in	Streptophyta	Bryopsida	Ptychomniales	Ptychomniaceae	Ptychomnion cygnisetum	1054	0	19	
+rrn5	rrn5_Myrtaceae_Eucalyptus_grandis	NC_040010.1	2628-3677(+)	homology to built-in	Streptophyta	Magnoliopsida	Myrtales	Myrtaceae	Eucalyptus grandis	1050	0	17	
+rrn5	rrn5_Phrymaceae_Erythranthe_guttata	NC_018041.1	461853-462902(-)	homology to built-in	Streptophyta	Magnoliopsida	Lamiales	Phrymaceae	Erythranthe guttata	1050	0	6	
+rrn5	rrn5_Geraniaceae_Geranium_maderense	NC_027000.1	491534-492584(+)	annotation	Streptophyta	Magnoliopsida	Geraniales	Geraniaceae	Geranium maderense	1051	0	11	
+rrn5	rrn5_Dendrocerotaceae_Nothoceros_aenigmaticus	NC_012651.1	182234-183287(-)	homology to built-in	Streptophyta	Anthocerotopsida	Dendrocerotales	Dendrocerotaceae	Nothoceros aenigmaticus	1054	0	4	
+rrn5	rrn5_Chlorellaceae_Prototheca_wickerhamii	NC_001613.1	765-1815(-)	annotation	Chlorophyta	Trebouxiophyceae	Chlorellales	Chlorellaceae	Prototheca wickerhamii	1051	0	1	
+rrn5	rrn5_Amaranthaceae_Beta_vulgaris	NC_002511.2	308323-309372(-)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Amaranthaceae	Beta vulgaris	1050	0	1	
+rrn5	rrn5_Chaetosphaeridiaceae_Chaetosphaeridium_globosum	NC_004118.1	55988-56574(+)	annotation	Streptophyta	Coleochaetophyceae	Coleochaetales	Chaetosphaeridiaceae	Chaetosphaeridium globosum	587	0	9	
+rrn5	rrn5_Characeae_Chara_vulgaris	NC_005255.1	67149-67737(+)	homology to built-in	Streptophyta	Charophyceae	Charales	Characeae	Chara vulgaris	589	0	2	
+rrn5	rrn5_Nephroselmidaceae_Nephroselmis_olivacea	NC_008239.1	42267-43317(-)	annotation	Chlorophyta	Nephroselmidophyceae	Nephroselmidales	Nephroselmidaceae	Nephroselmis olivacea	1051	0	1	
+rrn5	rrn5_Mesostigmataceae_Mesostigma_viride	NC_008240.1	36371-37421(+)	annotation	Streptophyta	Mesostigmatophyceae	Mesostigmatales	Mesostigmataceae	Mesostigma viride	1051	0	1	
+rrn5	rrn5_Oltmannsiellopsidaceae_Oltmannsiellopsis_viridis	NC_008256.1	6957-8007(+)	annotation	Chlorophyta	Ulvophyceae	Oltmannsiellopsidales	Oltmannsiellopsidaceae	Oltmannsiellopsis viridis	1051	0	1	
+rrn5	rrn5_Cycadaceae_Cycas_taitungensis	NC_010303.1	59899-60948(-)	homology to built-in	Streptophyta	Cycadopsida	Cycadales	Cycadaceae	Cycas taitungensis	1050	0	1	
+rrn5	rrn5_Caryophyllaceae_Silene_latifolia	NC_014487.1	223276-224326(+)	annotation	Streptophyta	Magnoliopsida	Caryophyllales	Caryophyllaceae	Silene latifolia	1051	0	2	
+rrn5	rrn5_Coccomyxaceae_Coccomyxa_subellipsoidea	NC_015316.1	53564-54614(+)	annotation	Chlorophyta	Trebouxiophyceae		Coccomyxaceae	Coccomyxa subellipsoidea	1051	0	1	
+rrn5	rrn5_Gesneriaceae_Dorcoceras_hygrometricum	NC_016741.1	234009-235059(-)	annotation	Streptophyta	Magnoliopsida	Lamiales	Gesneriaceae	Dorcoceras hygrometricum	1051	0	1	
+rrn5	rrn5_Lycopodiaceae_Phlegmariurus_squarrosus	NC_017755.1	90987-92036(-)	homology to built-in	Streptophyta	Lycopodiopsida	Lycopodiales	Lycopodiaceae	Phlegmariurus squarrosus	1050	0	1	
+rrn5	rrn5_Rosaceae_Malus_domestica	NC_018554.1	277482-278531(+)	homology to built-in	Streptophyta	Magnoliopsida	Rosales	Rosaceae	Malus domestica	1050	0	3	
+rrn5	rrn5_Trebouxiophyceae_Trebouxiophyceae_sp	NC_018568.1	60542-61592(+)	annotation	Chlorophyta	Trebouxiophyceae			Trebouxiophyceae sp. MX-AZ01	1051	0	1	
+rrn5	rrn5_Magnoliaceae_Liriodendron_tulipifera	NC_021152.1	491745-492793(+)	homology to built-in	Streptophyta	Magnoliopsida	Magnoliales	Magnoliaceae	Liriodendron tulipifera	1049	0	1	
+rrn5	rrn5_Monomastigaceae_Monomastix_sp	NC_022797.1	29049-30099(+)	annotation	Chlorophyta	Mamiellophyceae	Monomastigales	Monomastigaceae	Monomastix sp. OKE-1	1051	0	1	
+rrn5	rrn5_Closteriaceae_Closterium_baillyanum	NC_022860.1	24300-25350(-)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Closteriaceae	Closterium baillyanum	1051	0	1	
+rrn5	rrn5_Entransiaceae_Entransia_fimbriata	NC_022861.1	60988-61645(+)	annotation	Streptophyta	Klebsormidiophyceae	Entransiales	Entransiaceae	Entransia fimbriata	658	0	1	
+rrn5	rrn5_Mesotaeniaceae_Roya_obtusa	NC_022863.1	68598-69465(+)	annotation	Streptophyta	Zygnematophyceae	Zygnematales	Mesotaeniaceae	Roya obtusa	868	0	1	
+rrn5	rrn5_Tetraphidaceae_Tetraphis_pellucida	NC_024290.1	76139-77192(+)	homology to built-in	Streptophyta	Tetraphidopsida	Tetraphidales	Tetraphidaceae	Tetraphis pellucida	1054	0	14	
+rrn5	rrn5_Climaciaceae_Climacium_americanum	NC_024515.1	34415-35468(+)	homology to built-in	Streptophyta	Bryopsida	Hypnales	Climaciaceae	Climacium americanum	1054	0	3	
+rrn5	rrn5_Sphagnaceae_Sphagnum_palustre	NC_024521.1	50268-51321(+)	homology to built-in	Streptophyta	Sphagnopsida	Sphagnales	Sphagnaceae	Sphagnum palustre	1054	0	1	
+rrn5	rrn5_Trebouxiaceae_Lobosphaera_incisa	NC_027060.1	23554-24604(+)	annotation	Chlorophyta	Trebouxiophyceae	Trebouxiales	Trebouxiaceae	Lobosphaera incisa	1051	0	1	
+rrn5	rrn5_Ginkgoaceae_Ginkgo_biloba	NC_027976.1	178104-179153(-)	homology to built-in	Streptophyta	Ginkgoopsida	Ginkgoales	Ginkgoaceae	Ginkgo biloba	1050	0	1	
+rrn5	rrn5_Welwitschiaceae_Welwitschia_mirabilis	NC_029130.1	778628-779678(-)	annotation	Streptophyta	Gnetopsida	Welwitschiales	Welwitschiaceae	Welwitschia mirabilis	1051	0	1	
+rrn5	rrn5_Amaryllidaceae_Allium_cepa	NC_030100.1	132965-134014(-)	homology to built-in	Streptophyta	Magnoliopsida	Asparagales	Amaryllidaceae	Allium cepa	1050	0	1	
+rrn5	rrn5_Nelumbonaceae_Nelumbo_nucifera	NC_030753.1	10625-11674(+)	homology to built-in	Streptophyta	Magnoliopsida	Proteales	Nelumbonaceae	Nelumbo nucifera	1050	0	1	
+rrn5	rrn5_Ophioglossaceae_Ophioglossum_californicum	NC_030900.1	355237-356287(+)	annotation	Streptophyta	Polypodiopsida	Ophioglossales	Ophioglossaceae	Ophioglossum californicum	1051	0	1	
+rrn5	rrn5_Zosteraceae_Zostera_marina	NC_035345.1	70936-71986(-)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Zosteraceae	Zostera marina	1051	0	1	
+rrn5	rrn5_Lythraceae_Lagerstroemia_indica	NC_035616.1	246083-247132(+)	homology to built-in	Streptophyta	Magnoliopsida	Myrtales	Lythraceae	Lagerstroemia indica	1050	0	3	
+rrn5	rrn5_Nymphaeaceae_Nymphaea_colorata	NC_037468.1	408578-409627(-)	homology to built-in	Streptophyta	Magnoliopsida	Nymphaeales	Nymphaeaceae	Nymphaea colorata	1050	0	1	
+rrn5	rrn5_Caulerpaceae_Caulerpa_lentillifera	NC_038217.1	61393-62443(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Caulerpaceae	Caulerpa lentillifera	1051	0	1	
+rrn5	rrn5_Pinaceae_Pinus_taeda	NC_039746.1	146901-147950(+)	homology to built-in	Streptophyta	Pinopsida	Pinales	Pinaceae	Pinus taeda	1050	0	1	
+rrn5	rrn5_Coleochaetaceae_Coleochaete_scutata	NC_045180.1	178239-179292(+)	homology to built-in	Streptophyta	Coleochaetophyceae	Coleochaetales	Coleochaetaceae	Coleochaete scutata	1054	0	1	
+rrn5	rrn5_Ostreobiaceae_Ostreobium_quekettii	NC_045361.1	37775-38825(+)	annotation	Chlorophyta	Ulvophyceae	Bryopsidales	Ostreobiaceae	Ostreobium quekettii	1051	0	1	
+rrn5	rrn5_Chlorodendraceae_Scherffelia_dubia	NC_045363.1	36458-37508(+)	annotation	Chlorophyta	Chlorodendrophyceae	Chlorodendrales	Chlorodendraceae	Scherffelia dubia	1051	0	1	
+rrn5	rrn5_Polygalaceae_Epirixanthes_elongata	NC_046014.1	70921-71971(+)	annotation	Streptophyta	Magnoliopsida	Fabales	Polygalaceae	Epirixanthes elongata	1051	0	1	
+rrn5	rrn5_Andreaeaceae_Andreaea_wangiana	NC_046759.1	37830-38883(+)	homology to built-in	Streptophyta	Andreaeopsida	Andreaeales	Andreaeaceae	Andreaea wangiana	1054	0	1	
+rrn5	rrn5_Gonatozygaceae_Gonatozygon_brebissonii	NC_046951.1	32813-33863(+)	annotation	Streptophyta	Zygnematophyceae	Desmidiales	Gonatozygaceae	Gonatozygon brebissonii	1051	0	1	
+rrn5	rrn5_Watanabeaceae_Jaagichlorella_hainangensis	NC_048968.1	50549-51599(+)	annotation	Chlorophyta	Trebouxiophyceae	Watanabeales	Watanabeaceae	Jaagichlorella hainangensis	1051	0	1	
+rrn5	rrn5_Passifloraceae_Passiflora_edulis	NC_050950.1	523302-524351(+)	homology to built-in	Streptophyta	Magnoliopsida	Malpighiales	Passifloraceae	Passiflora edulis	1050	0	16	
+rrn5	rrn5_Cyperaceae_Cyperus_esculentus	NC_058697.1	178629-179678(-)	homology to built-in	Streptophyta	Magnoliopsida	Poales	Cyperaceae	Cyperus esculentus	1050	0	1	
+rrn5	rrn5_Proteaceae_Macadamia_integrifolia	NC_058888.1	291824-292873(-)	homology to built-in	Streptophyta	Magnoliopsida	Proteales	Proteaceae	Macadamia integrifolia	1050	0	4	
+rrn5	rrn5_Ulvaceae_Ulva_meridionalis	NC_065202.1	51309-52359(+)	annotation	Chlorophyta	Ulvophyceae	Ulvales	Ulvaceae	Ulva meridionalis	1051	0	1	
+rrn5	rrn5_Cactaceae_Pereskia_aculeata	NC_067638.1	4145-5195(-)	annotation	Streptophyta	Magnoliopsida	Caryophyllales	Cactaceae	Pereskia aculeata	1051	0	2	
+rrn5	rrn5_Juncaceae_Luzula_sylvatica	NC_069587.1	392222-393272(-)	annotation	Streptophyta	Magnoliopsida	Poales	Juncaceae	Luzula sylvatica	1051	0	1	
+rrn5	rrn5_Taxaceae_Taxus_chinensis	NC_069591.1	95549-96596(-)	homology to built-in	Streptophyta	Pinopsida	Cupressales	Taxaceae	Taxus chinensis	1048	0	1	
+rrn5	rrn5_Paeoniaceae_Paeonia_lactiflora	NC_070189.1	14290-15339(+)	homology to built-in	Streptophyta	Magnoliopsida	Saxifragales	Paeoniaceae	Paeonia lactiflora	1050	0	1	
+rrn5	rrn5_Zygnemataceae_Zygnema_circumcarinatum	NC_072974.1	122124-123176(-)	homology to built-in	Streptophyta	Zygnematophyceae	Zygnematales	Zygnemataceae	Zygnema circumcarinatum	1053	0	1	
+rrn5	rrn5_Pelliaceae_Apopellia_endiviifolia	NC_080360.1	90043-91096(-)	homology to built-in	Streptophyta	Jungermanniopsida	Pelliales	Pelliaceae	Apopellia endiviifolia	1054	1	1	
+rrn5	rrn5_Papaveraceae_Corydalis_pauciovulata	NC_081934.1	395023-396072(-)	homology to built-in	Streptophyta	Magnoliopsida	Ranunculales	Papaveraceae	Corydalis pauciovulata	1050	0	1	
+rrn5	rrn5_Chloranthaceae_Hedyosmum_orientale	NC_082064.1	273608-274657(-)	homology to built-in	Streptophyta	Magnoliopsida	Chloranthales	Chloranthaceae	Hedyosmum orientale	1050	0	1	
+rrn5	rrn5_Eucommiaceae_Eucommia_ulmoides	NC_082539.1	223471-224520(+)	homology to built-in	Streptophyta	Magnoliopsida	Garryales	Eucommiaceae	Eucommia ulmoides	1050	0	1	
+rrn5	rrn5_Menispermaceae_Stephania_japonica	NC_083965.1	294587-295636(+)	homology to built-in	Streptophyta	Magnoliopsida	Ranunculales	Menispermaceae	Stephania japonica	1050	0	1	
+rrn5	rrn5_Aizoaceae_Mesembryanthemum_crystallinum	NC_086673.1	552477-553526(-)	homology to built-in	Streptophyta	Magnoliopsida	Caryophyllales	Aizoaceae	Mesembryanthemum crystallinum	1050	0	1	
+rrn5	rrn5_Cymodoceaceae_Ruppia_sinensis	NC_088727.1	126116-127166(-)	homology to built-in	Streptophyta	Magnoliopsida	Alismatales	Cymodoceaceae	Ruppia sinensis	1051	0	1	

@@ -1,0 +1,184 @@
+seed_id	accession	phylum	class	order	family	species	cds_location	length_bp	non_ACGT	families_covered_75	note
+COI_Acanthocephala_Oligacanthorhynchidae_Oncicola_luehei	NC_016754.1	Acanthocephala	Archiacanthocephala	Oligacanthorhynchida	Oligacanthorhynchidae	Oncicola luehei	1..1534	1534	0	1	
+COI_Acanthocephala_Quadrigyridae_Pallisentis_celatus	NC_022921.1	Acanthocephala	Eoacanthocephala	Gyracanthocephala	Quadrigyridae	Pallisentis celatus	1..1534	1534	0	1	
+COI_Acanthocephala_Tenuisentidae_Paratenuisentis_ambiguus	NC_019807.1	Acanthocephala	Eoacanthocephala	Neoechinorhynchida	Tenuisentidae	Paratenuisentis ambiguus	1..1530	1530	1	1	
+COI_Acanthocephala_Echinorhynchidae_Echinorhynchus_truttae	NC_019805.1	Acanthocephala	Palaeacanthocephala	Echinorhynchida	Echinorhynchidae	Echinorhynchus truttae	complement(3063..4607)	1545	0	1	
+COI_Acanthocephala_Pomphorhynchidae_Pomphorhynchus_tereticollis	NC_060482.1	Acanthocephala	Palaeacanthocephala	Echinorhynchida	Pomphorhynchidae	Pomphorhynchus tereticollis	1..1533	1533	0	1	
+COI_Acanthocephala_Rhadinorhynchidae_Leptorhynchoides_thecatus	NC_006892.1	Acanthocephala	Palaeacanthocephala	Echinorhynchida	Rhadinorhynchidae	Leptorhynchoides thecatus	1..1528	1528	2	1	phylum seed; 2 IUPAC base(s) kept as in RefSeq
+COI_Acanthocephala_Polymorphidae_Southwellina_hispida	NC_026516.1	Acanthocephala	Palaeacanthocephala	Polymorphida	Polymorphidae	Southwellina hispida	1..1521	1521	0	2	
+COI_Acanthocephala_Polyacanthorhynchidae_Polyacanthorhynchus_caballeroi	NC_029766.1	Acanthocephala	Polyacanthocephala		Polyacanthorhynchidae	Polyacanthorhynchus caballeroi	1..1551	1551	0	1	
+COI_Annelida_Acanthobdellida_Acanthobdella_peledina	NC_063475.1	Annelida	Clitellata	Acanthobdellida		Acanthobdella peledina	8740..10276	1537	0	1	
+COI_Annelida_Enchytraeidae_Enchytraeus_irregularis	NC_070077.1	Annelida	Clitellata	Enchytraeida	Enchytraeidae	Enchytraeus irregularis	1..1539	1539	0	276	
+COI_Annelida_Ozobranchidae_Ozobranchus_jantseanus	NC_034807.1	Annelida	Clitellata	Hirudinida	Ozobranchidae	Ozobranchus jantseanus	8620..10156	1537	0	113	
+COI_Annelida_Chaetopteridae_Chaetopterus_variopedatus	NC_028710.1	Annelida	Polychaeta		Chaetopteridae	Chaetopterus variopedatus	join(<10..732,1046..1864)	1542	0	1	
+COI_Annelida_Saccocirridae_Pharyngocirrus_uchidai	NC_052721.1	Annelida	Polychaeta		Saccocirridae	Pharyngocirrus uchidai	complement(2576..4136)	1561	0	1	
+COI_Annelida_Nautiliniellidae_Iheyomytilidicola_lauensis	NC_060814.1	Annelida	Polychaeta	Phyllodocida	Nautiliniellidae	Iheyomytilidicola lauensis	3225..4764	1540	0	2	
+COI_Annelida_Nereididae_Platynereis_dumerilii	NC_000931.1	Annelida	Polychaeta	Phyllodocida	Nereididae	Platynereis dumerilii	1..1534	1534	3	9	phylum seed; 3 IUPAC base(s) kept as in RefSeq
+COI_Annelida_Sabellidae_Sabella_spallanzanii	NC_056279.1	Annelida	Polychaeta	Sabellida	Sabellidae	Sabella spallanzanii	16..1551	1536	0	1	
+COI_Annelida_Serpulidae_Spirobranchus_giganteus	NC_032055.1	Annelida	Polychaeta	Sabellida	Serpulidae	Spirobranchus giganteus	1..1590	1590	0	1	
+COI_Annelida_Siboglinidae_Ridgeia_piscesae	NC_024653.1	Annelida	Polychaeta	Sabellida	Siboglinidae	Ridgeia piscesae	9133..10688	1556	0	1	
+COI_Annelida_Spionidae_Polydora_hoplura	NC_061377.1	Annelida	Polychaeta	Spionida	Spionidae	Polydora hoplura	15356..16906	1551	0	1	
+COI_Annelida_Cirratulidae_Cirriformia_cf	NC_037390.1	Annelida	Polychaeta	Terebellida	Cirratulidae	Cirriformia cf. tentaculata HK-2018	1..1572	1572	0	1	
+COI_Annelida_Sternaspidae_Sternaspis_sendalli	NC_068907.1	Annelida	Polychaeta	Terebellida	Sternaspidae	Sternaspis sendalli	1..1542	1542	0	1	
+COI_Annelida_Sipunculidae_Sipunculus_nudus	NC_011826.1	Annelida	Sipuncula	Golfingiida	Sipunculidae	Sipunculus nudus	1..1550	1550	0	1	
+COI_Arthropoda_Salticidae_Habronattus_oregonensis	NC_005942.1	Arthropoda	Arachnida	Araneae	Salticidae	Habronattus oregonensis	1129..2670	1542	4	201	
+COI_Arthropoda_Blattisociidae_Blattisocius_tarsalis	NC_046027.1	Arthropoda	Arachnida	Mesostigmata	Blattisociidae	Blattisocius tarsalis	1..1539	1539	0	1	
+COI_Arthropoda_Atemnidae_Paratemnoides_elongatus	NC_017752.1	Arthropoda	Arachnida	Pseudoscorpiones	Atemnidae	Paratemnoides elongatus	1328..2857	1530	2	1	
+COI_Arthropoda_Pyroglyphidae_Dermatophagoides_pteronyssinus	NC_012218.1	Arthropoda	Arachnida	Sarcoptiformes	Pyroglyphidae	Dermatophagoides pteronyssinus	1..1548	1548	0	9	
+COI_Arthropoda_Demodicidae_Demodex_folliculorum	NC_026102.1	Arthropoda	Arachnida	Trombidiformes	Demodicidae	Demodex folliculorum	1..1539	1539	0	1	
+COI_Arthropoda_Eriophyidae_Epitrimerus_sabinae	NC_029208.1	Arthropoda	Arachnida	Trombidiformes	Eriophyidae	Epitrimerus sabinae	1..1533	1533	0	2	
+COI_Arthropoda_Tetranychidae_Tetranychus_urticae	NC_010526.1	Arthropoda	Arachnida	Trombidiformes	Tetranychidae	Tetranychus urticae	1..1539	1539	0	24	
+COI_Arthropoda_Trombiculidae_Leptotrombidium_pallidum	NC_007177.1	Arthropoda	Arachnida	Trombidiformes	Trombiculidae	Leptotrombidium pallidum	998..2530	1533	0	1	
+COI_Arthropoda_Limnadiidae_Limnadia_lenticularis	NC_039394.1	Arthropoda	Branchiopoda	Diplostraca	Limnadiidae	Limnadia lenticularis	<1386..2916	1531	0	137	
+COI_Arthropoda_Scutigeridae_Scutigera_coleoptrata	NC_005870.1	Arthropoda	Chilopoda	Scutigeromorpha	Scutigeridae	Scutigera coleoptrata	1125..2660	1536	0	411	
+COI_Arthropoda_Hypogastruridae_Gomphiocephalus_hodgsoni	NC_005438.1	Arthropoda	Collembola	Poduromorpha	Hypogastruridae	Gomphiocephalus hodgsoni	<1420..2961	1542	0	473	
+COI_Arthropoda_Harpacticidae_Tigriopus_californicus	NC_008831.2	Arthropoda	Copepoda	Harpacticoida	Harpacticidae	Tigriopus californicus	1..1528	1528	1	1	
+COI_Arthropoda_Armilliferidae_Armillifer_agkistrodontis	NC_032061.1	Arthropoda	Ichthyostraca	Porocephalida	Armilliferidae	Armillifer agkistrodontis	<1379..2903	1525	0	2	
+COI_Arthropoda_Linguatulidae_Linguatula_serrata	NC_039399.1	Arthropoda	Ichthyostraca	Porocephalida	Linguatulidae	Linguatula serrata	2757..4284	1528	0	1	
+COI_Arthropoda_Ptinidae_Stegobium_paniceum	NC_036678.1	Arthropoda	Insecta	Coleoptera	Ptinidae	Stegobium paniceum	<1..1531	1531	0	718	
+COI_Arthropoda_Culicidae_Anopheles_quadrimaculatus	NC_000875.1	Arthropoda	Insecta	Diptera	Culicidae	Anopheles quadrimaculatus A	<1423..2964	1542	0	734	
+COI_Arthropoda_Drosophilidae_Drosophila_melanogaster	NC_024511.2	Arthropoda	Insecta	Diptera	Drosophilidae	Drosophila melanogaster	<1474..3009	1536	0	843	phylum seed; CDS start/end flagged partial in RefSeq (usually a non-standard start codon)
+COI_Arthropoda_Nycteribiidae_Nycteribia_parvula	NC_068095.1	Arthropoda	Insecta	Diptera	Nycteribiidae	Nycteribia parvula	1..1498	1498	0	630	
+COI_Arthropoda_Simuliidae_Simulium_aureohirtum	NC_029753.1	Arthropoda	Insecta	Diptera	Simuliidae	Simulium aureohirtum	1506..3039	1534	0	725	
+COI_Arthropoda_Coccidae_Didesmococcus_koreanus	NC_057479.1	Arthropoda	Insecta	Hemiptera	Coccidae	Didesmococcus koreanus	116..1642	1527	0	2	
+COI_Arthropoda_Pleidae_Paraplea_frontalis	NC_028629.1	Arthropoda	Insecta	Hemiptera	Pleidae	Paraplea frontalis	1393..2926	1534	0	636	
+COI_Arthropoda_Pseudococcidae_Phenacoccus_manihoti	NC_066716.1	Arthropoda	Insecta	Hemiptera	Pseudococcidae	Phenacoccus manihoti	4827..6356	1530	0	2	
+COI_Arthropoda_Eupelmidae_Eupelmus_anpingensis	NC_068239.1	Arthropoda	Insecta	Hymenoptera	Eupelmidae	Eupelmus anpingensis	9231..10763	1533	0	281	
+COI_Arthropoda_Evaniidae_Evania_appendigaster	NC_013238.1	Arthropoda	Insecta	Hymenoptera	Evaniidae	Evania appendigaster	1436..2980	1545	0	1	
+COI_Arthropoda_Lycaenidae_Coreana_raphaelis	NC_007976.1	Arthropoda	Insecta	Lepidoptera	Lycaenidae	Coreana raphaelis	<1464..2994	1531	0	687	
+COI_Arthropoda_Ithonidae_Polystoechotes_punctata	NC_011278.1	Arthropoda	Insecta	Neuroptera	Ithonidae	Polystoechotes punctata	<1576..3109	1534	0	706	
+COI_Arthropoda_Liposcelididae_Liposcelis_decolor	NC_023839.1	Arthropoda	Insecta	Psocodea	Liposcelididae	Liposcelis decolor	1..1542	1542	0	3	
+COI_Arthropoda_Halictophagidae_Dipterophagus_daci	NC_058598.1	Arthropoda	Insecta	Strepsiptera	Halictophagidae	Dipterophagus daci	<1342..2848	1507	0	1	
+COI_Arthropoda_Xenidae_Xenos_yangi	NC_067052.1	Arthropoda	Insecta	Strepsiptera	Xenidae	Xenos yangi	<2009..3512	1504	0	1	
+COI_Arthropoda_Hyalidae_Parhyale_hawaiensis	NC_039402.1	Arthropoda	Malacostraca	Amphipoda	Hyalidae	Parhyale hawaiensis	2191..3727	1537	0	464	
+COI_Arthropoda_Macrohectopidae_Macrohectopus_branickii	NC_058990.1	Arthropoda	Malacostraca	Amphipoda	Macrohectopidae	Macrohectopus branickii	12237..13820	1584	0	1	
+COI_Arthropoda_Orithyiidae_Orithyia_sinica	NC_039639.1	Arthropoda	Malacostraca	Decapoda	Orithyiidae	Orithyia sinica	1..1539	1539	0	495	
+COI_Arthropoda_Spongicolidae_Spongiocaris_panglao	NC_038166.1	Arthropoda	Malacostraca	Decapoda	Spongicolidae	Spongiocaris panglao	1..1534	1534	0	638	
+COI_Arthropoda_Upogebiidae_Austinogebia_edulis	NC_019606.1	Arthropoda	Malacostraca	Decapoda	Upogebiidae	Austinogebia edulis	1..1542	1542	0	749	
+COI_Arthropoda_Bopyridae_Gyge_ovalis	NC_037467.1	Arthropoda	Malacostraca	Isopoda	Bopyridae	Gyge ovalis	4755..6294	1540	0	2	
+COI_Arthropoda_Cymothoidae_Anilocra_physodes	NANOPlasty_builtin	Arthropoda	Malacostraca	Isopoda	Cymothoidae	Anilocra physodes	partial (NANOPlasty built-in)	678	0		former built-in default mito seed of NANOPlasty ($seed_mito_parasite), kept so the default is never worse than before for species close to it
+COI_Arthropoda_Cypridinidae_Vargula_hilgendorfii	NC_005306.1	Arthropoda	Ostracoda	Myodocopida	Cypridinidae	Vargula hilgendorfii	1..1551	1551	0	1	
+COI_Arthropoda_Acerentomidae_Acerentomon_microrhinus	NC_026666.1	Arthropoda	Protura	Acerentomata	Acerentomidae	Acerentomon microrhinus	1867..3402	1536	0	1	
+COI_Arthropoda_Polyascidae_Parasacculina_yatsui	NC_079949.1	Arthropoda	Thecostraca		Polyascidae	Parasacculina yatsui	1..1536	1536	0	1	
+COI_Arthropoda_Sacculinidae_Sacculina_confragosa	NC_079950.1	Arthropoda	Thecostraca		Sacculinidae	Sacculina confragosa	1..1546	1546	0	1	
+COI_Brachiopoda_Lingulidae_Lingula_anatina	NC_036679.1	Brachiopoda	Lingulata	Lingulida	Lingulidae	Lingula anatina	1..1722	1722	0	1	phylum seed
+COI_Brachiopoda_Cancellothyrididae_Terebratulina_retusa	NC_000941.1	Brachiopoda	Rhynchonellata	Terebratulida	Cancellothyrididae	Terebratulina retusa	1..1542	1542	0	2	
+COI_Bryozoa_Bugulidae_Bugula_neritina	NC_010197.1	Bryozoa	Gymnolaemata	Cheilostomatida	Bugulidae	Bugula neritina	5107..6642	1536	0	4	phylum seed
+COI_Bryozoa_Flustrellidridae_Flustrellidra_hispida	NC_008192.1	Bryozoa	Gymnolaemata	Ctenostomatida	Flustrellidridae	Flustrellidra hispida	8999..10529	1531	0	1	
+COI_Chaetognatha_Sagittidae_Decipisagitta_decipiens	NC_013811.1	Chaetognatha	Sagittoidea	Aphragmophora	Sagittidae	Decipisagitta decipiens	8883..10463	1581	0	1	
+COI_Chaetognatha_Spadellidae_Spadella_cephaloptera	NC_006386.1	Chaetognatha	Sagittoidea	Phragmophora	Spadellidae	Spadella cephaloptera	complement(1..1521)	1521	0	1	phylum seed
+COI_Chordata_Salamandridae_Lyciasalamandra_atifi	NC_002756.1	Chordata	Amphibia	Caudata	Salamandridae	Lyciasalamandra atifi	5301..6860	1560	0	762	
+COI_Chordata_Ascidiidae_Phallusia_mammillata	NC_009833.1	Chordata	Ascidiacea	Phlebobranchia	Ascidiidae	Phallusia mammillata	12108..13637	1530	0	1	
+COI_Chordata_Cionidae_Ciona_savignyi	NC_004570.1	Chordata	Ascidiacea	Phlebobranchia	Cionidae	Ciona savignyi	1..1551	1551	0	4	
+COI_Chordata_Corellidae_Rhodosoma_turcicum	NC_021468.1	Chordata	Ascidiacea	Phlebobranchia	Corellidae	Rhodosoma turcicum	7263..8801	1539	0	1	
+COI_Chordata_Pyuridae_Halocynthia_roretzi	NC_002177.1	Chordata	Ascidiacea	Stolidobranchia	Pyuridae	Halocynthia roretzi	1..1554	1554	0	2	
+COI_Chordata_Bucerotidae_Rhabdotorrhinus_waldeni	NC_015085.1	Chordata	Aves	Bucerotiformes	Bucerotidae	Rhabdotorrhinus waldeni	5427..6977	1551	0	821	
+COI_Chordata_Viduidae_Vidua_chalybeata	NC_000880.1	Chordata	Aves	Passeriformes	Viduidae	Vidua chalybeata	6697..8247	1551	0	857	
+COI_Chordata_Etmopteridae_Etmopterus_pusillus	NC_031810.1	Chordata	Chondrichthyes	Squaliformes	Etmopteridae	Etmopterus pusillus	5463..7019	1557	0	786	
+COI_Chordata_Chamaeleonidae_Furcifer_oustaleti	NC_008777.1	Chordata	Lepidosauria	Squamata	Chamaeleonidae	Furcifer oustaleti	5216..6763	1548	0	2	
+COI_Chordata_Xenopeltidae_Xenopeltis_unicolor	NC_007402.1	Chordata	Lepidosauria	Squamata	Xenopeltidae	Xenopeltis unicolor	7120..8665	1546	0	118	
+COI_Chordata_Hominidae_Homo_sapiens	NC_012920.1	Chordata	Mammalia	Primates	Hominidae	Homo sapiens	5904..7445	1542	0	738	phylum seed
+COI_Cnidaria_Edwardsiidae_Nematostella_sp	NC_008164.1	Cnidaria	Anthozoa	Actiniaria	Edwardsiidae	Nematostella sp. JVK-2006	13498..15084	1587	0	119	phylum seed; RefSeq names it Nematostella sp. JVK-2006 (JGI genome-project material)
+COI_Cnidaria_Olindiidae_Craspedacusta_sowerbii	NC_018537.1	Cnidaria	Hydrozoa	Limnomedusae	Olindiidae	Craspedacusta sowerbii	complement(4225..5790)	1566	0	1	
+COI_Cnidaria_Clausophyidae_Chuniphyes_multidentata	NC_080940.1	Cnidaria	Hydrozoa	Siphonophorae	Clausophyidae	Chuniphyes multidentata	13501..15076	1576	0	1	
+COI_Cnidaria_Diphyidae_Diphyes_dispar	NC_080937.1	Cnidaria	Hydrozoa	Siphonophorae	Diphyidae	Diphyes dispar	5034..6565	1532	0	2	
+COI_Cnidaria_Myxobolidae_Myxobolus_shantungensis	NC_086767.1	Cnidaria	Myxozoa	Bivalvulida	Myxobolidae	Myxobolus shantungensis	20450..21886	1437	0	1	
+COI_Cnidaria_Sphaeromyxidae_Sphaeromyxa_zaharoni	NC_086771.1	Cnidaria	Myxozoa	Bivalvulida	Sphaeromyxidae	Sphaeromyxa zaharoni	13458..14898	1441	0	1	
+COI_Cnidaria_Kudoidae_Kudoa_septempunctata	NC_027523.1	Cnidaria	Myxozoa	Multivalvulida	Kudoidae	Kudoa septempunctata	9967..11331	1365	0	1	
+COI_Cnidaria_Polypodiidae_Polypodium_hydriforme	NC_065161.1	Cnidaria	Polypodiozoa	Polypodiidea	Polypodiidae	Polypodium hydriforme	18967..20451	1485	0	1	
+COI_Ctenophora_Pleurobrachiidae_Hormiphora_californensis	NC_045864.1	Ctenophora	Tentaculata	Cydippida	Pleurobrachiidae	Hormiphora californensis	1..1539	1539	0	1	
+COI_Ctenophora_Bolinopsidae_Mnemiopsis_leidyi	NC_016117.1	Ctenophora	Tentaculata	Lobata	Bolinopsidae	Mnemiopsis leidyi	1..1524	1524	0	2	phylum seed
+COI_Cycliophora_Symbiidae_Symbion_pandora	AY218084.1	Cycliophora	Eucycliophora	Symbiida	Symbiidae	Symbion pandora	<1..>652	651	0	7	phylum seed; partial cds (barcode region); no mitogenome for the phylum
+COI_Dicyemida_Dicyemidae_Dicyema_japonicum	MG839529.1	Dicyemida			Dicyemidae	Dicyema japonicum	1..1422	1422	0	1	phylum seed; complete cds; no mitogenome for the phylum
+COI_Echinodermata_Antedonidae_Florometra_serratissima	NC_001878.1	Echinodermata	Crinoidea	Comatulida	Antedonidae	Florometra serratissima	7254..8806	1553	0	78	
+COI_Echinodermata_Echinometridae_Heliocidaris_crassispina	NC_023774.1	Echinodermata	Echinoidea	Camarodonta	Echinometridae	Heliocidaris crassispina	5837..7390	1554	0	51	
+COI_Echinodermata_Strongylocentrotidae_Strongylocentrotus_purpuratus	NC_001453.1	Echinodermata	Echinoidea	Camarodonta	Strongylocentrotidae	Strongylocentrotus purpuratus	5785..7338	1554	0	33	phylum seed
+COI_Echinodermata_Ophiactidae_Ophiopholis_aculeata	NC_005334.1	Echinodermata	Ophiuroidea	Amphilepidida	Ophiactidae	Ophiopholis aculeata	1..1585	1585	0	13	
+COI_Entoprocta_Loxosomatidae_Loxosomella_aloxiata	NC_010432.1	Entoprocta			Loxosomatidae	Loxosomella aloxiata	<1..1530	1530	0	249	phylum seed; CDS start/end flagged partial in RefSeq (usually a non-standard start codon)
+COI_Gastrotricha_Chaetonotidae_Lepidodermella_squamata	NC_026985.1	Gastrotricha		Chaetonotida	Chaetonotidae	Lepidodermella squamata	12826..14364	1539	0	1	phylum seed
+COI_Gnathostomulida_Gnathostomulidae_Gnathostomula_armata	NC_026983.1	Gnathostomulida		Bursovaginoidea	Gnathostomulidae	Gnathostomula armata	1..1552	1552	0	1	phylum seed
+COI_Hemichordata_Harrimaniidae_Saccoglossus_kowalevskii	NC_007438.1	Hemichordata	Enteropneusta		Harrimaniidae	Saccoglossus kowalevskii	complement(13352..14905)	1554	0	72	phylum seed
+COI_Kinorhyncha_Pycnophyidae_Setaphyes_kielensis	NC_031872.1	Kinorhyncha	Allomalorhagida		Pycnophyidae	Setaphyes kielensis	3..1589	1587	0	3	phylum seed
+COI_Mollusca_Clavagellidae_Bryopa_lata	NC_034300.1	Mollusca	Bivalvia		Clavagellidae	Bryopa lata	1..1597	1597	0	2	
+COI_Mollusca_Euciroidae_Euciroa_cf	NC_034301.1	Mollusca	Bivalvia		Euciroidae	Euciroa cf. queenslandica STW-2017	1..1545	1545	0	1	
+COI_Mollusca_Laternulidae_Cryolaternula_elliptica	NC_022846.1	Mollusca	Bivalvia		Laternulidae	Cryolaternula elliptica	5595..7175	1581	0	1	
+COI_Mollusca_Poromyidae_Tropidomya_abbreviata	NC_034304.1	Mollusca	Bivalvia		Poromyidae	Tropidomya abbreviata	1..1605	1605	0	2	
+COI_Mollusca_Pharidae_Novaculina_chinensis	NC_077598.1	Mollusca	Bivalvia	Adapedonta	Pharidae	Novaculina chinensis	4421..6100	1680	0	21	
+COI_Mollusca_Arcidae_Anadara_kagoshimensis	NC_024927.1	Mollusca	Bivalvia	Arcoida	Arcidae	Anadara kagoshimensis	1..1584	1584	0	1	
+COI_Mollusca_Cardiidae_Acanthocardia_tuberculata	NC_008452.1	Mollusca	Bivalvia	Cardiida	Cardiidae	Acanthocardia tuberculata	1..1593	1593	0	1	
+COI_Mollusca_Tellinidae_Iridona_iridescens	NC_018371.1	Mollusca	Bivalvia	Cardiida	Tellinidae	Iridona iridescens	1..1671	1671	0	4	
+COI_Mollusca_Carditidae_Cardita_variegata	NC_082308.1	Mollusca	Bivalvia	Carditida	Carditidae	Cardita variegata	2972..4510	1539	0	1	
+COI_Mollusca_Limidae_Lima_vulgaris	NC_083122.1	Mollusca	Bivalvia	Limoida	Limidae	Lima vulgaris	1..1656	1656	0	1	
+COI_Mollusca_Lucinidae_Loripes_lacteus	NC_013271.1	Mollusca	Bivalvia	Lucinida	Lucinidae	Loripes lacteus	10..1566	1557	0	1	
+COI_Mollusca_Thyasiridae_Thyasira_tokunagai	NC_088051.1	Mollusca	Bivalvia	Lucinida	Thyasiridae	Thyasira tokunagai	2634..4178	1545	0	1	
+COI_Mollusca_Myidae_Mya_arenaria	NC_024738.1	Mollusca	Bivalvia	Myida	Myidae	Mya arenaria	1..1755	1755	0	2	
+COI_Mollusca_Teredinidae_Bactronophorus_thoracites	NC_063758.1	Mollusca	Bivalvia	Myida	Teredinidae	Bactronophorus thoracites	1..1578	1578	0	1	
+COI_Mollusca_Xylophagaidae_Xylonora_corona	NC_063753.1	Mollusca	Bivalvia	Myida	Xylophagaidae	Xylonora corona	1..1506	1506	0	2	
+COI_Mollusca_Modiolidae_Limnoperna_fortunei	NC_028706.1	Mollusca	Bivalvia	Mytilida	Modiolidae	Limnoperna fortunei	8711..10219	1509	0	1	
+COI_Mollusca_Mytilidae_Mytilus_galloprovincialis	NC_006886.2	Mollusca	Bivalvia	Mytilida	Mytilidae	Mytilus galloprovincialis	9068..10732	1665	0	1	
+COI_Mollusca_Ostreidae_Magallana_gigas	NC_001276.1	Mollusca	Bivalvia	Ostreida	Ostreidae	Magallana gigas	15598..17115	1518	0	1	phylum seed
+COI_Mollusca_Pectinidae_Placopecten_magellanicus	NC_007234.1	Mollusca	Bivalvia	Pectinida	Pectinidae	Placopecten magellanicus	14105..15617	1513	0	1	
+COI_Mollusca_Pinnidae_Atrina_pectinata	NC_020028.1	Mollusca	Bivalvia	Pterioida	Pinnidae	Atrina pectinata	8483..10042	1560	0	1	
+COI_Mollusca_Unionidae_Lampsilis_ornata	NC_005335.1	Mollusca	Bivalvia	Unionida	Unionidae	Lampsilis ornata	complement(3492..5033)	1542	1	23	
+COI_Mollusca_Anatinellidae_Raeta_pulchella	NC_082224.1	Mollusca	Bivalvia	Venerida	Anatinellidae	Raeta pulchella	1496..3085	1590	0	1	
+COI_Mollusca_Cyrenidae_Corbicula_fluminea	NC_046410.1	Mollusca	Bivalvia	Venerida	Cyrenidae	Corbicula fluminea	1..1614	1614	0	7	
+COI_Mollusca_Mactridae_Mactra_antiquata	NC_021375.1	Mollusca	Bivalvia	Venerida	Mactridae	Mactra antiquata	1..1572	1572	0	1	
+COI_Mollusca_Octopodidae_Octopus_vulgaris	NC_006353.1	Mollusca	Cephalopoda	Octopoda	Octopodidae	Octopus vulgaris	2564..4096	1533	0	332	
+COI_Mollusca_Bathyteuthidae_Bathyteuthis_abyssicola	NC_016423.1	Mollusca	Cephalopoda	Oegopsida	Bathyteuthidae	Bathyteuthis abyssicola	1416..2948	1533	0	444	
+COI_Mollusca_Lottiidae_Lottia_digitalis	NC_007782.1	Mollusca	Gastropoda		Lottiidae	Lottia digitalis	<1..1605	1605	0	2	
+COI_Mollusca_Lymnaeidae_Galba_pervia	NC_018536.1	Mollusca	Gastropoda		Lymnaeidae	Galba pervia	10531..12057	1527	0	89	
+COI_Mollusca_Ellobiidae_Myosotella_myosotis	NC_012434.1	Mollusca	Gastropoda	Ellobiida	Ellobiidae	Myosotella myosotis	59..1585	1527	0	4	
+COI_Mollusca_Chilodontidae_Granata_lyrata	NC_028708.1	Mollusca	Gastropoda	Seguenziida	Chilodontidae	Granata lyrata	1..1587	1587	1	2	
+COI_Nematoda_Dracunculidae_Dracunculus_medinensis	NC_016019.1	Nematoda	Chromadorea	Rhabditida	Dracunculidae	Dracunculus medinensis	9036..10614	1579	0	29	
+COI_Nematoda_Meloidogynidae_Meloidogyne_incognita	NC_024097.1	Nematoda	Chromadorea	Rhabditida	Meloidogynidae	Meloidogyne incognita	<1..1522	1522	0	1	
+COI_Nematoda_Onchocercidae_Onchocerca_volvulus	NC_001861.1	Nematoda	Chromadorea	Rhabditida	Onchocercidae	Onchocerca volvulus	2266..3912	1647	0	8	
+COI_Nematoda_Oxyuridae_Wellcomia_siamensis	NC_016129.1	Nematoda	Chromadorea	Rhabditida	Oxyuridae	Wellcomia siamensis	1..1558	1558	0	1	
+COI_Nematoda_Rhabditidae_Caenorhabditis_elegans	NC_001328.1	Nematoda	Chromadorea	Rhabditida	Rhabditidae	Caenorhabditis elegans	7845..9422	1578	0	27	phylum seed
+COI_Nematoda_Longidoridae_Xiphinema_americanum	NC_005928.1	Nematoda	Enoplea	Dorylaimida	Longidoridae	Xiphinema americanum	8993..10544	1552	0	1	
+COI_Nematoda_Mermithidae_Thaumamermis_cosgrovei	NC_008046.1	Nematoda	Enoplea	Mermithida	Mermithidae	Thaumamermis cosgrovei	4170..5699	1530	0	2	
+COI_Nematoda_Capillariidae_Eucoleus_annulatus	NC_056391.1	Nematoda	Enoplea	Trichinellida	Capillariidae	Eucoleus annulatus	10750..12297	1548	0	1	
+COI_Nematoda_Trichinellidae_Trichinella_spiralis	NC_002681.1	Nematoda	Enoplea	Trichinellida	Trichinellidae	Trichinella spiralis	10622..12166	1545	0	1	
+COI_Nematoda_Trichuridae_Trichuris_suis	NC_017747.1	Nematoda	Enoplea	Trichinellida	Trichuridae	Trichuris suis	1..1542	1542	0	1	
+COI_Nematomorpha_Chordodidae_Parachordodes_pustulosus	NC_085569.1	Nematomorpha	Gordioida	Chordodea	Chordodidae	Parachordodes pustulosus	10..1542	1533	0	1	
+COI_Nematomorpha_Parachordodidae_Gordionus_alpestris	NC_044095.1	Nematomorpha	Gordioida	Chordodea	Parachordodidae	Gordionus alpestris	1..1542	1542	0	1	phylum seed
+COI_Nemertea_Cephalotrichidae_Cephalothrix_simula	NC_012821.1	Nemertea	Palaeonemertea	Archinemertea	Cephalotrichidae	Cephalothrix simula	<13990..15525	1536	0	491	phylum seed; CDS start/end flagged partial in RefSeq (usually a non-standard start codon)
+COI_Onychophora_Peripatidae_Epiperipatus_biolleyi	NC_009082.1	Onychophora	Udeonychophora	Euonychophora	Peripatidae	Epiperipatus biolleyi	5423..6952	1530	0	200	phylum seed
+COI_Orthonectida_Rhopaluridae_Intoshia_linei	NC_060553.1	Orthonectida			Rhopaluridae	Intoshia linei	complement(2007..3536)	1530	0	1	phylum seed
+COI_Phoronida_Phoronidae_Phoronopsis_harmeri	NC_018761.1	Phoronida			Phoronidae	Phoronopsis harmeri	3510..5048	1539	0	76	phylum seed
+COI_Placozoa_NA_Trichoplax_adhaerens	NC_008151.3	Placozoa				Trichoplax adhaerens	COX1a join(33980..34365,34822..35078,38033..38111,7107..7212) + COX1b complement(join(16353..16823,17512..17772,18770..18904))	1695	0	132	phylum seed; COX1a + COX1b joined (trans-spliced in the genome; each part is its own ORF in RefSeq)
+COI_Platyhelminthes_Macrostomidae_Macrostomum_lignano	NC_035255.1	Platyhelminthes			Macrostomidae	Macrostomum lignano	<1..1548	1548	0	1	
+COI_Platyhelminthes_Stenostomidae_Stenostomum_sthenum	NC_035256.1	Platyhelminthes			Stenostomidae	Stenostomum sthenum	1..1557	1557	0	1	
+COI_Platyhelminthes_Hoploplanidae_Hoploplana_elisabelloi	NC_028200.1	Platyhelminthes		Polycladida	Hoploplanidae	Hoploplana elisabelloi	<1..1548	1548	0	2	
+COI_Platyhelminthes_Prosthiostomidae_Enchiridium_sp	NC_028199.1	Platyhelminthes		Polycladida	Prosthiostomidae	Enchiridium sp. MTA_2015	<1..1557	1557	0	1	
+COI_Platyhelminthes_Graffillidae_Graffilla_buccinicola	NC_050390.1	Platyhelminthes		Rhabdocoela	Graffillidae	Graffilla buccinicola	1..1530	1530	0	1	
+COI_Platyhelminthes_Umagillidae_Syndesmis_echinorum	NC_050392.1	Platyhelminthes		Rhabdocoela	Umagillidae	Syndesmis echinorum	1..1759	1759	0	1	
+COI_Platyhelminthes_Dugesiidae_Schmidtea_mediterranea	NC_022448.1	Platyhelminthes		Tricladida	Dugesiidae	Schmidtea mediterranea	<706..2247	1542	0	1	phylum seed; CDS start/end flagged partial in RefSeq (usually a non-standard start codon)
+COI_Platyhelminthes_Geoplanidae_Bipalium_kewense	NC_045216.1	Platyhelminthes		Tricladida	Geoplanidae	Bipalium kewense	1..1554	1554	0	1	
+COI_Platyhelminthes_Uteriporidae_Obrimoposthia_wandeli	NC_050050.1	Platyhelminthes		Tricladida	Uteriporidae	Obrimoposthia wandeli	<13161..14837	1677	0	1	
+COI_Platyhelminthes_Capingentidae_Breviscolex_orientalis	NC_035634.1	Platyhelminthes	Cestoda	Caryophyllidea	Capingentidae	Breviscolex orientalis	6625..8155	1531	0	1	
+COI_Platyhelminthes_Lytocestidae_Khawia_sinensis	NC_034800.1	Platyhelminthes	Cestoda	Caryophyllidea	Lytocestidae	Khawia sinensis	6637..8193	1557	0	2	
+COI_Platyhelminthes_Taeniidae_Echinococcus_multilocularis	NC_000928.2	Platyhelminthes	Cestoda	Cyclophyllidea	Taeniidae	Echinococcus multilocularis	9165..10772	1608	0	13	
+COI_Platyhelminthes_Diplectanidae_Lepidotrema_longipenis	NC_039617.1	Platyhelminthes	Monogenea	Dactylogyridea	Diplectanidae	Lepidotrema longipenis	1..1548	1548	0	8	
+COI_Platyhelminthes_Gyrodactylidae_Gyrodactylus_salaris	NC_008815.1	Platyhelminthes	Monogenea	Gyrodactylidea	Gyrodactylidae	Gyrodactylus salaris	7311..8858	1548	0	1	
+COI_Platyhelminthes_Microcotylidae_Polylabris_halichoeres	NC_016057.1	Platyhelminthes	Monogenea	Mazocraeidea	Microcotylidae	Polylabris halichoeres	11303..12886	1584	0	5	
+COI_Platyhelminthes_Cyathocotylidae_Cyathocotyle_prussica	NC_039780.1	Platyhelminthes	Trematoda	Diplostomida	Cyathocotylidae	Cyathocotyle prussica	6888..8438	1551	0	9	
+COI_Platyhelminthes_Diplostomidae_Diplostomum_ardeae	NC_049068.1	Platyhelminthes	Trematoda	Diplostomida	Diplostomidae	Diplostomum ardeae	6968..8611	1644	0	6	
+COI_Platyhelminthes_Opisthorchiidae_Opisthorchis_felineus	NC_011127.2	Platyhelminthes	Trematoda	Opisthorchiida	Opisthorchiidae	Opisthorchis felineus	6960..8522	1563	0	3	
+COI_Platyhelminthes_Cyclocoelidae_Uvitellina_sp	NC_042722.1	Platyhelminthes	Trematoda	Plagiorchiida	Cyclocoelidae	Uvitellina sp. SSS-2019	7198..8739	1542	0	16	
+COI_Platyhelminthes_Eucotylidae_Tanaisia_zarudnyi	NC_057537.1	Platyhelminthes	Trematoda	Plagiorchiida	Eucotylidae	Tanaisia zarudnyi	7134..9188	2055	0	1	
+COI_Platyhelminthes_Haploporidae_Carassotrema_koreanum	NC_065771.1	Platyhelminthes	Trematoda	Plagiorchiida	Haploporidae	Carassotrema koreanum	6842..8383	1542	0	1	
+COI_Platyhelminthes_Paramphistomidae_Paramphistomum_cervi	NC_023095.1	Platyhelminthes	Trematoda	Plagiorchiida	Paramphistomidae	Paramphistomum cervi	6916..8460	1545	0	7	
+COI_Platyhelminthes_Prosthogonimidae_Prosthogonimus_cuneatus	NC_050918.1	Platyhelminthes	Trematoda	Plagiorchiida	Prosthogonimidae	Prosthogonimus cuneatus	7047..8687	1641	0	1	
+COI_Platyhelminthes_Troglotrematidae_Paragonimus_westermani	NC_002354.2	Platyhelminthes	Trematoda	Plagiorchiida	Troglotrematidae	Paragonimus westermani	7337..8872	1536	0	2	
+COI_Porifera_Clathrinidae_Clathrina_clathrus	NC_021113.1	Porifera	Calcarea	Clathrinida	Clathrinidae	Clathrina clathrus	<3428..4849	1422	0	1	
+COI_Porifera_Callyspongiidae_Callyspongia_plicifera	NC_010206.1	Porifera	Demospongiae	Haplosclerida	Callyspongiidae	Callyspongia plicifera	3004..4614	1611	1	147	
+COI_Porifera_Niphatidae_Amphimedon_queenslandica	NC_008944.1	Porifera	Demospongiae	Haplosclerida	Niphatidae	Amphimedon queenslandica	3309..4901	1593	0	48	phylum seed
+COI_Porifera_Aphrocallistidae_Aphrocallistes_vastus	NC_010769.1	Porifera	Hexactinellida	Sceptrulophora	Aphrocallistidae	Aphrocallistes vastus	14860..16428	1569	0	3	
+COI_Priapulida_Priapulidae_Priapulus_caudatus	NC_008557.1	Priapulida	Priapulimorpha	Priapulimorphida	Priapulidae	Priapulus caudatus	10236..11774	1539	0	84	phylum seed
+COI_Rotifera_Philodinidae_Rotaria_rotatoria	NC_013568.1	Rotifera	Eurotatoria	Philodinida	Philodinidae	Rotaria rotatoria	1..1542	1542	0	1	
+COI_Rotifera_Brachionidae_Brachionus_plicatilis	NC_010484.1	Rotifera	Eurotatoria	Ploima	Brachionidae	Brachionus plicatilis	1..1551	1551	0	1	phylum seed; mitochondrial chromosome II (COX1 is not on chromosome I)
+COI_Tardigrada_Doryphoribiidae_Thulinius_sp	NC_015829.1	Tardigrada	Eutardigrada	Parachela	Doryphoribiidae	Thulinius sp. DVL-2010	13503..15047	1545	1	3	
+COI_Tardigrada_Hypsibiidae_Hypsibius_dujardini	NC_014848.1	Tardigrada	Eutardigrada	Parachela	Hypsibiidae	Hypsibius dujardini	<31..1563	1533	0	2	phylum seed; CDS start/end flagged partial in RefSeq (usually a non-standard start codon)
+COI_Xenacoelomorpha_Xenoturbellidae_Xenoturbella_bocki	NC_008556.1	Xenacoelomorpha			Xenoturbellidae	Xenoturbella bocki	1..1551	1551	2	1	phylum seed; 2 IUPAC base(s) kept as in RefSeq
+COI_Xenacoelomorpha_Convolutidae_Symsagittifera_roscoffensis	NC_014578.1	Xenacoelomorpha		Acoela	Convolutidae	Symsagittifera roscoffensis	7..1551	1545	0	2	
+COI_Xenacoelomorpha_Paratomellidae_Paratomella_rubra	NC_034946.1	Xenacoelomorpha		Acoela	Paratomellidae	Paratomella rubra	496..2058	1563	0	2	
