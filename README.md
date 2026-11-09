@@ -25,6 +25,19 @@ If your assembly was unsuccessful, you could already add the log file and the co
 
 ## Installation guide
 
+### Install dependencies locally
+
+- Install BLAST
+- Install kalign
+- Install Perl modules: MCE::Child, MCE::Channel and Parallel::ForkManager
+  
+  <code>cpan install MCE</code>
+  
+  <code>cpan install Parallel::ForkManager</code>
+  
+  <code>perl NANOPlasty0.2.pl -c config_nanoplasty.txt</code>
+
+
 ## How to run
 
 ### 1. Create configuration file
