@@ -25,6 +25,14 @@ If your assembly was unsuccessful, you could already add the log file and the co
 
 ## Installation guide
 
+### With Docker:
+
+<code>docker pull ndierckx/nanoplasty:latest</code>
+
+<code>docker run --rm ndierckx/nanoplasty  -c config.txt</code>
+
+### OR
+
 ### Install dependencies locally
 
 - Install BLAST
@@ -47,7 +55,9 @@ Every parameter of the configuration file is explained below.
 
 ### 2. Run NANOPlasty
 
-<code>perl NANOPlasty0.3.pl -c config_nanoplasty.txt</code>
+Docker      : <code>docker run --rm ndierckx/nanoplasty  -c config_nanoplasty.txt</code>
+
+Local       : <code>perl NANOPlasty0.3.pl -c config_nanoplasty.txt</code>
 
 ----------------------------------------------------------------------------------------------------------
 
