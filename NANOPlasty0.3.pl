@@ -51,10 +51,13 @@ GetOptions (
 
 my $sequencing_depth_NP = '';
 my $sequencing_depth_PB = '';
-my $plant_mito_limit = "90000000000";
-my $chloro_limit     = "820000000";
+my $mito_plant_limit = "95000000000";
+my $chloro_limit     = "900000000";
+my $mito_limit       = "900000000";
 my $restart_check = "";
 my $db_precheck_done = 0;
+my %kept_unzipped_reads;   # .gz inputs unzipped in this run, so a depth restart doesn't unzip them again
+my $streamed_reads_NP = "";   # the NP reads were taken from the start of the inputs, so a depth restart does that again
 RESTART:
 my $y = '1';
 my $y0 = '1';
@@ -88,6 +91,11 @@ my $reverse_seed = "yes";
 my $maxProcs = '5';
 my $minimum_read_length_NP = '500';
 my $minimum_read_length_PB = '500';
+# "Use full dataset" (last line of the Nanopore / PacBio section): "yes" = no subsampling, every read is used
+my $full_dataset_NP = "";
+my $full_dataset_PB = "";
+my $config_PB_section = "";        # the PacBio section of the config file has started
+my $config_after_min_PB = "";      # "Min read length PB" was read: only "Use full dataset" can still follow
 my $circular = "yes";
 my $already_assembled = '0';
 my $check_circular = '0';
@@ -305,6 +313,10 @@ my %prev_position_hap_compare;
 undef %prev_position_hap_compare;
 my %first_back_assembly;
 undef %first_back_assembly;
+# Split contigs (c2, c3, ...). Like a backward contig (b) they continue an assembled contig and have no start read
+# that could be replaced, so the round-1 rejections (READ_REJECTED2/3/4) do not apply to them.
+my %split_contig_ids;
+undef %split_contig_ids;
 my %rejected_rej_reads;
 undef %rejected_rej_reads;
 my %full_reset_time;
@@ -330,18 +342,25 @@ my %track_tandem_pos;
 undef %track_tandem_pos;
 my $been_reduced = "";
 my $chloro_file = "";
+# Result files of the current assembly, listed in the results table at the end of the log. They are
+# reset once the table is printed, so the chloroplast part of a mito_plant run gets its own table.
+my %result_circular_contigs;
+my %result_option_files;
+my $result_final_file = "";
+# Option file of each circularized contig, so every circle gets its own number (see the circle check).
+my %result_circle_option;
 
-# --- plant-mitochondrial origin check (type "plant_mito" only) -----------------------------
+# --- plant-mitochondrial origin check (type "mito_plant" only) -----------------------------
 # BLAST db prefix of diverse plant mitochondrial genomes. After 10 kb assembled (once) and then
 # every +500 kb, the freshly assembled segment is BLASTed against it; a segment with essentially
 # no mito homology means the seed ran into nuclear DNA -> discard it and continue with the next
-# seed. Set to your deployed db (e.g. ".../plant_mito_genomes/blast_db/plant_mito"); "" disables.
-my $plant_mito_db = "";
-my $plant_mito_check_frac = 0.01;   # min fraction of a checked segment that must hit the mito db
-my $plant_mito_terminal_frac = 0.4;# min fraction of a terminal 5 kb window that must hit the mito db;
+# seed. Set to your deployed db (e.g. ".../mito_plant_genomes/blast_db/mito_plant"); "" disables.
+my $mito_plant_db = "";
+my $mito_plant_check_frac = 0.01;   # min fraction of a checked segment that must hit the mito db
+my $mito_plant_terminal_frac = 0.4;# min fraction of a terminal 5 kb window that must hit the mito db;
                                     # summed over all HSPs with overlapping stretches counted once
 # Second, stricter pass of the seed-vs-raw-assembly test, run on the READ that was picked for the
-# seed rather than on the gene seed itself (plant_mito only). The region taken is the seed match
+# seed rather than on the gene seed itself (mito_plant only). The region taken is the seed match
 # plus $seed_read_assembly_flank bp on either side; if that much of it is already in the raw
 # assembly the read would only rebuild sequence we already have.
 my $seed_read_assembly_frac = 0.9;  # min merged fraction of that region already present in the raw
@@ -349,10 +368,23 @@ my $seed_read_assembly_frac = 0.9;  # min merged fraction of that region already
 my $seed_read_assembly_flank = 2000;# bp added on each side of the seed match (seeds are < 2000 bp)
 my $seed_read_assembly_id_ONT = 85; # min blast identity of an HSP to count, standard ONT reads
 my $seed_read_assembly_id_R10 = 95; # same, when $high_quality_ONT eq "yes"
-my %plant_mito_next;                # per seed: assembled length (bp) at which to run the next check
-my %plant_mito_checked_pos;         # per seed: read length at the previous check
-my %plant_mito_read_checked;        # read ids already vetted against the mito db (each checked at most once)
-undef %plant_mito_read_checked;
+my %mito_plant_next;                # per seed: assembled length (bp) at which to run the next check
+my %mito_plant_checked_pos;         # per seed: read length at the previous check
+# --- overlap stops ------------------------------------------------------------------------------
+# A contig only stops at the start sequences of its own seed. Running into a contig of another seed it
+# carries on; once the end it assembled itself has run along a contig written before for this many bp,
+# it stops there and the overlap is left for the merge step to join.
+my %overlap_stop_other = ("mito_plant" => 80000, "chloro" => 30000, "mito" => 5000);
+# A contig whose end repeats an earlier part of itself that is not its start (a loop) stops after this
+# many bp of repeat, and the repeated copy is cut off.
+my $overlap_stop_self = 120000;
+my %overlap_check_from;             # per contig: its length when it started (only what it assembled itself is checked)
+my %overlap_check_next;             # per contig: newly assembled length (bp) at which to run the next check
+my %start_read_fold;                # per read id: where a plant mito start read folds back on itself ("" = it does not)
+my %mito_plant_read_checked;        # read ids already vetted against the mito db (each checked at most once)
+undef %mito_plant_read_checked;
+my %mito_plant_read_failed;         # vetted reads that failed the terminal check (id -> coverage), see the split rule there
+undef %mito_plant_read_failed;
 my %rejected_read_ids;
 undef %rejected_read_ids;
 
@@ -365,6 +397,13 @@ while (my $line = <CONFIG>)
     $line =~ tr/\r//d;
     $line =~ s/\R/\012/;
     $line =~ s/[ \t\xA0]+$//;                                                       #CHECK THISSSSSSSSSSSSSSSSSSSSSSSSSSs
+    # The config used to be read up to "Min read length PB" only. "Use full dataset" may still follow it as the last
+    # line of the PacBio section; anything else after it is not read, as before.
+    if ($config_after_min_PB ne "")
+    {
+        next if ($line =~ m/^\s*$/);
+        last unless ($line =~ m/.*Use full dataset\s+\=/);
+    }
     if ($line =~ m/.*Project name\s+\=\s+(.*?)(Type.*)*$/)
     {
         $project = $1;
@@ -486,7 +525,8 @@ while (my $line = <CONFIG>)
             }
         }
     }
-    if ($line =~ m/.*Chloroplast sequence\s+\=\s+(.*?)(Plant mito DB.*)*$/)
+    # 'Mito plant DB' is no longer a config field (the DB ships in resources/); an old config line is ignored
+    if ($line =~ m/.*Chloroplast sequence\s+\=\s+(.*?)(Mito plant DB.*|Output path.*)*$/)
     {
         $chloro_file = $1;
         chomp $chloro_file;
@@ -496,20 +536,6 @@ while (my $line = <CONFIG>)
             {
                 $chloro_file = $line;
                 chomp $chloro_file;
-                last;
-            }
-        }
-    }
-    if ($line =~ m/.*Plant mito DB\s+\=\s+(.*?)(Output path.*)*$/)
-    {
-        $plant_mito_db = $1;
-        chomp $plant_mito_db;
-        if ($plant_mito_db eq "batch" && $batch_file ne "")
-        {
-            while (my $line = <BATCH>)
-            {
-                $plant_mito_db = $line;
-                chomp $plant_mito_db;
                 last;
             }
         }
@@ -599,8 +625,33 @@ while (my $line = <CONFIG>)
         }    
     }
     
+    # Last line of the Nanopore section and of the PacBio section: the same name, so the section decides
+    if ($line =~ m/.*Use full dataset\s+\=\s+(.*?)(PacBio reads:.*)*$/)
+    {
+        my $full_dataset_tmp = $1;
+        chomp $full_dataset_tmp;
+        if ($full_dataset_tmp eq "batch" && $batch_file ne "")
+        {
+            while (my $line = <BATCH>)
+            {
+                $full_dataset_tmp = $line;
+                chomp $full_dataset_tmp;
+                last;
+            }
+        }
+        if ($config_PB_section eq "")
+        {
+            $full_dataset_NP = $full_dataset_tmp;
+        }
+        else
+        {
+            $full_dataset_PB = $full_dataset_tmp;
+        }
+        last if ($config_after_min_PB ne "");
+    }
     if ($line =~ m/.*PacBio reads\s+\=\s+(.*?)(Local DB and PB reads.*)*$/)
     {
+        $config_PB_section = "yes";
         $PB_reads = $1;
         chomp $PB_reads;
         if ($PB_reads eq "batch" && $batch_file ne "")
@@ -640,9 +691,13 @@ while (my $line = <CONFIG>)
                 last;
             }
         }
-        last;
+        $config_PB_section = "yes";
+        $config_after_min_PB = "yes";
     }
 }
+# Only "yes" (any case) switches it on
+$full_dataset_NP = (lc($full_dataset_NP) eq "yes") ? "yes" : "";
+$full_dataset_PB = (lc($full_dataset_PB) eq "yes") ? "yes" : "";
 my $chloro_file_check = $chloro_file;
 close CONFIG;
 
@@ -654,7 +709,7 @@ $project =~ tr/: /__/;
 my $project0 = $project;
 my $genome_range_low0 = $genome_range_low;
 my $genome_range_high0 = $genome_range_high;   
-if ($type eq "plant_mito" && $chloro_file eq "")
+if ($type eq "mito_plant" && $chloro_file eq "")
 {
     $project .= "_chloro";  
     $genome_range_low = '80000';
@@ -733,41 +788,58 @@ if ($input_reads_DB_folder_NP ne "")
 }
 
 
-# Resolve the plant-mito screening database: 'Plant mito DB' config field -> $NANOPLASTY_DB env -> bundled DB next to the script.
-if ($type eq "plant_mito")
+# The mito_plant screening database ships with NANOPlasty, like the seed panels: resources/mito_plant_db/mito_plant
+# next to the script, or under share/ for an installed copy. It is not a config option. The DB only screens reads
+# and contigs. Without a usable one the assembly runs anyway, unscreened, with a warning that is printed once the
+# log is open (below the input parameters).
+my $mito_plant_db_warning = "";
+if ($type eq "mito_plant")
 {
-    if ($plant_mito_db eq "" && defined($ENV{NANOPLASTY_DB}) && $ENV{NANOPLASTY_DB} ne "")
+    foreach my $pm_cand ($RealBin."/resources/mito_plant_db/mito_plant", $RealBin."/../share/nanoplasty/resources/mito_plant_db/mito_plant")
     {
-        $plant_mito_db = $ENV{NANOPLASTY_DB};
-    }
-    if ($plant_mito_db eq "")
-    {
-        foreach my $pm_cand ($RealBin."/db/plant_mito/plant_mito", $RealBin."/../share/nanoplasty/db/plant_mito/plant_mito")
+        if (-e $pm_cand.".nin" || -e $pm_cand.".ndb" || -e $pm_cand.".nal")
         {
-            if (-e $pm_cand.".nin" || -e $pm_cand.".ndb")
-            {
-                $plant_mito_db = $pm_cand;
-                last;
-            }
+            $mito_plant_db = $pm_cand;
+            last;
         }
     }
-    if ($plant_mito_db ne "" && !(-e $plant_mito_db.".nin" || -e $plant_mito_db.".ndb"))
+    if ($mito_plant_db eq "")
     {
-        my $msg = "\nERROR: The plant mito database '".$plant_mito_db."' was not found (no .nin/.ndb index next to it). Check the 'Plant mito DB' setting or the NANOPLASTY_DB environment variable. Terminating.\n";
-        print $msg;
-        print OUTPUT4 $msg;
-        close OUTPUT4;
-        exit 1;
-    }
-    if ($plant_mito_db eq "")
-    {
-        my $msg = "\nWARNING: No plant mito database found (checked 'Plant mito DB', \$NANOPLASTY_DB, and the bundled 'db/plant_mito'). Nuclear-origin screening will be disabled.\n";
-        print $msg;
-        print OUTPUT4 $msg;
+        $mito_plant_db_warning = "WARNING: No mito_plant database found (resources/mito_plant_db/mito_plant next to the script). The assembly runs without the plant-mitochondrial screening.";
     }
     else
     {
-        print OUTPUT4 "Plant mito DB         = ".$plant_mito_db."\n\n";
+        # Test the DB once with blastn, the way the checks use it. A file test is not enough: a BLAST v5 DB whose
+        # files were renamed keeps its .ndb, but blastn cannot open it (mdb_env_open).
+        my $pm_test_query = $TMP_directory."mito_plant_db_test.fasta";
+        my $pm_test_out = $TMP_directory."mito_plant_db_test.txt";
+        my $pm_test_err = $TMP_directory."mito_plant_db_test_error.txt";
+        open(my $PM_TQ, ">", $pm_test_query) or die "\nCan't open file $pm_test_query, $!\n";
+        print $PM_TQ ">test\nATGGCTAAGCTTACCGGTCGTACTGCAGTTCGATCCGGAAGGCTTCGTATGCTCAGTCAAGG\n";
+        close $PM_TQ;
+        my $pm_test_rc = system("blastn -task dc-megablast -query ".$pm_test_query." -db ".$mito_plant_db." -out ".$pm_test_out." -outfmt \"6 qstart qend\" -evalue 1e-2 -max_target_seqs 50 -dust no 2> ".$pm_test_err);
+        if ($pm_test_rc != 0)
+        {
+            my $pm_test_msg = "";
+            if (open(my $PM_TE, "<", $pm_test_err))
+            {
+                while (my $pm_l = <$PM_TE>)
+                {
+                    chomp $pm_l;
+                    if ($pm_l =~ m/error/i)
+                    {
+                        $pm_test_msg = " (".$pm_l.")";
+                        last;
+                    }
+                }
+                close $PM_TE;
+            }
+            $mito_plant_db_warning = "WARNING: blastn cannot use the mito_plant database '".$mito_plant_db."'".$pm_test_msg.". The assembly runs without the plant-mitochondrial screening.";
+            $mito_plant_db = "";
+        }
+        unlink $pm_test_query;
+        unlink $pm_test_out;
+        unlink $pm_test_err;
     }
 }
 
@@ -796,7 +868,7 @@ else
 
 print "\n\n-----------------------------------------------";
 print "\nNANOPlasty\n";
-print "Version 0.1\n";
+print "Version 0.3\n";
 print "Author: Nicolas Dierckxsens, (c) 2026\n";
 print "-----------------------------------------------\n\n";
 
@@ -811,7 +883,6 @@ print "Seed Input            = ".$seed_input0."\n";
 print "Extend seed directly  = ".$extend_seed_directly."\n";
 print "Threads               = ".$maxProcs."\n";
 print "Chloroplast sequence  = ".$chloro_file."\n";
-print "Plant mito DB         = ".$plant_mito_db."\n";
 print "Output path           = ".$output_path."\n\n";
 
 print "Nanopore reads:\n";
@@ -819,18 +890,20 @@ print "-----------------------\n";
 print "Nanopore reads        = ".$NP_reads."\n";
 print "Local DB and NP reads = ".$input_reads_DB_folder_NP."\n";
 print "R10                   = ".$high_quality_ONT."\n";
-print "Min read length NP    = ".$minimum_read_length_NP."\n\n";
+print "Min read length NP    = ".$minimum_read_length_NP."\n";
+print "Use full dataset      = ".$full_dataset_NP."\n\n";
 
 print "PacBio reads:\n";
 print "-----------------------\n";
 print "PacBio reads          = ".$PB_reads."\n";
 print "Local DB and PB reads = ".$input_reads_DB_folder_PB."\n";
-print "Min read length PB    = ".$minimum_read_length_PB."\n\n";
+print "Min read length PB    = ".$minimum_read_length_PB."\n";
+print "Use full dataset      = ".$full_dataset_PB."\n\n";
 
 
 print OUTPUT4 "\n\n-----------------------------------------------";
 print OUTPUT4 "\nNANOPlasty\n";
-print OUTPUT4 "Version 0.1\n";
+print OUTPUT4 "Version 0.3\n";
 print OUTPUT4 "Author: Nicolas Dierckxsens, (c) 2026\n";
 print OUTPUT4 "-----------------------------------------------\n\n";
 
@@ -845,7 +918,6 @@ print OUTPUT4 "Seed Input            = ".$seed_input0."\n";
 print OUTPUT4 "Extend seed directly  = ".$extend_seed_directly."\n";
 print OUTPUT4 "Threads               = ".$maxProcs."\n";
 print OUTPUT4 "Chloroplast sequence  = ".$chloro_file."\n";
-print OUTPUT4 "Plant mito DB         = ".$plant_mito_db."\n";
 print OUTPUT4 "Output path           = ".$output_path."\n\n";
 
 print OUTPUT4 "Nanopore reads:\n";
@@ -853,16 +925,31 @@ print OUTPUT4 "-----------------------\n";
 print OUTPUT4 "Nanopore reads        = ".$NP_reads."\n";
 print OUTPUT4 "Local DB and NP reads = ".$input_reads_DB_folder_NP."\n";
 print OUTPUT4 "R10                   = ".$high_quality_ONT."\n";
-print OUTPUT4 "Min read length NP    = ".$minimum_read_length_NP."\n\n";
+print OUTPUT4 "Min read length NP    = ".$minimum_read_length_NP."\n";
+print OUTPUT4 "Use full dataset      = ".$full_dataset_NP."\n\n";
 
 print OUTPUT4 "PacBio reads:\n";
 print OUTPUT4 "-----------------------\n";
 print OUTPUT4 "PacBio reads          = ".$PB_reads."\n";
 print OUTPUT4 "Local DB and PB reads = ".$input_reads_DB_folder_PB."\n";
-print OUTPUT4 "Min read length PB    = ".$minimum_read_length_PB."\n\n";
+print OUTPUT4 "Min read length PB    = ".$minimum_read_length_PB."\n";
+print OUTPUT4 "Use full dataset      = ".$full_dataset_PB."\n\n";
+if ($type eq "mito_plant")
+{
+    if ($mito_plant_db_warning ne "")
+    {
+        print "\n".$mito_plant_db_warning."\n\n";
+        print OUTPUT4 $mito_plant_db_warning."\n\n";
+    }
+    else
+    {
+        print "Mito plant DB: ".$mito_plant_db."\n\n";
+        print OUTPUT4 "Mito plant DB: ".$mito_plant_db."\n\n";
+    }
+}
 
 
-if ($type eq "plant_mito" && $chloro_file ne "" && $chloro_file_check eq "")
+if ($type eq "mito_plant" && $chloro_file ne "" && $chloro_file_check eq "")
 {
     goto NEXT_SEED;
 }
@@ -899,15 +986,15 @@ if ($extend_seed_directly eq "no")
 {
     $extend_seed_directly = "";
 }
-# plant_mito picks its seed reads inside the "if ($extend_seed_directly eq '')" block at the
+# mito_plant picks its seed reads inside the "if ($extend_seed_directly eq '')" block at the
 # start of the assembly, so with this option on the built-in mito seeds are never read at all
 # and the run can only bounce between END1 and NEXT_SEED. Say so here instead of hanging.
-if ($type eq "plant_mito" && $extend_seed_directly ne "")
+if ($type eq "mito_plant" && $extend_seed_directly ne "")
 {
-    die "\n'Extend seed directly' cannot be used when 'Type' is 'plant_mito', the built-in mito seeds need the seed-read search, please check the configuration file!\n";
+    die "\n'Extend seed directly' cannot be used when 'Type' is 'mito_plant', the built-in mito seeds need the seed-read search, please check the configuration file!\n";
 }
 
-my $USAGE = "\nUsage: perl NANOPlasty0.1.pl -c config_example.txt";
+my $USAGE = "\nUsage: perl NANOPlasty0.3.pl -c config_example.txt";
 
 if (($NP_reads ne "" || $input_reads_DB_folder_NP ne "") && ($PB_reads ne "" || $input_reads_DB_folder_PB ne ""))
 {
@@ -1368,6 +1455,17 @@ if ($maxProcs_tmp < 1)
     $maxProcs_tmp = '1';
 }
 
+# pigz decompresses about twice as fast as gzip (same output); gzip where pigz isn't installed
+my $gunzip_tool = "gzip";
+foreach my $path_dir_tmp (split /:/, (defined($ENV{PATH}) ? $ENV{PATH} : ""))
+{
+    if ($path_dir_tmp ne "" && -x $path_dir_tmp."/pigz")
+    {
+        $gunzip_tool = "pigz";
+        last;
+    }
+}
+
 #Seed selection-----------------------------------------------------------------------------------------------------------------------------------------
 
 my $Seed_RUBP_spermatopsida_zea_mays = "GAATTCCTATAGTAAAATTCCTATAGGATAGAACGTACACAGGGTGTATACATAAATGAATGAAACATATTACTTAACTTAAGCATACTCCTTTTTTTATTTAATGAGTTGATATTAATTAAATATCATTTTTTTTAGATTTTTGCAAAGGTTTCTTTCGCCTAATCCTATCGAGTTGTCCCTGTGCTTGTGTGAATTCTTAATTCATGAGTTGTAGGGAGGGACTTATGTCACCACAAACAGAAACTAAAGCAAGTGTTGGATTTAAAGCTGGTGTTAAGGATTATAAATTGACTTACTACACCCCGGAGTACGAAACCAAGGATACTGATATCTTGGCGGCATTCCGAGTAACTCCACAGCTCGGGGTTCCGCCTGAGGAAGCAGGGGCTGCAGTGGCTGCGGAATCTTCTGCTGCTGGTACATGGACAACTGTTTGGACTGATGGACTTACCAGTCTTGATCGTTACAAAGGACGATGCTATCACATCGAGCCCGTTCCTGGGGACCCAGATCAATATATCTGTTATGTAGCTTATCCATTAGACCTATTTGAAGAGGGTTCTGTTACTAACATGTTTACTTCCATTGTGGGTAACGTATTTGGTTTCAAAGCCTTACGCGCTCTACGTTTGGAGGATCTACGAATTCCCCCTGCTTATTCAAAAACTTTCCAAGGTCCGCCACGCGGTATGCAAGTTGAAAGGGATAAGTTGAACAAGTACGGTCGTCCTTTATTGGGATGTACTATTAAACCAAAATTGGGATTATCCGCAAAAAATTACGGTAGAGCGTGTTATGAGTGTCTACGCGGTGGACTTGATTTTACCAAAGATGATGAAAACGTAAACTCACAACCATTTATGCGCTGGAGAGACCGTTTCGTCTTTTGTGCCGAAGCAATTTATAAATCACAAGCCGAAACTGGTGAAATCAAGGGGCATTACTTGAATGCGACTGCAGGTACATGCGATGAAATGATTAAGGGAGCTGTATTTGCAAGGCAATTAGGGGTTCCTATTGTAATGCATGACTACTTGACAGGTGGATTCACCGCAAATACTACTTTGTCTCATTATTGCCGCGACAACGGCCTACTTCACATTCACCGAGCAATGCATGCAGTTATTGATAGACAGAAAAATCATGGTATGCATTTCCGTGTATTAGCTAAAGCATTGCGTATGTCGGGGGGAGATCATATCCACTCCGGTACAGTAGTAGGTAAGTTAGAAGGGGAACGCGAAATAACTTTAGGTTTTGTTGATTTATTGCGCGATGATTTTATTGAAAAAGATCGTTCTCGCGGTATCTTTTTCACTCAGGACTGGGTATCCATGCCAGGTGTTATACCGGTGGCTTCTGGGGGTATTCATGTTTGGCATATGCCAGCTCTGACCGAAATCCTTGGAGATGATTCAGTATTACAATTTGGTGGAGGAACTTTAGGACATCCTTGGGGAAATGCACATGGTGCAGCAGCTAATCGTGTAGCTTTAGAAGCCTGTGTACAAGCTCGTAACGAAGGGCGCGATCTAGCTCGCGAGGTACAAATTATCAAAGCAGCTTGCAAATGGAGTGCCGAACTAGCCGCAGCTTGCGAAATATGGAAGGAGATCAAATTCGATGGTTTCAAAGCGATGGATACCATATAAAATAAAAAAAAAGCAAAATATGAAGTGAAAAAATAAGTTATGAAATGAAATGAAATGACGTAATTCTTTATTCCTCTAATTGATTGCAATTC";
@@ -1390,28 +1488,51 @@ my $Seed_mito_rps7_spermatopsida_paphiopedilum_concolor = "GATCAAGATGGACAGTAACGA
 my $Seed_mito_rps10_spermatopsida_paphiopedilum_micranthum = "GTGAACTGTGCTTAGACGCTTCGTCAAACCGCACCGCATCTACGGGAGGAGCTGATGGATGAGTGGGCTTCCCCTTTCGATTCACGGAATGTGATCTGGGACACGATGGGAGTTAGCGTGCCTCGGTAGGCAAGAGATCACCGGAGTATAGCACAAGATCGCCCTTTCTTGCTGCCAAGGGGTCAACCTGTGAACAAGGTAAACCCAATGGGATGGGAACCAAAAAACGGGAGGGTACCGCATTGGGCAGAAGACGATCCAAAAAGCGAAGGCTCACCCTTCAAAGTTCCGGGTGAGATAGGCGACAGGTAGCTTGCTTCCAAGCCTATAGGCCGCGAGGAATCAAGAGATCTTTGCCGGTGCTGACTTGGATCTCGGGTGACGGAAGAAGGCGGCCAGAAGCGACGAGCAGTCGCGGTC";
 my $Seed_mito_rps12_spermatopsida_paphiopedilum_micranthum = "ACTAGTGATAGGGCAAAGGGGGAAAGGACATAGGAAAGAGGGATGCCTACTTTCAATCAATTGATTCGCCATGGTAGAGAAGAAAAACGGCGCACAGACCGTACTCGAGCTTTGGATCAATGTCCCCAGAAGCAAGGAGTATGCCCGCGTGTTTCGACGAGAACACCGAAAAAACCAAATTCAGCTCTACGTAAGATAGCCAAAGTACGGTTGAGCAATCGACATGATATATTTGCTCACATTCCAGGCGAAGGTCATAATTCGCAGGAGCATCCTATAGTCTTAGTCAGAGGAGGTAGAGTGAAAGATTCGCCAGGTGTGAAATCCCATTGTATTCGGGGAGTCAAGGATTTGCTGGGAATTGCGGATCGCAGAAGGGGCAGATCTAAATATGGTGCAGAAAGACCCAAATCGAAATGAATGGAAGATGCCTCTGGAACGTCTGTTGGTTGAAGGCGAGCTATCGTCTATCGCTTTGTTCAATGCAATG";
 my $Seed_mito_rrn5_spermatopsida_paphiopedilum_gratrixianum = "TTTGGAGAGATCATCATAAATTATTGAAGTATGTTGTTCCCGGTACATAAAATACTCAGCCAGAGTCGCTCCCGTATAAGGAGCGAGGTATTGTAATGTAGCCGGCGAATCCGCTGTTTCAGCTACCACAATAGTGTATTCCATTGCCCCTCGTTCCTGTAAAGTAGTCACCACCTGAGCTACAGAAGATGCTTTTTGACCAATAGCTACATAAACACATATTACATTTTGCCCTTGTTGATTGAGAATCGTATCTGTAGCTACTGCTGTTTTTTACCAGTCTGTCTGTCCCCAATAATTCATTCTCGCTGACCACGTCCTATAGGTATCATCGAATCAATAGCAATAAGTCCTGTTTGAAGAGGCTCATATACAGAACGTCTCGAAAATAATACGCGATCCCATTCCGACCTCGATATGTGGAATCGTCTTGCGCCATATGTACTGAAATTGTTCGGGAGACATGGTCCAAGCACTGACGCGAACCGGCCTACTTATAGCCCTCTTCGATACGTAATCGACTTCTTGCCTGTGTGGATCACTTGATATTAGAAGCGAGGCTCGTTTTTTGCTTCCCTTGGGGGAGCCTTGCTCTCTTCGTTTAGTATTCACTTCTATCTCGGCCGGATAAGTCAAAAGGTAAATAACACCTAGTTCTGCCTGCGCCCTTTAGCTAATACCTATCCTTCGTTTGTACTCAACTCAGCCCATTCCTATTCCATCGTCGTTCTTTCCTCCAATCTTGAGAATCCCATAGTATATGGGGCTACTAGCTAGCTCCTCGAAACTACTAAAAACCGATCGACTGCTCTCTTTGCGACCGGGCCGGTTCCAGCAATAGAGGGATCACGAGTAATGTAGCCTATAATTCGATTGAATCGTAACGACACTTGAACAGATAGGCGTGGCGTGTTACCTACCAAAGAAAGAAACAACGCTCGTAGTTCAGGTTTTGGCCAGGAGCCGAATCAAAGCATCGAGAATGAATAACATAATAGAACGCCCAGGTGAAATGAGAAGTAAAAAATGGGAGAGTTGGTAAAGCCTATA";
-my $seed_mito_parasite = "AAAGATATTGGAACCCTTTATTTTATATTTGGGGCTTGAGCTGGGGTAGTGGGAGTGGCGTTTAGAATACTGATTCGGTCCGAACTATCTCAACCAGGTAATCTACTGGGTAGAGACCAATTGTACAATGCCATTGTCACAGCCCATGCCTTTATTATAATCTTTTTCATAGTTATGCCTATTATAATCGGGGGGTTTGGTAACTGACTTGTTCCACTTATAGTGGGGGCGCCCGACATAGCATTTCCTCGTATAAACAATATAAGGTTTTGGCTACTACCCCCTGCTCTCACACTACTAGTAGTCGGTGCAATAGTTGAAGAGGGGGCAGGTACCGGCTGAACTGTATACCCTCCGCTGTCAAGGAGAATAGCCCACAGGGGCGCTTCTGTGGATTTCTCTATCTTTTCACTACACCTTGCGGGTGTGTCATCAATCTTAGGGGCGGTTAATTTTATTACTACAATTATCAATATGCGCCCACCCTCAATACCTTTAACCCAAATACCTCTATTTGTGTGATCAATTCTTATTACAGCAGTATTACTATTACTATCTTTACCCGTATTGGCAGGGGCTATCACGATACTACTTACCGATCGTAATTTAAATACCTCCTTTTTCGACCCAAGCGGAGGTGGGGACCCTATCTTGTTCCAACATTTGTTTTGATTTTTC";
+my $seed_mito_h_sapiens = "ATGTTCGCCGACCGTTGACTATTCTCTACAAACCACAAAGACATTGGAACACTATACCTATTATTCGGCGCATGAGCTGGAGTCCTAGGCACAGCTCTAAGCCTCCTTATTCGAGCCGAGCTGGGCCAGCCAGGCAACCTTCTAGGTAACGACCACATCTACAACGTTATCGTCACAGCCCATGCATTTGTAATAATCTTCTTCATAGTAATACCCATCATAATCGGAGGCTTTGGCAACTGACTAGTTCCCCTAATAATCGGTGCCCCCGATATGGCGTTTCCCCGCATAAACAACATAAGCTTCTGACTCTTACCTCCCTCTCTCCTACTCCTGCTCGCATCTGCTATAGTGGAGGCCGGAGCAGGAACAGGTTGAACAGTCTACCCTCCCTTAGCAGGGAACTACTCCCACCCTGGAGCCTCCGTAGACCTAACCATCTTCTCCTTACACCTAGCAGGTGTCTCCTCTATCTTAGGGGCCATCAATTTCATCACAACAATTATCAATATAAAACCCCCTGCCATAACCCAATACCAAACGCCCCTCTTCGTCTGATCCGTCCTAATCACAGCAGTCCTACTTCTCCTATCTCTCCCAGTCCTAGCTGCTGGCATCACTATACTACTAACAGACCGCAACCTCAACACCACCTTCTTCGACCCCGCCGGAGGAGGAGACCCCATTCTATACCAACACCTATTCTGATTTTTCGGTCACCCTGAAGTTTATATTCTTATCCTACCAGGCTTCGGAATAATCTCCCATATTGTAACTTACTACTCCGGAAAAAAAGAACCATTTGGATACATAGGTATGGTCTGAGCTATGATATCAATTGGCTTCCTAGGGTTTATCGTGTGAGCACACCATATATTTACAGTAGGAATAGACGTAGACACACGAGCATATTTCACCTCCGCTACCATAATCATCGCTATCCCCACCGGCGTCAAAGTATTTAGCTGACTCGCCACACTCCACGGAAGCAATATGAAATGATCTGCTGCAGTGCTCTGAGCCCTAGGATTCATCTTTCTTTTCACCGTAGGTGGCCTGACTGGCATTGTATTAGCAAACTCATCACTAGACATCGTACTACACGACACGTACTACGTTGTAGCCCACTTCCACTATGTCCTATCAATAGGAGCTGTATTTGCCATCATAGGAGGCTTCATTCACTGATTTCCCCTATTCTCAGGCTACACCCTAGACCAAACCTACGCCAAAATCCATTTCACTATCATATTCATCGGCGTAAATCTAACTTTCTTCCCACAACACTTTCTCGGCCTATCCGGAATGCCCCGACGTTACTCGGACTACCCCGATGCATACACCACATGAAACATCCTATCATCTGTAGGCTCATTCATTTCTCTAACAGCAGTAATATTAATAATTTTCATGATTTGAGAAGCCTTCGCTTCGAAGCGAAAAGTCCTAATAGTAGAAGAACCCTCCATAAACCTGGAGTGACTATATGGATGCCCCCCACCCTACCACACATTCGAAGAACCCGTATACATAAAATCTAGA";
 
-my %plant_mito_seeds;
-undef %plant_mito_seeds;
+my %mito_plant_seeds;
+undef %mito_plant_seeds;
 
-$plant_mito_seeds{"18S"} = $Seed_mito_18S_spermatopsida_glycyrrhiza_glabra;
-$plant_mito_seeds{"26S"} = $Seed_mito_26S_spermatopsida_cypripedium_henryi;
-$plant_mito_seeds{"rpl5"} = $Seed_mito_rpl5_spermatopsida_lactuca_sativa;
-$plant_mito_seeds{"atp6"} = $Seed_mito_atp6_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"atp8"} = $Seed_mito_atp8_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"ccmB"} = $Seed_mito_ccmB_spermatopsida_paphiopedilum_gratrixianum;
-$plant_mito_seeds{"ccmC"} = $Seed_mito_ccmC_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"ccmFc"} = $Seed_mito_ccmFc_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"matR"} = $Seed_mito_matR_spermatopsida_apostasia_shenzhenica;
-$plant_mito_seeds{"mttB"} = $Seed_mito_mttB_spermatopsida_anemone_patens;
-$plant_mito_seeds{"nad1"} = $Seed_mito_nad1_spermatopsida_paphiopedilum_henryanum;
-$plant_mito_seeds{"nad2E2"} = $Seed_mito_nad2E2_spermatopsida_paphiopedilum_henryanum;
-$plant_mito_seeds{"nad4E2"} = $Seed_mito_nad4E2_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"rps7"} = $Seed_mito_rps7_spermatopsida_paphiopedilum_concolor;
-$plant_mito_seeds{"rps10"} = $Seed_mito_rps10_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"rps12"} = $Seed_mito_rps12_spermatopsida_paphiopedilum_micranthum;
-$plant_mito_seeds{"rrn5"} = $Seed_mito_rrn5_spermatopsida_paphiopedilum_gratrixianum;
+$mito_plant_seeds{"18S"} = $Seed_mito_18S_spermatopsida_glycyrrhiza_glabra;
+$mito_plant_seeds{"26S"} = $Seed_mito_26S_spermatopsida_cypripedium_henryi;
+$mito_plant_seeds{"rpl5"} = $Seed_mito_rpl5_spermatopsida_lactuca_sativa;
+$mito_plant_seeds{"atp6"} = $Seed_mito_atp6_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"atp8"} = $Seed_mito_atp8_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"ccmB"} = $Seed_mito_ccmB_spermatopsida_paphiopedilum_gratrixianum;
+$mito_plant_seeds{"ccmC"} = $Seed_mito_ccmC_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"ccmFc"} = $Seed_mito_ccmFc_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"matR"} = $Seed_mito_matR_spermatopsida_apostasia_shenzhenica;
+$mito_plant_seeds{"mttB"} = $Seed_mito_mttB_spermatopsida_anemone_patens;
+$mito_plant_seeds{"nad1"} = $Seed_mito_nad1_spermatopsida_paphiopedilum_henryanum;
+$mito_plant_seeds{"nad2E2"} = $Seed_mito_nad2E2_spermatopsida_paphiopedilum_henryanum;
+$mito_plant_seeds{"nad4E2"} = $Seed_mito_nad4E2_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"rps7"} = $Seed_mito_rps7_spermatopsida_paphiopedilum_concolor;
+$mito_plant_seeds{"rps10"} = $Seed_mito_rps10_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"rps12"} = $Seed_mito_rps12_spermatopsida_paphiopedilum_micranthum;
+$mito_plant_seeds{"rrn5"} = $Seed_mito_rrn5_spermatopsida_paphiopedilum_gratrixianum;
+
+# Default mito_plant seeds: resources/mito_plant_seeds.fasta holds a panel per gene (the gene is the
+# seed ID up to the first "_"). A gene's panel replaces the built-in seed of that gene and is
+# searched as one multi-FASTA query. Without the file the built-in seeds above are used.
+my ($mp_panel_tmp, $mp_count_tmp, $mp_file_tmp) = resource_seed_fasta("mito_plant_seeds.fasta");
+if ($mp_count_tmp > 0)
+{
+    undef %mito_plant_seeds;
+    foreach my $mp_record (split /(?=^>)/m, $mp_panel_tmp)
+    {
+        my ($mp_gene) = $mp_record =~ m/^>([^_\n]+)_/;
+        next unless (defined($mp_gene));
+        $mito_plant_seeds{$mp_gene} .= $mp_record;
+    }
+    if ($type eq "mito_plant")
+    {
+        print OUTPUT4 "\nMito plant seeds: ".$mp_count_tmp." seeds for ".(keys %mito_plant_seeds)." genes from ".$mp_file_tmp."\n";
+    }
+}
+elsif ($type eq "mito_plant")
+{
+    print OUTPUT4 "\nMito plant seeds: resources/mito_plant_seeds.fasta not found next to the script, using the built-in seeds\n";
+}
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------
 #Make hash of ONT reads----------------------------------------------------------------------------------------------------------------------------------
@@ -1482,6 +1603,9 @@ if ($subsample ne "")
 {
     $read_limit = '0';
 }
+# Estimated bp in the Nanopore input, kept when the read limit stopped the loading before the end of the
+# input: "Reduced sequencing depth" is then the share of the input used.
+my $input_estimated_bp_NP = "";
 
 if ($NP_reads ne "" || $input_reads_DB_folder_NP ne "")
 {   
@@ -1515,6 +1639,7 @@ if ($NP_reads ne "" || $input_reads_DB_folder_NP ne "")
     
     my %NP_reads;
     undef %NP_reads;
+    my $stream_message_NP = "";
     my $count_files = '0';
     if ($NP_reads ne "")
     {
@@ -1555,6 +1680,69 @@ if ($NP_reads ne "" || $input_reads_DB_folder_NP ne "")
         my %file_lines;
         undef %file_lines;
         
+        # The assembly uses at most $chloro_limit / $mito_plant_limit / $mito_limit bp of reads, but the whole input was
+        # unzipped, counted and split first (hours for a 450 GB .gz). When the inputs hold well over the limit
+        # (estimated from their size and first 8 MB), the reads are taken from the start of each input instead,
+        # written straight into pieces like the ones split makes, and the rest of the input is not read.
+        my $stream_limit_NP = "";
+        if ($type eq "chloro" && $chloro_limit ne "")
+        {
+            $stream_limit_NP = $chloro_limit;
+        }
+        elsif ($type eq "mito_plant" && $mito_plant_limit ne "")
+        {
+            $stream_limit_NP = $mito_plant_limit;
+        }
+        elsif ($type eq "mito" && $mito_limit ne "")
+        {
+            $stream_limit_NP = $mito_limit;
+        }
+        # "Use full dataset = yes": no limit, so no reading from the start only either
+        if ($stream_limit_NP ne "" && $subsample eq "" && $full_dataset_NP eq "")
+        {
+            my %estimated_selected_bp;
+            my $estimated_total_bp = '0';
+            my $estimated_selected_total = '0';
+            foreach my $NP_reads_tmp (sort keys %NP_reads)
+            {
+                my $check_zip_long2 = substr $NP_reads_tmp, -3;
+                if ($check_zip_long2 eq "bz2" || $check_zip_long2 eq "zip")
+                {
+                    $estimated_selected_total = '0';
+                    last;
+                }
+                my ($total_bp_tmp, $selected_bp_tmp) = estimate_read_bp($NP_reads_tmp, $gunzip_tool, $minimum_read_length_NP);
+                unless (defined($selected_bp_tmp))
+                {
+                    $estimated_selected_total = '0';
+                    last;
+                }
+                $estimated_selected_bp{$NP_reads_tmp} = $selected_bp_tmp;
+                $estimated_selected_total += $selected_bp_tmp;
+                $estimated_total_bp += $total_bp_tmp;
+            }
+            $input_estimated_bp_NP = $estimated_total_bp if ($estimated_selected_total > 0);
+            # After a depth restart the raised limit can be close to the whole input: reading from the start
+            # again, up to the new limit or the end of the input, avoids unzipping, counting and splitting it all.
+            if ($estimated_selected_total > $stream_limit_NP*1.5 || ($streamed_reads_NP ne "" && $estimated_selected_total > 0))
+            {
+                $streamed_reads_NP = "yes";
+                my @stream_files = sort keys %NP_reads;
+                my ($left_early_tmp, $pieces_tmp, $streamed_bp_tmp) = stream_read_pieces(\@stream_files, \%estimated_selected_bp, $stream_limit_NP, $minimum_read_length_NP, $maxProcs_tmp, $directory_DB_NP.$output_path_test, $gunzip_tool);
+                # The pieces are picked up from the DB folder below, like split pieces
+                foreach my $NP_reads_tmp (@stream_files)
+                {
+                    delete $NP_reads{$NP_reads_tmp};
+                }
+                $been_reduced = "yes" if ($left_early_tmp ne "");
+                my $taken_tmp = "taken from the start";
+                $taken_tmp = "the whole input" if ($left_early_tmp eq "");
+                my $input_size_tmp = sprintf("%.1f", $estimated_total_bp/1000000000)." Gbp";
+                $input_size_tmp = sprintf("%.1f", $estimated_total_bp/1000000)." Mbp" if ($estimated_total_bp < 1000000000);
+                $stream_message_NP = "Large input, about ".$input_size_tmp." (estimated): ".sprintf("%.1f", $streamed_bp_tmp/1000000)." Mbp of reads >= ".$minimum_read_length_NP." bp, ".$taken_tmp.", in ".$pieces_tmp." pieces\n";
+            }
+        }
+
         foreach my $NP_reads_tmp (keys %NP_reads)
         {
             #my $filesize = "";
@@ -1578,7 +1766,12 @@ if ($NP_reads ne "" || $input_reads_DB_folder_NP ne "")
                 my $g = @new_filename;
                 $g--;
                 $new_filename = $output_path.$new_filename[$g];
-                my $return_value = system("gzip -c -q -k -d ".$NP_reads_tmp." > ".$new_filename);
+                # A depth restart (goto RESTART) reuses the copy unzipped in the first pass
+                unless (exists($kept_unzipped_reads{$new_filename}) && -s $new_filename)
+                {
+                    my $return_value = system($gunzip_tool." -c -q -k -d ".$NP_reads_tmp." > ".$new_filename);
+                    $kept_unzipped_reads{$new_filename} = undef if ($return_value == 0);
+                }
                 
                 $delete_input_files{$new_filename} = undef;
                 
@@ -1796,10 +1989,17 @@ COUNT_LINES:
         {
             $lenght_by_file = $chloro_limit/$file_count
         }
-        elsif ($type eq "plant_mito" && $plant_mito_limit ne "")
+        elsif ($type eq "mito_plant" && $mito_plant_limit ne "")
         {
-            $lenght_by_file = $plant_mito_limit/$file_count
+            $lenght_by_file = $mito_plant_limit/$file_count
         }
+        elsif ($type eq "mito" && $mito_limit ne "")
+        {
+            $lenght_by_file = $mito_limit/$file_count
+        }
+        # "Use full dataset = yes": every read is used. No reads are left out, so $been_reduced stays empty and the
+        # depth restart (which raises the limit) cannot fire.
+        $lenght_by_file = "" if ($full_dataset_NP ne "");
 
 #Build local BLAST databse and save reads to disk---------------------------------------------------------------------------
     
@@ -1829,7 +2029,7 @@ COUNT_LINES:
             my $FILE_tmp;
             if ($check_zip_long eq "gz")
             {
-                open ($FILE_tmp, '-|', 'gzip', '-dc', $NP_reads_tmp) or die "Can't open file $NP_reads_tmp, $!\n";
+                open ($FILE_tmp, '-|', $gunzip_tool, '-dc', $NP_reads_tmp) or die "Can't open file $NP_reads_tmp, $!\n";
             }
             elsif ($check_zip_long2 eq "bz2")
             {
@@ -1871,7 +2071,7 @@ COUNT_LINES:
             my $FILE_LONG;
             if ($check_zip_long eq "gz")
             {
-                open ($FILE_LONG, '-|', 'gzip', '-dc', $NP_reads_tmp) or die "Can't open file $NP_reads_tmp, $!\n";
+                open ($FILE_LONG, '-|', $gunzip_tool, '-dc', $NP_reads_tmp) or die "Can't open file $NP_reads_tmp, $!\n";
             }
             elsif ($check_zip_long2 eq "bz2")
             {
@@ -1915,7 +2115,7 @@ FILE_LONG:  while (my $line = <$FILE_LONG>)
             {
                 if ($long_id_NP > $read_limit)
                 {
-                    print $long_id_NP." LIMIT_REACHED2\n";
+                    #print $long_id_NP." LIMIT_REACHED2\n";
                     last FILE_LONG;
                 }
                 chomp $line;    
@@ -1981,7 +2181,7 @@ FILE_LONG:  while (my $line = <$FILE_LONG>)
                         $selected_read_length_tmp += $length_tmp;
                         if ($selected_read_length_tmp > $lenght_by_file && $lenght_by_file ne "")
                         {
-                            print $selected_read_length_tmp." bp :LIMIT_REACHED\n";
+                            #print $selected_read_length_tmp." bp :LIMIT_REACHED\n";
                             $been_reduced = "yes";
                             last FILE_LONG;
                         }
@@ -2105,6 +2305,11 @@ FILE_LONG:  while (my $line = <$FILE_LONG>)
         #print $long2." LONG2\n";
     }
     print "...OK\n\n";
+    if ($stream_message_NP ne "")
+    {
+        print $stream_message_NP."\n";
+        print OUTPUT4 $stream_message_NP."\n";
+    }
 }
 
 if ($input_reads_DB_folder_NP ne "")
@@ -2165,6 +2370,7 @@ if ($read_count_NP > 0)
         $N50_filtered_NP = $N50_NP;
     }
 
+    $input_estimated_bp_NP = "" if ($been_reduced eq "");
     open(STATS_NP, ">" .$statistics_NP) or die "\nCan't open file $statistics_NP, $!\n";
     print STATS_NP "Nanopore reads\n";
     print STATS_NP "--------------\n";
@@ -2177,7 +2383,9 @@ if ($read_count_NP > 0)
     print STATS_NP "Reads below min length  : ".$removed_reads_min_NP."\n";
     print STATS_NP "Total removed bp        : ".$removed_reads_total_length_NP." bp\n";
     print STATS_NP "Filtered N50            : ".$N50_filtered_NP." bp\n";
-    print STATS_NP "Filtered average length : ".$average_length_filtered_NP." bp\n\n";
+    print STATS_NP "Filtered average length : ".$average_length_filtered_NP." bp\n";
+    print STATS_NP "Input length (estimated): ".int($input_estimated_bp_NP)." bp\n" if ($input_estimated_bp_NP ne "");
+    print STATS_NP "\n";
     close STATS_NP;
     
     print "\n\nNanopore reads\n";
@@ -2248,6 +2456,10 @@ elsif ($NP_reads ne "" || $input_reads_DB_folder_NP ne "")
             my @line_tmp = split ' ', $line_tmp;
             $average_length_filtered_NP = $line_tmp[4];
         }
+        if ($line_tmp =~ m/^Input length \(estimated\)\s*:\s*(\d+) bp/)
+        {
+            $input_estimated_bp_NP = $1;
+        }
     }
     close STATS_NP;
 
@@ -2259,7 +2471,21 @@ elsif ($NP_reads ne "" || $input_reads_DB_folder_NP ne "")
     }
 }
 
-if ($total_read_length_NP > 0 && $removed_reads_total_length_NP > 0)
+# The loaded reads are only the start of each input when the read limit stopped the loading: the share used is
+# then taken of the input's estimated size. Otherwise every read was loaded and the share used is the bp in reads
+# of at least the minimum length.
+if ($total_read_length_NP > 0 && $input_estimated_bp_NP ne "" && $input_estimated_bp_NP > 0)
+{
+    my $used_bp_NP = $total_read_length_NP-$removed_reads_total_length_NP;
+    my $used_percent_NP = $used_bp_NP/$input_estimated_bp_NP*100;
+    $used_percent_NP = 100 if ($used_percent_NP > 100);
+    my $input_size_NP = sprintf("%.1f", $input_estimated_bp_NP/1000000000)." Gbp";
+    $input_size_NP = sprintf("%.1f", $input_estimated_bp_NP/1000000)." Mbp" if ($input_estimated_bp_NP < 1000000000);
+    my $line_NP = "Reduced sequencing depth: ".sprintf("%.2f", $used_percent_NP)."% (".sprintf("%.1f", $used_bp_NP/1000000)." Mbp in reads >= ".$minimum_read_length_NP." bp, of about ".$input_size_NP." in the input)\n\n";
+    print $line_NP;
+    print OUTPUT4 $line_NP;
+}
+elsif ($total_read_length_NP > 0 && $removed_reads_total_length_NP > 0)
 {
     my $reduced_fraction_NP = $removed_reads_total_length_NP/$total_read_length_NP;
     my $reduced_fraction_NP_fraction = (1-$reduced_fraction_NP)*100;
@@ -2431,7 +2657,12 @@ if ($PB_reads ne "" || $input_reads_DB_folder_PB ne "")
                 my $g = @new_filename;
                 $g--;
                 $new_filename = $output_path.$new_filename[$g];
-                my $return_value = system("gzip -c -q -k -d ".$PB_reads_tmp." > ".$new_filename);
+                # A depth restart (goto RESTART) reuses the copy unzipped in the first pass
+                unless (exists($kept_unzipped_reads{$new_filename}) && -s $new_filename)
+                {
+                    my $return_value = system($gunzip_tool." -c -q -k -d ".$PB_reads_tmp." > ".$new_filename);
+                    $kept_unzipped_reads{$new_filename} = undef if ($return_value == 0);
+                }
                 
                 $delete_input_files{$new_filename} = undef;
                 
@@ -2651,7 +2882,7 @@ COUNT_LINES_PB:
             my $FILE_tmp;
             if ($check_zip_long eq "gz")
             {
-                open ($FILE_tmp, '-|', 'gzip', '-dc', $PB_reads_tmp) or die "Can't open file $PB_reads_tmp, $!\n";
+                open ($FILE_tmp, '-|', $gunzip_tool, '-dc', $PB_reads_tmp) or die "Can't open file $PB_reads_tmp, $!\n";
             }
             elsif ($check_zip_long2 eq "bz2")
             {
@@ -2694,7 +2925,7 @@ COUNT_LINES_PB:
             my $FILE_LONG;
             if ($check_zip_long eq "gz")
             {
-                open ($FILE_LONG, '-|', 'gzip', '-dc', $PB_reads_tmp) or die "Can't open file $PB_reads_tmp, $!\n";
+                open ($FILE_LONG, '-|', $gunzip_tool, '-dc', $PB_reads_tmp) or die "Can't open file $PB_reads_tmp, $!\n";
             }
             elsif ($check_zip_long2 eq "bz2")
             {
@@ -3072,6 +3303,197 @@ mce_child
     }
 };
 
+# Estimates the bp in a read file, in all reads and in reads of at least $min_len bp, from its first 8 MB
+# (decompressed for .gz) and its size on disk. Returns () when no complete read is found.
+sub estimate_read_bp
+{
+    my ($file, $gunzip_tool, $min_len) = @_;
+    my $sample_bytes = 8000000;
+    my $file_size = -s $file;
+    return () unless (defined($file_size) && $file_size > 0);
+    my $gz = "";
+    $gz = "yes" if (substr($file, -2) eq "gz");
+    my $FILE_SAMPLE;
+    if ($gz eq "yes")
+    {
+        # The first bytes of a .gz decompress on their own; the read cut off at the end is dropped below
+        open($FILE_SAMPLE, '-|', "head -c ".$sample_bytes." ".$file." | ".$gunzip_tool." -dc 2>/dev/null") or return ();
+    }
+    else
+    {
+        open($FILE_SAMPLE, '<', $file) or return ();
+    }
+    my @lines;
+    my $bytes_read = 0;
+    while (my $line = <$FILE_SAMPLE>)
+    {
+        push @lines, $line;
+        $bytes_read += length($line);
+        last if ($gz eq "" && $bytes_read >= $sample_bytes);
+    }
+    close $FILE_SAMPLE;
+    return () if (@lines < 2);
+
+    # fastq or fasta: the same test as the read parser
+    my $second_line = $lines[1];
+    chomp $second_line;
+    my $third_line = "";
+    $third_line = $lines[2] if (@lines > 2);
+    chomp $third_line;
+    my $lines_per_read = 2;
+    if ($third_line eq "+" || (substr($third_line, 0, 1) eq "+" && length($third_line) < (length($second_line)-10)))
+    {
+        $lines_per_read = 4;
+    }
+    my $bytes_complete = 0;
+    my $bp = 0;
+    my $bp_selected = 0;
+    for (my $i = 0; $i+$lines_per_read <= @lines; $i += $lines_per_read)
+    {
+        last if (substr($lines[$i+$lines_per_read-1], -1) ne "\n");
+        foreach my $j ($i..$i+$lines_per_read-1)
+        {
+            $bytes_complete += length($lines[$j]);
+        }
+        next if (substr($lines[$i], 0, 10) eq "fastq_fail");
+        my $seq = $lines[$i+1];
+        chomp $seq;
+        $bp += length($seq);
+        $bp_selected += length($seq) if (length($seq) >= $min_len);
+    }
+    return () if ($bp == 0 || $bytes_complete == 0);
+    my $compressed_read = $bytes_read;
+    if ($gz eq "yes")
+    {
+        $compressed_read = $sample_bytes;
+        $compressed_read = $file_size if ($file_size < $sample_bytes);
+    }
+    my $total_bp = $file_size*($bytes_read/$compressed_read)*($bp/$bytes_complete);
+    return ($total_bp, $total_bp*$bp_selected/$bp);
+}
+
+# Copies reads from the start of each file in @$files_ref into at most $pieces_max files
+# <$piece_path>stream_NNN.fasta, each with at most $limit/$pieces_max bp in reads of at least $min_len bp,
+# so the read parser's per-piece limit never cuts a piece. The reads are dealt to the pieces in turn, so
+# every piece gets reads also when the input ends before $limit. A file is left once its share of $limit is
+# written: the part of $limit not yet used, in proportion to its estimated bp among the files still to read.
+# Returns (a file was left before its end, pieces written, bp written in reads of at least $min_len bp).
+sub stream_read_pieces
+{
+    my ($files_ref, $estimated_ref, $limit, $min_len, $pieces_max, $piece_path, $gunzip_tool) = @_;
+    my $piece_cap = $limit/$pieces_max;
+    my @piece_fh;          # a piece's file is opened when it gets its first read
+    my @piece_bp;          # bp in reads >= $min_len per piece
+    my $piece_next = 0;    # the piece whose turn it is
+    my $pieces = 0;
+    my $used_bp = 0;
+    my $left_early = "";
+    my $estimated_left = 0;
+    foreach my $file (@$files_ref)
+    {
+        $estimated_left += $estimated_ref->{$file};
+    }
+STREAM_FILE:
+    foreach my $file (@$files_ref)
+    {
+        my $share = $limit-$used_bp;
+        if ($estimated_left > 0)
+        {
+            $share = ($limit-$used_bp)*$estimated_ref->{$file}/$estimated_left;
+        }
+        $estimated_left -= $estimated_ref->{$file};
+        my $file_bp = 0;
+        my $FILE_IN;
+        if (substr($file, -2) eq "gz")
+        {
+            open($FILE_IN, '-|', $gunzip_tool, '-dc', $file) or die "Can't open file $file, $!\n";
+        }
+        else
+        {
+            open($FILE_IN, '<', $file) or die "Can't open file $file, $!\n";
+        }
+        my @read_lines;
+        while (@read_lines < 3)
+        {
+            my $line = <$FILE_IN>;
+            last unless (defined($line));
+            push @read_lines, $line;
+        }
+        my $second_line = "";
+        $second_line = $read_lines[1] if (@read_lines > 1);
+        chomp $second_line;
+        my $third_line = "";
+        $third_line = $read_lines[2] if (@read_lines > 2);
+        chomp $third_line;
+        my $lines_per_read = 2;
+        if ($third_line eq "+" || (substr($third_line, 0, 1) eq "+" && length($third_line) < (length($second_line)-10)))
+        {
+            $lines_per_read = 4;
+        }
+STREAM_READ:
+        while (1)
+        {
+            while (@read_lines < $lines_per_read)
+            {
+                my $line = <$FILE_IN>;
+                last unless (defined($line));
+                push @read_lines, $line;
+            }
+            last STREAM_READ if (@read_lines == 0);
+            my @read_tmp = splice(@read_lines, 0, $lines_per_read);
+            my $length_tmp = 0;
+            if (@read_tmp == $lines_per_read && substr($read_tmp[0], 0, 10) ne "fastq_fail")
+            {
+                my $seq = $read_tmp[1];
+                chomp $seq;
+                $length_tmp = length($seq);
+                $length_tmp = 0 if ($length_tmp < $min_len);
+            }
+            my $piece_tmp = $piece_next;
+            if ($length_tmp > 0)
+            {
+                if ($file_bp >= $share)
+                {
+                    $left_early = "yes";
+                    last STREAM_READ;
+                }
+                # the first piece from its turn on with room for this read
+                my $tries = 0;
+                while ($tries < $pieces_max && defined($piece_bp[$piece_tmp]) && $piece_bp[$piece_tmp] > 0 && $piece_bp[$piece_tmp]+$length_tmp > $piece_cap)
+                {
+                    $piece_tmp = ($piece_tmp+1) % $pieces_max;
+                    $tries++;
+                }
+                if ($tries >= $pieces_max)
+                {
+                    $left_early = "yes";
+                    close $FILE_IN;
+                    last STREAM_FILE;
+                }
+                $piece_next = ($piece_tmp+1) % $pieces_max;
+            }
+            unless (defined($piece_fh[$piece_tmp]))
+            {
+                my $piece_file = $piece_path."stream_".sprintf("%03d", $piece_tmp+1).".fasta";
+                open($piece_fh[$piece_tmp], '>', $piece_file) or die "\nCan't open file $piece_file, $!\n";
+                $piece_bp[$piece_tmp] = 0;
+                $pieces++;
+            }
+            print {$piece_fh[$piece_tmp]} @read_tmp;
+            $piece_bp[$piece_tmp] += $length_tmp;
+            $file_bp += $length_tmp;
+            $used_bp += $length_tmp;
+        }
+        # For a .gz this stops the decompression where the reading stopped
+        close $FILE_IN;
+    }
+    foreach my $fh (@piece_fh)
+    {
+        close $fh if (defined($fh));
+    }
+    return ($left_early, $pieces, $used_bp);
+}
+
 sub syscmd {
     my $cmd = shift;
     return unless $cmd;
@@ -3172,13 +3594,13 @@ $| = 1;
 select(STDOUT); # default
 $| = 1;
 
-print "\nPrepare seeds...";
-print OUTPUT4 "\nPrepare seeds...";
+print "\nPrepare seeds...\n";
+print OUTPUT4 "\nPrepare seeds...\n";
 
 my %reads_as_seeds;
 undef %reads_as_seeds;
 my $type0 = $type;
-if ($type eq "plant_mito" && $chloro_file_check eq "")
+if ($type eq "mito_plant" && $chloro_file_check eq "")
 {
     $type = "chloro";
 }
@@ -3188,6 +3610,10 @@ my $space_at_end2 = "";
 my $id_line = "";
 my %seeds_list;
 undef %seeds_list;
+# Seed id of a start read -> [id and sequence of the seed the read was found with, read id]. When that start read is
+# rejected, its %seeds_list entry goes back to this seed, so the next start read is never searched with the rejected read.
+my %seed_query_of;
+undef %seed_query_of;
 my %seeds_list_sorted;
 undef %seeds_list_sorted;
 my $count_seeds0 = '0';
@@ -3275,13 +3701,44 @@ if ($extend_seed_directly eq "")
     }
     elsif ($type eq "mito" && $seed_input eq "")
     {
-        $seed_input = $seed_mito_parasite;
-        $id_tmp = "COI_Anilocra";
+        # Default mito seeds: the COI panel shipped with NANOPlasty (resources/mito_seeds.fasta),
+        # searched as one multi-FASTA query. The built-in Homo sapiens COI is the fallback when the
+        # file is missing.
+        my ($panel_tmp, $panel_count_tmp, $panel_file_tmp) = mito_seed_panel();
+        if ($panel_count_tmp > 0)
+        {
+            $seed_input = $panel_tmp;
+            $id_tmp = "mito_seeds";
+            print OUTPUT4 "\nSeed: ".$panel_count_tmp." COI seeds from ".$panel_file_tmp.", searched as one query\n";
+        }
+        else
+        {
+            $seed_input = $seed_mito_h_sapiens;
+            $id_tmp = "COI_Homo_sapiens";
+            print OUTPUT4 "\nSeed: resources/mito_seeds.fasta not found next to the script, using the built-in Homo sapiens COI\n";
+        }
     }
     elsif ($type eq "chloro" && $seed_input eq "")
     {
-        $seed_input = $Seed_RUBP_spermatopsida_zea_mays;
-        $id_tmp = "RUBP_zea_mays";
+        # Default chloroplast seeds: the rbcL panel in resources/chloro_seeds.fasta, searched as one
+        # multi-FASTA query. Without the file the built-in rbcL seeds are tried one after another.
+        # chloro_seeds.fasta is chloro_seeds.fasta plus the built-in Zea mays and Arabidopsis thaliana
+        # rbcL: without a flowering plant in the panel, one matched the moss seed at only ~84 % and a
+        # contaminant closer to its own seed got the start (CRR1105811: a green alga at 88 %). Both seeds also
+        # find rbcL copies in mitogenomes; seed_panel_vote skips candidate reads that carry a mito gene.
+        my ($panel_tmp, $panel_count_tmp, $panel_file_tmp) = resource_seed_fasta("chloro_seeds.fasta");
+        if ($panel_count_tmp > 0)
+        {
+            $seed_input = $panel_tmp;
+            $id_tmp = "chloro_seeds";
+            print OUTPUT4 "\nSeed: ".$panel_count_tmp." rbcL seeds from ".$panel_file_tmp.", searched as one query\n";
+        }
+        else
+        {
+            $seed_input = $Seed_RUBP_spermatopsida_zea_mays;
+            $id_tmp = "RUBP_zea_mays";
+            print OUTPUT4 "\nSeed: resources/chloro_seeds.fasta not found next to the script, using the built-in rbcL seeds\n";
+        }
     }
     elsif ($type eq "chloro" && $seed_input eq $Seed_RUBP_spermatopsida_zea_mays)
     {
@@ -3293,15 +3750,15 @@ if ($extend_seed_directly eq "")
         $seed_input = $Seed_RUBP_chlorophyta_floydiella_terrestris;
         $id_tmp = "RUBP_chlorophyta";
     }
-    elsif ($type eq "plant_mito")
+    elsif ($type eq "mito_plant")
     {
-        foreach my $seed_plant_mito (sort keys %plant_mito_seeds)
+        foreach my $seed_mito_plant (sort keys %mito_plant_seeds)
         {
-            $id_tmp = $seed_plant_mito;
-            $seed_input = $plant_mito_seeds{$seed_plant_mito};
+            $id_tmp = $seed_mito_plant;
+            $seed_input = $mito_plant_seeds{$seed_mito_plant};
             last;
         }
-        delete $plant_mito_seeds{$id_tmp};
+        delete $mito_plant_seeds{$id_tmp};
     }
     my $seed_input_read = "";
     my $seed_read_id_tmp = "";
@@ -3310,15 +3767,50 @@ if ($extend_seed_directly eq "")
     # seed-read-vs-raw-assembly check below can cut the region around the seed out of the read.
     my $seed_read_pos_start_tmp = '0';
     my $seed_read_pos_end_tmp = '0';
+    # A seed without sequence cannot find a read. It comes from a contig that assembled nothing,
+    # whose backward seed is then empty. blastn stops on it with "Query is Empty!" and writes no
+    # results, so DB_RESULTS_SEED below waited for them for ever. Go on with the next seed instead.
+    my $seed_length_tmp = 0;
+    foreach my $seed_line_tmp (split /\n/, $seed_input)
+    {
+        next if substr($seed_line_tmp, 0, 1) eq ">";
+        $seed_line_tmp =~ s/\s+//g;
+        $seed_length_tmp += length($seed_line_tmp);
+    }
+    if ($seed_length_tmp < 100)
+    {
+        print OUTPUT4 "\nSeed ".$id_tmp." has no sequence to search (".$seed_length_tmp." bp), skipped\n";
+        if (keys %seeds_list > 0)
+        {
+            goto NEXT_SEED;
+        }
+        goto NEXT_MITO_PLANT_READ;
+    }
     my $query_seed_DB = $TMP_directory."query_seed_".$id_tmp.".fasta";
+    # The seed searched with, before a seed panel's id is replaced by the name of the best matching seed
+    my $query_seed_id_tmp = $id_tmp;
+    my $query_seed_input_tmp = $seed_input;
     
     my %output_files_DB_seed;
     undef %output_files_DB_seed;
     open(INPUT_QUERY_SEED, ">" .$query_seed_DB) or die "\nCan't open file $query_seed_DB, $!\n";
     print INPUT_QUERY_SEED $seed_input;        
     close INPUT_QUERY_SEED;       
+    # A multi-FASTA query (the mito or chloro seed panel) is searched in one go. Its hits are collected
+    # and the start read is chosen by seed_panel_vote() once all DB parts are read, not hit by hit.
+    my $seed_panel_query = "";
+    if (($type eq "mito" || $type eq "chloro") && substr($seed_input, 0, 1) eq ">")
+    {
+        $seed_panel_query = "yes";
+    }
+    my $seed_panel_voted = "";
+    my %seed_panel_hits;
+    undef %seed_panel_hits;
+    # Best hit (bit score) of every read, so a seed panel can be named after the seed that matches
+    # the chosen start read best.
+    my %seed_best_hit;
     
-    if (-s $final_assembly_file && $type eq "plant_mito")
+    if (-s $final_assembly_file && $type eq "mito_plant")
     {           
         my $file_tmp = $output_path."blast_seed_input_test_".$id_tmp.".txt";
         my $command = "blastn -task dc-megablast -query ".$query_seed_DB." -subject ".$final_assembly_file." -out ".$file_tmp." -outfmt 7";
@@ -3329,42 +3821,29 @@ NEXT_SEED_FINAL_CHECK0:
         {
             open(SEED_TEST5, $file_tmp) or die "\nCan't open file $file_tmp, $!\n";
             
-            my $count_lines_tmp = '1';
             while (my $line_tmp = <SEED_TEST5>)
             {
                 chomp($line_tmp);
-                if ($count_lines_tmp eq '4' && $line_tmp eq "# 0 hits found")
-                {
-                    close SEED_TEST5;
-                    goto NEXT_SEED_FINAL_CHECK0b;
-                }
-                elsif ($count_lines_tmp eq '5' && $line_tmp eq "# BLAST processed 1 queries")
-                {
-                    close SEED_TEST5;
-                    $count_tmp2++;
-                    goto NEXT_SEED_FINAL_CHECK0;
-                }
-                elsif ($count_lines_tmp > 5)
-                {
-                    my @line_tmp = split /\t/, $line_tmp;
-                    my $accuracy_tmp = $line_tmp[2];
-                    my $alignment_length = $line_tmp[3];
+                # A multi-seed query (a mito_plant seed panel) writes one block per seed, so read
+                # every hit line instead of stopping at the first block's "# 0 hits found".
+                next if ($line_tmp eq "" || substr($line_tmp, 0, 1) eq "#");
+                my @line_tmp = split /\t/, $line_tmp;
+                my $accuracy_tmp = $line_tmp[2];
+                my $alignment_length = $line_tmp[3];
 
-                    if ($accuracy_tmp > 70 && $alignment_length > 250)
+                if ($accuracy_tmp > 70 && $alignment_length > 250)
+                {
+                    close SEED_TEST5;
+                    #print OUTPUT4 $line_tmp." MATCH_SEED\n";
+                    if (keys %mito_plant_seeds > 0)
                     {
-                        close SEED_TEST5;
-                        #print OUTPUT4 $line_tmp." MATCH_SEED\n";
-                        if (keys %plant_mito_seeds > 0)
-                        {
-                            goto NEXT_SEED;
-                        }
-                        else
-                        {
-                            goto END_LAST;
-                        }
-                    }  
-                }
-                $count_lines_tmp++;
+                        goto NEXT_SEED;
+                    }
+                    else
+                    {
+                        goto END_LAST;
+                    }
+                }  
             }
             close SEED_TEST5;
         }
@@ -3380,7 +3859,9 @@ NEXT_SEED_FINAL_CHECK0b:
     foreach my $pid_tmp (keys %ret_data_NP)
     {
         my $file_tmp = $TMP_directory."blast_tmp_DB_seed_".$id_tmp."_".$pid_tmp.".txt";
-        my $command_DB = "blastn -query ".$query_seed_DB." -db ".$ret_data_NP{$pid_tmp}." -out ".$file_tmp." -outfmt 7 -num_threads 2 &";
+        # A new search for a rejected start read uses the same file names: the previous results must not be read
+        unlink $file_tmp;
+        my $command_DB = "blastn -task dc-megablast -query ".$query_seed_DB." -db ".$ret_data_NP{$pid_tmp}." -out ".$file_tmp." -outfmt 7 -num_threads 2 &";
         syscmd($command_DB);             
         $output_files_DB_seed{$file_tmp} = undef;
     }
@@ -3398,26 +3879,17 @@ DB_RESULTS_SEED1:
             while (my $line_tmp = <BLAST_RESULTS_DB_SEED>)
             {
                 chomp($line_tmp);
-                if ($count_lines_tmp eq '4' && $line_tmp eq "# 0 hits found")
-                {
-                    delete $output_files_DB_seed{$blast_db_results_tmp};
-                    close BLAST_RESULTS_DB_SEED;
-                    next DB_RESULTS_SEED;
-                }
-                elsif ($count_lines_tmp eq '5' && $line_tmp eq "# BLAST processed 1 queries")
-                {
-                    delete $output_files_DB_seed{$blast_db_results_tmp};
-                    close BLAST_RESULTS_DB_SEED;
-                    next DB_RESULTS_SEED;
-                }
-                elsif ($count_lines_tmp > 5 && $line_tmp eq "# BLAST processed 1 queries" && $file_complete eq "")
+                # The file is complete once blastn has written "# BLAST processed N queries". A
+                # multi-seed query writes one block per seed, so "# 0 hits found" on line 4 only
+                # says the first seed had no hits, and N is the number of seeds, not 1.
+                if ($line_tmp =~ m/^# BLAST processed \d+ quer/ && $file_complete eq "")
                 {
                     $file_complete = "yes";
                     delete $output_files_DB_seed{$blast_db_results_tmp};
                     close BLAST_RESULTS_DB_SEED;
                     goto DB_RESULTS_SEED1;
                 }
-                elsif ($count_lines_tmp > 5 && $file_complete eq "yes")
+                elsif ($file_complete eq "yes" && $line_tmp ne "" && substr($line_tmp, 0, 1) ne "#")
                 {
                     my @line_tmp = split /\t/, $line_tmp;
                     my $id_tmp = $line_tmp[1];
@@ -3434,19 +3906,40 @@ DB_RESULTS_SEED1:
                     {
                         next;
                     }
+                    if (!exists($seed_best_hit{$id_tmp}) || $line_tmp[11] > (split /\t/, $seed_best_hit{$id_tmp})[11])
+                    {
+                        $seed_best_hit{$id_tmp} = $line_tmp;
+                    }
+                    if ($seed_panel_query eq "yes" && $seed_panel_voted eq "")
+                    {
+                        if ($accuracy_tmp > 70)
+                        {
+                            push @{$seed_panel_hits{$line_tmp[0]}}, $line_tmp;
+                        }
+                        next;
+                    }
                     if ($accuracy_tmp > 70 && (($alignment_length > $longest_coverage+50 && ($accuracy_tmp > $highest_accuracy-2 || $alignment_length > 2*$longest_coverage))
-                        || ($accuracy_tmp > $highest_accuracy+1 && $alignment_length > $longest_coverage*0.95) || $type eq "plant_mito"))
+                        || ($accuracy_tmp > $highest_accuracy+1 && $alignment_length > $longest_coverage*0.95) || $type eq "mito_plant"))
                     {
                         my @split_tmp = split /a/, $id_tmp;
                         my $output_file_NP1  = $tmp_sequences_directory_NP.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_NP_".$id_tmp.".fasta";
                         open(OUTPUT_LONG_NP4, $output_file_NP1) or die "\nCan't open file $output_file_NP1, $!\n";
                         my $seed_input_read_tmp = <OUTPUT_LONG_NP4>;
                         close OUTPUT_LONG_NP4;
+                        # A plant mito start read is used whole. A foldback read (one molecule read on both strands
+                        # in a row, its second half the reverse complement of the first) starts every seed on it from
+                        # the same place, so only one half is used (the one with the best seed hit).
+                        if ($type eq "mito_plant")
+                        {
+                            my @best_hit_tmp = exists($seed_best_hit{$id_tmp}) ? (split /\t/, $seed_best_hit{$id_tmp}) : ();
+                            my ($best_start_tmp, $best_end_tmp) = @best_hit_tmp > 9 ? ($best_hit_tmp[8], $best_hit_tmp[9]) : ($read_pos_start_tmp, $read_pos_end_tmp);
+                            ($seed_input_read_tmp) = start_read_fold_part($seed_input_read_tmp, $id_tmp, $read_pos_start_tmp, $read_pos_end_tmp, $best_start_tmp, $best_end_tmp, \%start_read_fold, $TMP_directory."start_read_fold_".$id_tmp);
+                        }
                         if (length($seed_input_read_tmp) > 650)
                         {       
                             $backup_reads{$alignment_length}{$accuracy_tmp} = $id_tmp."_".$read_pos_start_tmp."_".$read_pos_end_tmp;
                             
-                            if ($type ne "plant_mito" || (($alignment_length > $longest_coverage+50 && ($accuracy_tmp > $highest_accuracy-2 || $alignment_length > 2*$longest_coverage))
+                            if ($type ne "mito_plant" || (($alignment_length > $longest_coverage+50 && ($accuracy_tmp > $highest_accuracy-2 || $alignment_length > 2*$longest_coverage))
                                 || ($accuracy_tmp > $highest_accuracy+1 && $alignment_length > $longest_coverage*0.95)
                                 || (length($seed_input_read_tmp) > length($seed_input_read)+500 && $accuracy_tmp > $highest_accuracy-2 && $alignment_length > $longest_coverage*0.97)))
                             {
@@ -3518,17 +4011,37 @@ DB_RESULTS_SEED1:
     {
         goto DB_RESULTS_SEED;
     }
- NEXT_PLANT_MITO_READ:   
+    if ($seed_panel_query eq "yes" && $seed_panel_voted eq "")
+    {
+        # With all seeds pooled, the read that matches some seed best need not be the sample's:
+        # a contaminant close to one of the reference species would win. The reads decide
+        # instead (see seed_panel_vote), and the winner's hit goes through the code above.
+        $seed_panel_voted = "yes";
+        my $vote_file_tmp = seed_panel_vote(\%seed_panel_hits, \%ret_data_NP, $TMP_directory, $tmp_sequences_directory_NP, $output_path_test, $id_tmp, ($type eq "chloro" ? "yes" : ""));
+        if ($vote_file_tmp ne "")
+        {
+            $output_files_DB_seed{$vote_file_tmp} = undef;
+            goto DB_RESULTS_SEED;
+        }
+    }
+ NEXT_MITO_PLANT_READ:   
     if ($seed_input_read eq "")
     {
-        if ($type eq "plant_mito" && keys %plant_mito_seeds > 0)
+        if ($type eq "mito_plant" && keys %mito_plant_seeds > 0)
         {
             goto NEXT_SEED;
         }
-        if ($type eq "chloro" && $seed_input ne $Seed_RUBP_chlorophyta_floydiella_terrestris)
+        # The chloro seed panel already holds every seed, so after it there is no next one to try
+        if ($type eq "chloro" && $seed_input ne $Seed_RUBP_chlorophyta_floydiella_terrestris && substr($seed_input, 0, 1) ne ">")
         {
             print OUTPUT4 "\nTry next seed!\n";
             $seed_input0 = "";
+            # Only the built-in seeds have a next one (Zea mays -> Arabidopsis -> Floydiella). A seed from the
+            # config has none, so NEXT_SEED searched the same sequence again, for ever. Start the default seeds.
+            if ($seed_input ne $Seed_RUBP_spermatopsida_zea_mays && $seed_input ne $Seed_rbcl_arabidopsis)
+            {
+                $seed_input = "";
+            }
             goto NEXT_SEED;
         }
         print "\nNo reads found that match with this seed!\n";
@@ -3541,7 +4054,7 @@ DB_RESULTS_SEED1:
         delete $backup_reads{$longest_coverage}{$highest_accuracy};
     }
     
-    if ($type eq "plant_mito" && $chloro_file ne "")
+    if ($type eq "mito_plant" && $chloro_file ne "" && -s $chloro_file)
     {
         # Always query with the sequence that will actually seed the assembly ($seed_input_read),
         # capped at its terminal 20 kb, and measure the coverage bar against the length of what is
@@ -3593,7 +4106,7 @@ CHLORO_SEED_FINAL_CHECK0:
                     {
                         close SEED_TEST6;
                         #print OUTPUT4 $line_tmp." MATCH_SEED2 (".$alignment_length."/".$seed_chloro_query_length." at ".$accuracy_tmp."%)\n";
-                        if (keys %plant_mito_seeds > 0)
+                        if (keys %mito_plant_seeds > 0)
                         {
                             goto NEXT_SEED;
                         }
@@ -3615,7 +4128,7 @@ CHLORO_SEED_FINAL_CHECK0:
     }
     CHLORO_SEED_FINAL_CHECK0b:
 
-    if ($type eq "plant_mito" && -s $final_assembly_file && $seed_read_pos_start_tmp > 0)
+    if ($type eq "mito_plant" && -s $final_assembly_file && $seed_read_pos_start_tmp > 0)
     {
         # Stricter second pass of the NEXT_SEED_FINAL_CHECK0 test at the top of this block. That one
         # only asks whether the gene seed has any hit in the raw assembly; here the read that was
@@ -3688,6 +4201,15 @@ RAS_BACKUP_READ:
                         open(OUTPUT_LONG_NP4, $output_file_NP1) or die "\nCan't open file $output_file_NP1, $!\n";
                         my $seed_input_read_tmp = <OUTPUT_LONG_NP4>;
                         close OUTPUT_LONG_NP4;
+                        # A plant mito start read is used whole. A foldback read (one molecule read on both strands
+                        # in a row, its second half the reverse complement of the first) starts every seed on it from
+                        # the same place, so only one half is used (the one with the best seed hit).
+                        if ($type eq "mito_plant")
+                        {
+                            my @best_hit_tmp = exists($seed_best_hit{$id_tmp}) ? (split /\t/, $seed_best_hit{$id_tmp}) : ();
+                            my ($best_start_tmp, $best_end_tmp) = @best_hit_tmp > 9 ? ($best_hit_tmp[8], $best_hit_tmp[9]) : ($read_pos_start_tmp, $read_pos_end_tmp);
+                            ($seed_input_read_tmp) = start_read_fold_part($seed_input_read_tmp, $id_tmp, $read_pos_start_tmp, $read_pos_end_tmp, $best_start_tmp, $best_end_tmp, \%start_read_fold, $TMP_directory."start_read_fold_".$id_tmp);
+                        }
                         my $seed_input_read_tmp2 = "";
                         if (length($seed_input_read_tmp) > $genome_range_low && $genome_range_low > 6500)
                         {
@@ -3720,9 +4242,9 @@ RAS_BACKUP_READ:
                 # non-empty is not proof that a candidate was found - only the flag is.
                 if ($ras_backup_found eq "yes")
                 {
-                    goto NEXT_PLANT_MITO_READ;
+                    goto NEXT_MITO_PLANT_READ;
                 }
-                elsif (keys %plant_mito_seeds > 0)
+                elsif (keys %mito_plant_seeds > 0)
                 {
                     goto NEXT_SEED;
                 }
@@ -3734,7 +4256,7 @@ RAS_BACKUP_READ:
         }
     }
 
-    if ($type eq "plant_mito" && $plant_mito_db ne "")
+    if ($type eq "mito_plant" && $mito_plant_db ne "")
     {
         # Verify the chosen seed read is mitochondrial at BOTH terminal ends (same >5000 bp terminal
         # non-mito test as the per-read check during extension). A read whose end runs into non-mito
@@ -3750,13 +4272,13 @@ RAS_BACKUP_READ:
         if (length($pm_seed_seq) > 5000)
         {
             my $pm_win = 5001;
-            my $pm_seed_fa  = $TMP_directory."plantmito_seedcheck_".$seed_read_id_tmp.".fasta";
-            my $pm_seed_out = $TMP_directory."plantmito_seedcheck_".$seed_read_id_tmp.".txt";
+            my $pm_seed_fa  = $TMP_directory."mito_plant_seedcheck_".$seed_read_id_tmp.".fasta";
+            my $pm_seed_out = $TMP_directory."mito_plant_seedcheck_".$seed_read_id_tmp.".txt";
             open(my $PM_SFA, ">", $pm_seed_fa) or print OUTPUT4 "Can't open ".$pm_seed_fa."\n";
             print $PM_SFA ">H\n".(substr $pm_seed_seq, 0, $pm_win)."\n";
             print $PM_SFA ">T\n".(substr $pm_seed_seq, -$pm_win)."\n";
             close $PM_SFA;
-            my $pm_seed_rc = system("blastn -task dc-megablast -query ".$pm_seed_fa." -db ".$plant_mito_db." -out ".$pm_seed_out." -outfmt \"6 qseqid qstart qend\" -evalue 1e-2 -num_threads 4 -max_target_seqs 50 -dust no");
+            my $pm_seed_rc = system("blastn -task dc-megablast -query ".$pm_seed_fa." -db ".$mito_plant_db." -out ".$pm_seed_out." -outfmt \"6 qseqid qstart qend\" -evalue 1e-2 -num_threads 4 -max_target_seqs 50 -dust no");
             my %pm_seed_hit;
             my %pm_seed_iv;
             if ($pm_seed_rc == 0 && -s $pm_seed_out)
@@ -3777,11 +4299,11 @@ RAS_BACKUP_READ:
                 # A window counts as mito when the merged query coverage of ALL its HSPs reaches the
                 # threshold; overlapping HSPs are counted once. A terminal window that matches the db
                 # in several separate chunks now passes, where a single-HSP test would have failed it.
-                my $pm_seed_thr = $plant_mito_terminal_frac*$pm_win;
+                my $pm_seed_thr = $mito_plant_terminal_frac*$pm_win;
                 foreach my $pm_q ("H", "T")
                 {
                     my $pm_seed_cov = exists $pm_seed_iv{$pm_q} ? pp_covered_len($pm_seed_iv{$pm_q}) : 0;
-                    #print OUTPUT4 $seed_read_id_tmp." ".$pm_q." ".$pm_seed_cov."/".$pm_win." PLANT_MITO_SEED_COV thr=".int($pm_seed_thr)."\n";
+                    #print OUTPUT4 $seed_read_id_tmp." ".$pm_q." ".$pm_seed_cov."/".$pm_win." MITO_PLANT_SEED_COV thr=".int($pm_seed_thr)."\n";
                     $pm_seed_hit{$pm_q} = undef if $pm_seed_cov >= $pm_seed_thr;
                 }
             }
@@ -3789,7 +4311,7 @@ RAS_BACKUP_READ:
             unlink $pm_seed_out;
             if ($pm_seed_rc == 0 && (!exists $pm_seed_hit{"H"} || !exists $pm_seed_hit{"T"}))
             {
-                #print OUTPUT4 "\n".$seed_read_id_tmp." PLANT_MITO_SEED_REJECT (terminal end not mito); trying another seed.\n";
+                #print OUTPUT4 "\n".$seed_read_id_tmp." MITO_PLANT_SEED_REJECT (terminal end not mito); trying another seed.\n";
                 my $pm_backup_found = "";
 PM_BACKUP_READ:
                 foreach my $alignment_length_tmp (sort {$b <=> $a} keys %backup_reads)
@@ -3802,6 +4324,15 @@ PM_BACKUP_READ:
                         open(OUTPUT_LONG_NP4, $output_file_NP1) or die "\nCan't open file $output_file_NP1, $!\n";
                         my $seed_input_read_tmp = <OUTPUT_LONG_NP4>;
                         close OUTPUT_LONG_NP4;
+                        # A plant mito start read is used whole. A foldback read (one molecule read on both strands
+                        # in a row, its second half the reverse complement of the first) starts every seed on it from
+                        # the same place, so only one half is used (the one with the best seed hit).
+                        if ($type eq "mito_plant")
+                        {
+                            my @best_hit_tmp = exists($seed_best_hit{$id_tmp}) ? (split /\t/, $seed_best_hit{$id_tmp}) : ();
+                            my ($best_start_tmp, $best_end_tmp) = @best_hit_tmp > 9 ? ($best_hit_tmp[8], $best_hit_tmp[9]) : ($read_pos_start_tmp, $read_pos_end_tmp);
+                            ($seed_input_read_tmp) = start_read_fold_part($seed_input_read_tmp, $id_tmp, $read_pos_start_tmp, $read_pos_end_tmp, $best_start_tmp, $best_end_tmp, \%start_read_fold, $TMP_directory."start_read_fold_".$id_tmp);
+                        }
                         my $seed_input_read_tmp2 = "";
                         if (length($seed_input_read_tmp) > $genome_range_low && $genome_range_low > 6500)
                         {
@@ -3836,9 +4367,9 @@ PM_BACKUP_READ:
                 # $seeds_list{$id_tmp} below once all backups had been consumed.
                 if ($pm_backup_found eq "yes")
                 {
-                    goto NEXT_PLANT_MITO_READ;
+                    goto NEXT_MITO_PLANT_READ;
                 }
-                elsif (keys %plant_mito_seeds > 0)
+                elsif (keys %mito_plant_seeds > 0)
                 {
                     goto NEXT_SEED;
                 }
@@ -3850,6 +4381,26 @@ PM_BACKUP_READ:
         }
     }
 
+    # A seed panel (multi-FASTA query) is named after the seed that matches the start read best, so
+    # the contigs and the log say which reference the assembly started from. The mito vote already
+    # logs that seed. mito_plant keeps its gene names (atp6, 18S, ...) and only logs the seed.
+    if (substr($seed_input, 0, 1) eq ">" && exists($seed_best_hit{$seed_read_id_tmp}))
+    {
+        my @best_tmp = split /\t/, $seed_best_hit{$seed_read_id_tmp};
+        if ($type ne "mito")
+        {
+            print OUTPUT4 "Best matching seed: ".$best_tmp[0]." (read ".$seed_read_id_tmp.", ".$best_tmp[2]." % over ".$best_tmp[3]." bp)\n";
+        }
+        if ($id_tmp eq "mito_seeds" || $id_tmp eq "chloro_seeds")
+        {
+            $id_tmp = $best_tmp[0];
+        }
+    }
+    if ($type eq "mito_plant" && $seed_read_id_tmp ne "" && exists($start_read_fold{$seed_read_id_tmp}) && $start_read_fold{$seed_read_id_tmp} ne "")
+    {
+        print OUTPUT4 "Start read ".$seed_read_id_tmp." folds back on itself at ".$start_read_fold{$seed_read_id_tmp}." bp; only one half is used (".length($seed_input_read)." bp)\n";
+    }
+    $seed_query_of{$id_tmp} = [$query_seed_id_tmp, $query_seed_input_tmp, $seed_read_id_tmp];
     $seeds_list{$id_tmp} = $seed_input_read;
     $seeds_list_sorted{$count_seeds0} = $id_tmp;
     $y{$id_tmp} = '1';
@@ -3873,8 +4424,8 @@ undef %split_contigs_ends;
 my %contig_connections;
 undef %contig_connections;
 
-print "...OK\n\n";
-print OUTPUT4 "...OK\n\n";
+#print "...OK\n\n";
+#print OUTPUT4 "...OK\n\n";
 
 FIRST_SEED:
 
@@ -4322,6 +4873,8 @@ CHECK_DBs_PB:
                 
                 foreach my $del_file_tmp (keys %delete_input_files)
                 {
+                    # Reads were capped and the depth isn't checked yet: a depth restart may still need the unzipped copy
+                    next if (exists($kept_unzipped_reads{$del_file_tmp}) && $been_reduced ne "" && $restart_check eq "");
                     unlink  $del_file_tmp;
                 }
                 
@@ -6407,7 +6960,8 @@ AVERAGE_LENGTH_PB:
 					}
                     goto SKIP_CONFIRMED_PB;
 				}
-                if ($y eq "1" && $count_matches_with_high_scores < 6 && ($first_back_assembly eq "" || length($read) < 5000) && (keys %rejected_read_ids < 3 || $restart_check eq "yes") && $extend_seed_directly eq "")
+                # Not for a backward or split contig (b, c2, c3, ...): its seed is assembled sequence, not a start read that could be replaced.
+                if ($y eq "1" && $count_matches_with_high_scores < 6 && $first_back_assembly eq "" && !exists($split_contig_ids{$id}) && (keys %rejected_read_ids < 3 || $restart_check eq "yes") && $extend_seed_directly eq "")
                 {
                     print OUTPUT4 "READ_REJECTED3\n";
                     $first_back_assembly = "yes";
@@ -6420,8 +6974,9 @@ AVERAGE_LENGTH_PB:
 					if ($sequencing_depth_PB < 20 && $been_reduced ne "")
 					{
 						my $increase_tmp = 50/$sequencing_depth_PB;
-						$plant_mito_limit *= $increase_tmp;
+						$mito_plant_limit *= $increase_tmp;
 						$chloro_limit *= $increase_tmp;
+						$mito_limit *= $increase_tmp;
 						$sequencing_depth_PB = '50';
 						remove_dir($directory_DB_PB);
 						remove_dir($tmp_sequences_directory_PB);
@@ -6436,6 +6991,12 @@ AVERAGE_LENGTH_PB:
 				elsif ($sequencing_depth_PB ne "")
 				{
 					$restart_check = "yes";
+					# No depth restart from here on: the unzipped reads kept for it can go
+					foreach my $file_tmp (keys %kept_unzipped_reads)
+					{
+						unlink $file_tmp;
+					}
+					undef %kept_unzipped_reads;
 				}
                 
                 if ($count_matches_with_high_scores < 3  && $full_reset_PB eq "" && $new_contig_check eq "")
@@ -8915,7 +9476,10 @@ POST_SNP_PATTERNS_TMP_PB: foreach my $pos_tmp (sort {$a <=> $b} keys %SNP_patter
 						{
 							print {$filehandle{$seed_id2}} $post_pattern_match." POST_PATTERN_MATCH\n";
 						}
-                        if ($y eq "1" && $post_pattern_match eq "yes3")
+                        # Not for a backward or split contig (b, c2, c3, ...): its seed is assembled sequence, not a start read that could
+                        # be replaced. Rejecting one restarted through NEXT_SEED, which also dropped the split contigs still waiting to be
+                        # extended (CRR1105804, CRR1105808).
+                        if ($y eq "1" && $post_pattern_match eq "yes3" && $first_back_assembly eq "" && !exists($split_contig_ids{$id}))
                         {
                             print OUTPUT4 "READ_REJECTED2\n";
                             $first_back_assembly = "yes";
@@ -10148,7 +10712,7 @@ READ_PATTERN_FINAL_PB:              	foreach my $rank_tmp (sort {$a <=> $b} keys
 						if (($post_pattern_match eq "yes2" || $post_pattern_match eq "yes3" || $SNP_check eq "yes2") &&
                             $post_pattern_match_average eq "yes" && $post_pattern_match_extra eq "yes" && $remove_reads eq "" && $find_haps_in_seed eq "")
                         {
-                            if ($type eq "plant_mito" && length($read)-$original_seed_length{$id} < 5000 && ($first_back_assembly eq "" || length($read) < 5000))
+                            if ($type eq "mito_plant" && length($read)-$original_seed_length{$id} < 5000 && ($first_back_assembly eq "" || length($read) < 5000))
 							{
 								#print "READ_REJECTED4\n";
 								#print {$filehandle{$seed_id2}} "READ_REJECTED4\n";
@@ -12474,12 +13038,12 @@ SEP_HAP_END_PB:
 						$y{$id} = $y;
 						goto FULL_RESET;
                     }
-					elsif (($post_pattern_match eq "yes3" && $SNR_read_ahead eq "" && ($N_resolved > length($best_extension)*0.01 || $N_resolved > 5) && $trace_back_check eq "" && $post_pattern_match_count > 2 && $find_haps_in_seed eq "") && $first_back_assembly eq "")
+					elsif ($post_pattern_match eq "yes3" && $SNR_read_ahead eq "" && ($N_resolved > length($best_extension)*0.01 || $N_resolved > 5) && $trace_back_check eq "" && $post_pattern_match_count > 2 && $find_haps_in_seed eq "")
                     {					
 						print {$filehandle{$seed_id2}} $best_extension." LAST_EXTENSION_PB\n";
 						$unresolvable_PB = "yes";
 #Split into contigs---------------------------------------------------------------------------------------------------------------
-						if ($total_nuc_count > 8 && keys %split_patterns_final_score > 1)
+						if ($total_nuc_count > 8 && keys %split_patterns_final_score > 1 && $first_back_assembly eq "")
 						{
 							my $new_contig_seed = substr $read, -$lowest_longest_match, $lowest_longest_match;
 							
@@ -16151,7 +16715,8 @@ AVERAGE_LENGTH_NP:
                     undef %double_matches;
                     goto SKIP_CONFIRMED_NP;
                 }
-                if ($y eq "1" && $count_matches_with_high_scores < 5 && ($first_back_assembly eq "" || length($read) < 5000) && (keys %rejected_read_ids < 3 || $restart_check ne "") && $extend_seed_directly eq "")
+                # Not for a backward or split contig (b, c2, c3, ...): its seed is assembled sequence, not a start read that could be replaced.
+                if ($y eq "1" && $count_matches_with_high_scores < 5 && $first_back_assembly eq "" && !exists($split_contig_ids{$id}) && (keys %rejected_read_ids < 3 || $restart_check ne "") && $extend_seed_directly eq "")
                 {
                     print OUTPUT4 "READ_REJECTED3\n";
                     $first_back_assembly = "yes";
@@ -16163,10 +16728,17 @@ AVERAGE_LENGTH_NP:
 					$sequencing_depth_NP = $count_matches_with_high_scores;
 					if ($sequencing_depth_NP < 20 && $been_reduced ne "")
 					{
-						my $increase_tmp = 50/$sequencing_depth_NP;
-                        print OUTPUT4 $increase_tmp." INCREASE_SUBSAMPLED_FRACTION\n";
-						$plant_mito_limit *= $increase_tmp;
+						my $increase_tmp = '50';
+                        if ($sequencing_depth_NP ne '0')
+                        {
+                            $increase_tmp =  50/$sequencing_depth_NP;
+                        }
+                        
+                        print OUTPUT4 "\nNot enough sequencing depth: ".$sequencing_depth_NP."\n";
+                        print OUTPUT4 $increase_tmp." Increase Subsampled Fraction\n";
+						$mito_plant_limit *= $increase_tmp;
 						$chloro_limit *= $increase_tmp;
+						$mito_limit *= $increase_tmp;
 						$sequencing_depth_NP = '50';
 						remove_dir($directory_DB_NP);
 						remove_dir($tmp_sequences_directory_NP);
@@ -16182,6 +16754,12 @@ AVERAGE_LENGTH_NP:
 				elsif ($sequencing_depth_NP ne "")
 				{
 					$restart_check = "yes";
+					# No depth restart from here on: the unzipped reads kept for it can go
+					foreach my $file_tmp (keys %kept_unzipped_reads)
+					{
+						unlink $file_tmp;
+					}
+					undef %kept_unzipped_reads;
 				}
                 
 				if ($count_matches_with_high_scores < 5  && $full_reset_NP eq "" && $new_contig_check eq "")
@@ -16790,7 +17368,7 @@ MISMATCH_RETRY_NP:
 				
 #Check assembled reads -----------------------------------------------------------------------------------------------------            
 							
-				if ($vv eq '1' && $type eq "plant_mito")
+				if ($vv eq '1' && $type eq "mito_plant")
 				{
 					my $count_ass1 = '0';
 					my $count_ass2 = '0';
@@ -16828,7 +17406,7 @@ MISMATCH_RETRY_NP:
 						$check_circular = "";
 					}
 				}
-				if ($type eq "plant_mito")
+				if ($type eq "mito_plant")
 				{
 					foreach my $id58 (keys %reads_as_seeds_tmp)
 					{
@@ -18311,7 +18889,7 @@ SWITCH_CLIP_NP:
 					my $vv = '0.79';
 					my $vv2 = '0.84';
 					my $vv3 = '0.19';
-                    if ($type ne "plant_mito")
+                    if ($type ne "mito_plant")
                     {
                         $vv = '0.68';
 					    $vv2 = '0.74';
@@ -18321,7 +18899,7 @@ SWITCH_CLIP_NP:
 						$vv = '0.83';
 						$vv2 = '0.88';
 						$vv3 = '0.14';
-                        if ($type ne "plant_mito")
+                        if ($type ne "mito_plant")
                         {
                             $vv = '0.74';
                             $vv2 = '0.79';
@@ -18337,8 +18915,7 @@ SWITCH_CLIP_NP:
 						$vv2 = '0.74';
 					}
 ADD_QUALITY_NP:                  
-                    if ((($nucs{"a"} > $total_nuc_count*$vv || ($nucs{"a"} > $total_nuc_count*0.49 && $PB_reads eq "" && $input_reads_DB_folder_PB eq "" && $only_2_reads eq "yes" && ($nuc1 eq 'a' || $nuc1 eq "-"))
-					   || ($nucs{"a"} > $total_nuc_count*0.55 && $nucs{"a"} > $total_nuc_count-2))
+                    if ((($nucs{"a"} > $total_nuc_count*$vv || ($nucs{"a"} > $total_nuc_count*0.49 && $PB_reads eq "" && $input_reads_DB_folder_PB eq "" && $only_2_reads eq "yes" && ($nuc1 eq 'a' || $nuc1 eq "-")) || ($nucs{"a"} > $total_nuc_count*0.55 && $nucs{"a"} > $total_nuc_count-2))
                        && ($nucs{"a"} > $total_nuc_count*$vv2 || $total_nuc_count < 15 || $count_matches_with_high_scores < $sequencing_depth_NP*2 || $nuc_top10 ne "no"))
 					   || ($nucs{"a"} > $total_nuc_count*0.7 && $nucs{"c"} < $total_nuc_count*$vv3 && $nucs{"t"} < $total_nuc_count*$vv3 && $nucs{"g"} < $total_nuc_count*$vv3 && $nucs{"-"} < $total_nuc_count*($vv3+0.01)))
                     {
@@ -19553,7 +20130,10 @@ POST_SNP_PATTERNS_TMP_NP: foreach my $pos_tmp (sort {$a <=> $b} keys %SNP_patter
 						{
 							print {$filehandle{$seed_id2}} $post_pattern_match." POST_PATTERN_MATCH\n";
 						}
-						if ($y eq "1" && $post_pattern_match eq "yes3")
+						# Not for a backward or split contig (b, c2, c3, ...): its seed is assembled sequence, not a start read that could
+						# be replaced. Rejecting one restarted through NEXT_SEED, which also dropped the split contigs still waiting to be
+						# extended (CRR1105804, CRR1105808).
+						if ($y eq "1" && $post_pattern_match eq "yes3" && $first_back_assembly eq "" && !exists($split_contig_ids{$id}))
                         {
                             print OUTPUT4 "READ_REJECTED2\n";
                             $first_back_assembly = "yes";
@@ -20090,27 +20670,27 @@ HIGHEST_RANK_NP:
 								}
 							}
                             
-#Check plant mito reads against database-----------------------------------------------------------------------------------------------------------------------------------------------
+#Check mito_plant reads against database-----------------------------------------------------------------------------------------------------------------------------------------------
                            
-                            if ($type eq "plant_mito" && $plant_mito_db ne "" && $post_pattern_match eq "yes3")
+                            if ($type eq "mito_plant" && $mito_plant_db ne "" && $post_pattern_match eq "yes3")
                             {
                                 # Reject candidate reads that carry a >5000 bp non-mito stretch at a terminal end (leading or
                                 # trailing) - likely nuclear/chimeric reads that would drag the assembly out of the mito genome.
                                 # Two speedups vs a full-read scan: (1) memoize - a read's mito status is intrinsic and never
-                                # changes, so each read is checked at most once (%plant_mito_read_checked); (2) only BLAST the
+                                # changes, so each read is checked at most once (%mito_plant_read_checked); (2) only BLAST the
                                 # terminal ~5 kb window of each end instead of the whole (up to ~150 kb) read - a window with no
                                 # mito hit means that end's non-mito gap is >5000 bp.
                                 my $pm_win = 5001;
-                                my $pm_reads_fa  = $TMP_directory."plantmito_readcheck_".$seed_id2.".fasta";
-                                my $pm_reads_out = $TMP_directory."plantmito_readcheck_".$seed_id2.".txt";
+                                my $pm_reads_fa  = $TMP_directory."mito_plant_readcheck_".$seed_id2.".fasta";
+                                my $pm_reads_out = $TMP_directory."mito_plant_readcheck_".$seed_id2.".txt";
                                 my %pm_this;
-                                print {$filehandle{$seed_id2}} "PLANT_MITO_READ_CHECK\n";
+                                print {$filehandle{$seed_id2}} "MITO_PLANT_READ_CHECK\n";
                                 
                                 open(my $PM_FA, ">", $pm_reads_fa) or print {$filehandle{$seed_id2}} "Can't open ".$pm_reads_fa."\n";
                                 foreach my $rank_tmp9 (keys %subject_list)
                                 {
                                     my $pm_id = $rank_to_id{$rank_tmp9};
-                                    next if exists $rejected_read_ids{$pm_id} || exists $plant_mito_read_checked{$pm_id};
+                                    next if exists $rejected_read_ids{$pm_id} || exists $mito_plant_read_checked{$pm_id};
                                     my $pm_seq = $hash_NP_reads_tmp{$pm_id};
                                     next unless defined $pm_seq && $pm_seq ne "";
                                     $pm_seq =~ s/\s+//g;
@@ -20120,16 +20700,16 @@ HIGHEST_RANK_NP:
                                     print $PM_FA ">T_".$pm_id."\n".(substr $pm_seq, -$pm_win)."\n";
                                 }
                                 close $PM_FA;
+                                my $pm_thr = $mito_plant_terminal_frac*$pm_win;
                                 if (keys %pm_this > 0)
                                 {
-                                    my $pm_rc = system("blastn -task dc-megablast -query ".$pm_reads_fa." -db ".$plant_mito_db." -out ".$pm_reads_out." -outfmt \"6 qseqid qstart qend\" -evalue 1e-2 -num_threads 4 -max_target_seqs 50 -dust no");
+                                    my $pm_rc = system("blastn -task dc-megablast -query ".$pm_reads_fa." -db ".$mito_plant_db." -out ".$pm_reads_out." -outfmt \"6 qseqid qstart qend\" -evalue 1e-2 -num_threads 4 -max_target_seqs 50 -dust no");
                                     if ($pm_rc == 0)
                                     {
                                         # A window counts as mito when the merged query coverage of ALL its HSPs reaches
                                         # the threshold; overlapping HSPs are counted once. A terminal window that matches
                                         # the db in several separate chunks now passes, where a single-HSP test failed it.
                                         my %pm_cov;
-                                        my $pm_thr = $plant_mito_terminal_frac*$pm_win;
                                         if (-s $pm_reads_out)
                                         {
                                             my %pm_iv;
@@ -20150,25 +20730,91 @@ HIGHEST_RANK_NP:
                                         }
                                         foreach my $pm_id (keys %pm_this)
                                         {
-                                            $plant_mito_read_checked{$pm_id} = undef;
+                                            $mito_plant_read_checked{$pm_id} = undef;
                                             my $pm_cov_H = exists $pm_cov{"H_".$pm_id} ? $pm_cov{"H_".$pm_id} : 0;
                                             my $pm_cov_T = exists $pm_cov{"T_".$pm_id} ? $pm_cov{"T_".$pm_id} : 0;
                                             if ($pm_cov_H < $pm_thr || $pm_cov_T < $pm_thr)
                                             {
-                                                $rejected_read_ids{$pm_id} = undef;
-                                                $remove_reads = "yes";
-                                                $reads_to_remove{$id_to_rank{$pm_id}} = undef;
-                                                print {$filehandle{$seed_id2}} $id_to_rank{$pm_id}." ".$pm_id." PLANT_MITO_READ_REJECT H=".$pm_cov_H." T=".$pm_cov_T."/".$pm_win." thr=".int($pm_thr)."\n";
+                                                $mito_plant_read_failed{$pm_id} = "H=".$pm_cov_H." T=".$pm_cov_T;
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        print {$filehandle{$seed_id2}} "PLANT_MITO_CHECK blastn failed rc=".$pm_rc."\n";
+                                        print {$filehandle{$seed_id2}} "MITO_PLANT_CHECK blastn failed rc=".$pm_rc."\n";
                                     }
                                 }
                                 unlink $pm_reads_fa;
                                 unlink $pm_reads_out;
+                                # The failing reads among the current ones: those found now and those kept at an
+                                # earlier split of this contig (a read is only BLASTed once).
+                                my %pm_fail;
+                                foreach my $rank_tmp9 (keys %subject_list)
+                                {
+                                    my $pm_id = $rank_to_id{$rank_tmp9};
+                                    next unless defined $pm_id && exists $mito_plant_read_failed{$pm_id};
+                                    next if exists $rejected_read_ids{$pm_id};
+                                    $pm_fail{$pm_id} = $mito_plant_read_failed{$pm_id};
+                                }
+                                if (keys %pm_fail > 0)
+                                {
+                                    # The reads are grouped by split option. An option has a mito match when at least
+                                    # one of its reads passes. When no option has one, rejecting the reads would end
+                                    # the contig here, also where the region only lacks homologs in the db. Keep them
+                                    # all and handle the split as for the other types, so both options are assembled.
+                                    my $pm_options = 0;
+                                    my $pm_options_mito = 0;
+                                    foreach my $pm_nuc (keys %split_patterns_final_score)
+                                    {
+                                        my $pm_option_reads = 0;
+                                        my $pm_option_pass = 0;
+                                        foreach my $pm_rank (keys %{$split_patterns_final_score{$pm_nuc}})
+                                        {
+                                            my $pm_id = $rank_to_id{$pm_rank};
+                                            next unless defined $pm_id;
+                                            next if exists $rejected_read_ids{$pm_id};
+                                            $pm_option_reads++;
+                                            $pm_option_pass++ unless exists $pm_fail{$pm_id};
+                                        }
+                                        next if $pm_option_reads == 0;
+                                        $pm_options++;
+                                        $pm_options_mito++ if $pm_option_pass > 0;
+                                    }
+                                    if ($pm_options > 1 && $pm_options_mito == 0)
+                                    {
+                                        my $pm_fail_count = keys %pm_fail;
+                                        print {$filehandle{$seed_id2}} $pm_fail_count." MITO_PLANT_SPLIT_NO_MITO (".$pm_options." options, none with a mito read; no read rejected)\n";
+                                    }
+                                    else
+                                    {
+                                        # Keep at least 3 reads. The terminal test also fails mito reads whose ends have no
+                                        # homolog in the db (wheat: 10 of 12 reads rejected at one split mapped end to end to
+                                        # the mitogenome), and with fewer reads left the split cannot be resolved.
+                                        my $pm_keep = 0;
+                                        foreach my $rank_tmp9 (keys %subject_list)
+                                        {
+                                            my $pm_id = $rank_to_id{$rank_tmp9};
+                                            next unless defined $pm_id;
+                                            next if exists $rejected_read_ids{$pm_id};
+                                            $pm_keep++ unless exists $pm_fail{$pm_id};
+                                        }
+                                        if ($pm_keep < 3)
+                                        {
+                                            my $pm_fail_count = keys %pm_fail;
+                                            print {$filehandle{$seed_id2}} $pm_fail_count." MITO_PLANT_TOO_FEW_LEFT (".$pm_keep." reads would remain; no read rejected)\n";
+                                        }
+                                        else
+                                        {
+                                            foreach my $pm_id (keys %pm_fail)
+                                            {
+                                                $rejected_read_ids{$pm_id} = undef;
+                                                $remove_reads = "yes";
+                                                $reads_to_remove{$id_to_rank{$pm_id}} = undef;
+                                                print {$filehandle{$seed_id2}} $id_to_rank{$pm_id}." ".$pm_id." MITO_PLANT_READ_REJECT ".$pm_fail{$pm_id}."/".$pm_win." thr=".int($pm_thr)."\n";
+                                            }
+                                        }
+                                    }
+                                }
                                 if ($remove_reads eq "yes")
                                 {
                                     goto REMOVE_READS_NP;
@@ -23072,6 +23718,16 @@ REMAIN_REJ_NP:					foreach my $rank_tmp (sort {$a <=> $b} keys %split_patterns_f
            
                                 goto MISMATCH_RETRY_NP;
                             }
+                            else
+                            {
+                                # Nothing to realign with: no read was removed, or at most one is left. Cancel the removal
+                                # and call the base, as REMAIN_TOO_LOW does. Falling through left the removal pending, and
+                                # REMOVE_BY_AVERAGE_COUNT below asked for the same removal again, for ever.
+                                print {$filehandle{$seed_id2}} $removed_reads_tmp." REMOVE_NOTHING_LEFT\n";
+                                $remove_reads = "";
+                                undef %reads_to_remove;
+                                goto BASECALL2_NP;
+                            }
                         }
                         
                         if ($post_pattern_match eq "yes3" && $y > 10 && $count_matches_high_average_NP{$id} > 13 && $SNR_read_ahead eq "")
@@ -24452,7 +25108,7 @@ SEP_HAP_END:
 
 					if ($post_pattern_match eq "yes3" && $post_pattern_match_count > 2 && $find_haps_in_seed eq "")
 					{
-						if ($type eq "plant_mito" && length($read)-$original_seed_length{$id} < 5000 && ($first_back_assembly eq "" || length($read) < 5000))
+						if ($type eq "mito_plant" && length($read)-$original_seed_length{$id} < 5000 && ($first_back_assembly eq "" || length($read) < 5000))
 						{
 							#print "READ_REJECTED4\n";
 							#print {$filehandle{$seed_id2}} "READ_REJECTED4\n";
@@ -24749,14 +25405,12 @@ SEP_HAP_END:
 						goto AFTER_NEXT_MAFFT;
 					}
 					
-					if (($unresolvable_NP eq "yes2" || ($post_pattern_match eq "yes3" && ($trace_back_check eq "" || $post_pattern_match_count > 7) && $post_pattern_match_count > 5 && $find_haps_in_seed eq "" && $PB_reads eq ""
-						   && $input_reads_DB_folder_PB eq "" && $count_options > 1 && (length($best_extension) < 2000 || length($best_extension) < $length_extension*0.7) && ($SNR_read_ahead eq "" || $post_pattern_match_count > 10)))
-						&& $first_back_assembly eq "")
+					if ($unresolvable_NP eq "yes2" || ($post_pattern_match eq "yes3" && ($trace_back_check eq "" || $post_pattern_match_count > 7) && $post_pattern_match_count > 5 && $find_haps_in_seed eq "" && $PB_reads eq "" && $input_reads_DB_folder_PB eq "" && $count_options > 1 && (length($best_extension) < 2000 || length($best_extension) < $length_extension*0.7) && ($SNR_read_ahead eq "" || $post_pattern_match_count > 10)))
                     {					
 						print {$filehandle{$seed_id2}} $best_extension." LAST_EXTENSION\n";
 						$unresolvable_NP = "yes";					
 #Split into contigs---------------------------------------------------------------------------------------------------------------
-						if ($total_nuc_count > 8 && keys %split_patterns_final_score > 1 && $repetitive_detect2 eq "")
+						if ($total_nuc_count > 8 && keys %split_patterns_final_score > 1 && $repetitive_detect2 eq "" && $first_back_assembly eq "")
 						{						
 							my $gap_check = "";
 							$finished_reads_stop = "yes";
@@ -24795,7 +25449,7 @@ SEP_HAP_END:
 											}
 										}
 									}
-                                    if ($type ne "plant_mito" && $second_length_tmp > 5000)
+                                    if ($type ne "mito_plant" && $second_length_tmp > 5000)
                                     {
                                         $second_length_tmp = '5000';
                                     }
@@ -25069,7 +25723,7 @@ SEP_HAP_END:
 						$AF0 = 0.65;
 						$AF2 = 0.68;
 					}
-					if ($type ne "plant_mito" && $AF0 > 0.63 && $high_quality_ONT ne "yes")
+					if ($type ne "mito_plant" && $AF0 > 0.63 && $high_quality_ONT ne "yes")
                     {
                         $AF0 = 0.63;
 						$AF2 = 0.66;
@@ -25377,7 +26031,8 @@ TRACE_BACK_POS_NEW_NP:		foreach my $pos_tmpi (sort {$b <=> $a} keys %{$trace_bac
 				
 				if (length($best_extension) < $length_extension-$extension_part_length && $unresolvable_NP eq "" && $loop_check eq "yes")
 				{
-					if ($y eq "1" && length($best_extension) eq '0' && ($first_back_assembly eq "" || length($read) < 5000))
+					# Not for a backward or split contig (b, c2, c3, ...): its seed is assembled sequence, not a start read that could be replaced.
+					if ($y eq "1" && length($best_extension) eq '0' && $first_back_assembly eq "" && !exists($split_contig_ids{$id}))
 					{
 						print OUTPUT4 "READ_REJECTED4\n";
 						$first_back_assembly = "yes";
@@ -26329,15 +26984,15 @@ AFTER_EXT:
             my $circle = "";
 			# --- plant-mitochondrial origin check ------------------------------------------------
 			# After 10 kb assembled (once) and then every +500 kb, BLAST the freshly assembled
-			# segment against the plant-mito db. A segment with essentially no mito homology means
+			# segment against the mito_plant db. A segment with essentially no mito homology means
 			# the seed has wandered into nuclear DNA -> discard this seed and continue with the next.
-			if ($type eq "plant_mito" && $plant_mito_db ne "")
+			if ($type eq "mito_plant" && $mito_plant_db ne "")
 			{
 				my $pm_assembled = length($read) - $original_seed_length{$id};
-				$plant_mito_next{$id} = 10000 unless defined $plant_mito_next{$id};
-				if ($pm_assembled >= $plant_mito_next{$id})
+				$mito_plant_next{$id} = 10000 unless defined $mito_plant_next{$id};
+				if ($pm_assembled >= $mito_plant_next{$id})
 				{
-					my $pm_from = defined($plant_mito_checked_pos{$id}) ? $plant_mito_checked_pos{$id} : 0;
+					my $pm_from = defined($mito_plant_checked_pos{$id}) ? $mito_plant_checked_pos{$id} : 0;
 					my $pm_seg = substr $read, $pm_from;   # newly assembled part (incl. seed on 1st check)
 					my $pm_seglen = length($pm_seg);
 					if ($pm_seglen >= 1000)
@@ -26346,9 +27001,10 @@ AFTER_EXT:
 						my $pm_o = $TMP_directory."pmito_check_".$id."_".$y.".txt";
 						open(my $PMQ, ">", $pm_q) or die "\nCan't open file $pm_q, $!\n";
 						print $PMQ ">seg\n".$pm_seg."\n"; close $PMQ;
-						syscmd("blastn -task dc-megablast -query ".$pm_q." -db ".$plant_mito_db." -out ".$pm_o." -outfmt \"6 qstart qend\" -evalue 1e-6 -max_target_seqs 50 -dust no");
+						# The exit code is checked: a failed search finds no hit either, and would discard a mito contig.
+						my $pm_seg_rc = system("blastn -task dc-megablast -query ".$pm_q." -db ".$mito_plant_db." -out ".$pm_o." -outfmt \"6 qstart qend\" -evalue 1e-6 -max_target_seqs 50 -dust no");
 						my $pm_cov = 0;
-						if (-s $pm_o)
+						if ($pm_seg_rc == 0 && -s $pm_o)
 						{
 							my @pm_iv;
 							open(my $PMR, "<", $pm_o) or die "\nCan't open file $pm_o, $!\n";
@@ -26357,10 +27013,14 @@ AFTER_EXT:
 							@pm_iv = sort { $a->[0] <=> $b->[0] } @pm_iv;
 							if (@pm_iv) { my ($cs,$ce) = @{$pm_iv[0]}; for my $i (1..$#pm_iv) { my ($s,$e) = @{$pm_iv[$i]}; if ($s <= $ce+1) { $ce = $e if $e > $ce } else { $pm_cov += $ce-$cs+1; ($cs,$ce) = ($s,$e) } } $pm_cov += $ce-$cs+1; }
 						}
-						my $pm_thr = $plant_mito_check_frac * $pm_seglen;
+						my $pm_thr = $mito_plant_check_frac * $pm_seglen;
 						$pm_thr = 700 if $pm_thr < 700;
-						print {$filehandle{$seed_id2}} $pm_cov."/".$pm_seglen." PLANT_MITO_CHECK thr=".int($pm_thr)."\n";
-						if ($pm_cov < $pm_thr)
+						print {$filehandle{$seed_id2}} $pm_cov."/".$pm_seglen." MITO_PLANT_CHECK thr=".int($pm_thr)."\n";
+						if ($pm_seg_rc != 0)
+						{
+							print {$filehandle{$seed_id2}} "MITO_PLANT_CHECK blastn failed rc=".$pm_seg_rc.", segment not checked\n";
+						}
+						elsif ($pm_cov < $pm_thr)
 						{
 							print OUTPUT4 "\n".$id.": assembled segment not of plant-mitochondrial origin (".$pm_cov."/".$pm_seglen." bp hit) -> discarded, next seed\n";
 							print "\n".$id.": not plant-mitochondrial (nuclear?) -> discarded, next seed\n";
@@ -26369,15 +27029,90 @@ AFTER_EXT:
 							goto END1;
 						}
 						# passed: schedule the next check +500 kb further on
-						$plant_mito_checked_pos{$id} = length($read);
-						$plant_mito_next{$id} = $pm_assembled + 500000;
+						$mito_plant_checked_pos{$id} = length($read);
+						$mito_plant_next{$id} = $pm_assembled + 500000;
+					}
+				}
+			}
+			# --- overlap stops -------------------------------------------------------------------------------
+			# Each time the part a contig assembled itself (beyond the seed it started from) has grown by an eighth
+			# of the limit, its end is compared with the contigs written so far and with the contig's own earlier
+			# sequence. Running along another contig for $overlap_stop_other{$type} bp, it stops: the overlap stays,
+			# for the merge step. Repeating an earlier part of itself that is not its start for $overlap_stop_self
+			# bp (a loop), it stops too, and the repeated copy is cut off.
+			if (!defined($overlap_check_from{$id}))
+			{
+				$overlap_check_from{$id} = length($read);
+			}
+			my $ov_limit = exists($overlap_stop_other{$type}) ? $overlap_stop_other{$type} : $overlap_stop_other{"mito_plant"};
+			my $ov_step = $ov_limit/8 > 1000 ? int($ov_limit/8) : 1000;
+			my $ov_new = length($read)-$overlap_check_from{$id};
+			if (!defined($overlap_check_next{$id}))
+			{
+				$overlap_check_next{$id} = $ov_limit;
+			}
+			if ($ov_new >= $overlap_check_next{$id})
+			{
+				$overlap_check_next{$id} = $ov_new+$ov_step;
+				if (-s $final_assembly_file)
+				{
+					my $ov_tol = $ov_limit/40 > 500 ? int($ov_limit/40) : 500;
+					my $ov_qlen = $ov_limit+2*$ov_step+2000;
+					$ov_qlen = $ov_new if ($ov_qlen > $ov_new);
+					my ($ov_status, $ov_len, $ov_contig) = contig_tail_overlap((substr $read, -$ov_qlen), $final_assembly_file, "", $ov_tol, $TMP_directory."overlap_".$id);
+					print {$filehandle{$seed_id2}} $ov_status." ".(defined($ov_len) ? $ov_len : "-")." ".(defined($ov_contig) ? $ov_contig : "-")." OVERLAP_CHECK\n";
+					if ($ov_status eq "ok" && $ov_len >= $ov_limit)
+					{
+						print {$filehandle{$seed_id2}} "\nSTOP_CONTIG, runs along ".$ov_contig." for ".$ov_len." bp\n\n";
+						print OUTPUT4 "\n".$id.": runs along ".$ov_contig." for ".$ov_len." bp -> stopped\n";
+						print "\n".$id.": runs along ".$ov_contig." for ".$ov_len." bp -> stopped\n";
+						$unresolvable_NP = "yes";
+						$best_extension = "";
+					}
+				}
+				if ($ov_new >= $overlap_stop_self && $unresolvable_NP ne "yes")
+				{
+					my $ov_tol_self = int($overlap_stop_self/40);
+					my $ov_qlen = $overlap_stop_self+2*$ov_step+5000;
+					$ov_qlen = $ov_new if ($ov_qlen > $ov_new);
+					my $ov_self_file = $TMP_directory."overlap_".$id."_self.fasta";
+					open(my $OV_SELF, ">", $ov_self_file) or die "\nCan't open file $ov_self_file, $!\n";
+					print $OV_SELF ">".$id."\n".$read."\n";
+					close $OV_SELF;
+					my ($ov_status, $ov_len, $ov_contig, $ov_qs, $ov_ss) = contig_tail_overlap((substr $read, -$ov_qlen), $ov_self_file, length($read)-$ov_qlen, $ov_tol_self, $TMP_directory."overlap_".$id."_self");
+					unlink $ov_self_file;
+					print {$filehandle{$seed_id2}} $ov_status." ".(defined($ov_len) ? $ov_len : "-")." ".(defined($ov_ss) ? $ov_ss : "-")." LOOP_CHECK\n";
+					if ($ov_status eq "ok" && $ov_len >= $overlap_stop_self && $ov_ss > 1000)
+					{
+						my $ov_cut = length($read)-$ov_qlen+$ov_qs-1;
+						$ov_cut = $overlap_check_from{$id} if ($ov_cut < $overlap_check_from{$id});
+						print {$filehandle{$seed_id2}} "\nSTOP_CONTIG, repeats itself from ".$ov_ss." for ".$ov_len." bp, cut at ".$ov_cut."\n\n";
+						print OUTPUT4 "\n".$id.": repeats its own sequence from ".$ov_ss." bp for ".$ov_len." bp -> stopped, repeated copy cut off (".length($read)." -> ".$ov_cut." bp)\n";
+						print "\n".$id.": repeats its own sequence for ".$ov_len." bp -> stopped, repeated copy cut off\n";
+						$read = substr $read, 0, $ov_cut;
+						$position = length($read);
+						$position{$id} = $position;
+						$seed{$id} = $read;
+						$unresolvable_NP = "yes";
+						$best_extension = "";
 					}
 				}
 			}
 			my $circle_r = "";
 			my $circle_save = ""; 
-			if ((length($read)-$original_seed_length{$id} > $genome_range_low*0.95 || $check_circular eq "yes") && $circular eq "yes")
+			# mito_plant: a plant mitogenome is often several circular molecules, so a contig may close at any length,
+			# also below the genome range. There the start and end windows are kept apart, and a closure only counts
+			# when the contig end runs along the contig for 10 kb on the way into its start (circle_closure_check), so
+			# not just along a repeat.
+			my $circle_new_tmp = length($read)-$original_seed_length{$id};
+			my $circle_below_range = "";
+			if ($type eq "mito_plant" && $circle_new_tmp <= $genome_range_low*0.95 && $check_circular ne "yes" && $circle_new_tmp >= 1000)
 			{
+				$circle_below_range = "yes";
+			}
+			if (($circle_new_tmp > $genome_range_low*0.95 || $check_circular eq "yes" || $circle_below_range eq "yes") && $circular eq "yes")
+			{
+				my $read_before_circle = $circle_below_range eq "yes" ? $read : "";
 				print {$filehandle{$seed_id2}} length($read)." LENGTH_READ\n";
 				print {$filehandle{$seed_id2}} $original_seed_length{$id}." ORGI_LENGTH\n";
 
@@ -26389,6 +27124,13 @@ AFTER_EXT:
 				if (length($read)-$original_seed_length{$id} < 25000)
 				{
 					$length_match_tmp = '6000';
+				}
+				if ($circle_below_range eq "yes")
+				{
+					# 20 kb, so the start anchors stay in view while a contig without a seed runs the 10 kb along its start;
+					# the end window has to stay clear of the start anchors (30-175 bp after the seed)
+					$length_match_tmp = 20000;
+					$length_match_tmp = int(($circle_new_tmp-200)/2) if ($length_match_tmp > int(($circle_new_tmp-200)/2));
 				}
 				my $start_seq = substr $read, $original_seed_length{$id}, $length_match_tmp;
 				my $start_seq1 = substr $read, $original_seed_length{$id}+30, 25;
@@ -26417,7 +27159,8 @@ AFTER_EXT:
 					my $seq_test = substr $end_seq, -$r-25-30;
 					$circle = "maybe";
 					$circle_r = $r+25+30;
-					if ($start_seq =~ m/(.*.)$seq_test.*$/)
+					# (.*?): first occurrence, offset 0 included
+					if ($start_seq =~ m/(.*?)$seq_test.*$/)
 					{
 						$circle = "yes";
 						$r2 = length($1);
@@ -26437,7 +27180,7 @@ AFTER_EXT:
 					my $seq_test = substr $end_seq, -$r-25-100;
 					$circle = "maybe";
 					$circle_r = $r+25+100;
-					if ($start_seq =~ m/(.*.)$seq_test.*$/)
+					if ($start_seq =~ m/(.*?)$seq_test.*$/)
 					{
 						$circle = "yes";
 						$r2 = length($1);
@@ -26457,7 +27200,7 @@ AFTER_EXT:
 					my $seq_test = substr $end_seq, -$r-25-150;
 					$circle = "maybe";
 					$circle_r = $r+25+150;
-					if ($start_seq =~ m/(.*.)$seq_test.*$/)
+					if ($start_seq =~ m/(.*?)$seq_test.*$/)
 					{
 						$circle = "yes";
 						$r2 = length($1);
@@ -26476,7 +27219,7 @@ AFTER_EXT:
 					my $r2 = '0';
 					my $seq_test = substr $start_seq, 0, $r+25+30;
 					$circle = "maybe2";
-					$circle_r = $r+25+30;
+					$circle_r = $r+25+47;   # 47 bp follow the anchor (72-25)
 					if ($end_seq =~ m/.*.$seq_test(.*)$/)
 					{
 						$circle = "yes";
@@ -26495,7 +27238,7 @@ AFTER_EXT:
 					my $r2 = '0';
 					my $seq_test = substr $start_seq, 0, $r+25+100;
 					$circle = "maybe2";
-					$circle_r = $r+25+100;
+					$circle_r = $r+25+117;   # 117 bp follow the anchor (142-25)
 					if ($end_seq =~ m/.*.$seq_test(.*)$/)
 					{
 						$circle = "yes";
@@ -26514,7 +27257,7 @@ AFTER_EXT:
 					my $r2 = '0';
 					my $seq_test = substr $start_seq, 0, $r+25+150;
 					$circle = "maybe2";
-					$circle_r = $r+25+150;
+					$circle_r = $r+25+167;   # 167 bp follow the anchor (192-25)
 					if ($end_seq =~ m/.*.$seq_test(.*)$/)
 					{
 						$circle = "yes";
@@ -26556,7 +27299,7 @@ AFTER_EXT:
                 print  {$filehandle{$seed_id2}} $accuracy_tmp2." ACC\n";
                     chomp($seq_test_file);
                     chomp($ref_file);
-                    my $command = "blastn -query ".$seq_test_file." -subject ".$ref_file." -out ".$TMP_directory."blast_circle_tmp_".$id."_".$y.".txt -outfmt 7 -strand plus -perc_identity ".$accuracy_tmp2." -qcov_hsp_perc 99";
+                    my $command = "blastn -query ".$seq_test_file." -subject ".$ref_file." -out ".$TMP_directory."blast_circle_tmp_".$id."_".$y.".txt -outfmt \"7 std qseq sseq\" -strand plus -perc_identity ".$accuracy_tmp2." -qcov_hsp_perc 99";
                     syscmd($command);
 					
 					sleep(2);
@@ -26566,6 +27309,7 @@ AFTER_EXT:
 					{
 						open(BLAST_CIRCLE, $input_BLAST_tmp) or die "\nCan't open file $input_BLAST_tmp, $!\n";
 						my $count_lines_tmp = '1';
+						my @hit_tmp = ();
 						
 						while (my $line_tmp = <BLAST_CIRCLE>)
                         {
@@ -26577,17 +27321,54 @@ AFTER_EXT:
                             }
                             elsif ($count_lines_tmp > 5 && $line_tmp !~ /^#/)
                             {
-								my $read_new_temp = $read;
-								$read = substr $read_new_temp, $original_seed_length{$id}+$circle_r;
-								$circle_save = $original_seed_length{$id}+$circle_r;
-								$circle = "yes";
-
-									print {$filehandle{$seed_id2}} $line_tmp." LINE\n";
-									last;
+								# keep the hit that starts earliest in the start window, not the first one listed:
+								# with a repeat in the window the query can match more than once
+								my @h_tmp = split /\t/, $line_tmp;   # qstart qend sstart send = [6] [7] [8] [9], qseq sseq = [12] [13]
+								if (defined($h_tmp[13]))
+								{
+									@hit_tmp = @h_tmp if (!@hit_tmp || $h_tmp[8] < $hit_tmp[8]);
+									print {$filehandle{$seed_id2}} join("\t", @h_tmp[0..11])." LINE\n";
+								}
 							}
 							$count_lines_tmp++;
 						}
 						close BLAST_CIRCLE;
+						if (@hit_tmp)
+						{
+							# Trim by where the overlap ends in the start window, not by the query length: an indel
+							# in the overlap would shift the junction, and the query starts inside the overlap when
+							# the start anchor matched a repeat copy. The offset is read 30 aligned bases before the
+							# end of the hit, so a gap BLAST places in a noisy read end does not count.
+							my $trim_tmp = length($seq_test) + circle_diag($hit_tmp[12], $hit_tmp[13], $hit_tmp[7], $hit_tmp[9], "end");
+							my $read_new_temp = $read;
+							$read = substr $read_new_temp, $original_seed_length{$id}+$trim_tmp;
+							$circle_save = $original_seed_length{$id}+$trim_tmp;
+							$circle = "yes";
+							print {$filehandle{$seed_id2}} $trim_tmp." CIRCLE_TRIM\n";
+						}
+					}
+				}
+				if ($circle_below_range eq "yes" && ($circle eq "yes" || $circle eq "maybe" || $circle eq "maybe2"))
+				{
+					my ($cc_status, $cc_len, $cc_dup) = circle_closure_check($read_before_circle, $original_seed_length{$id}, $length_match_tmp, 10000, $TMP_directory."circle_close_".$id);
+					print {$filehandle{$seed_id2}} $circle." ".$cc_status." ".(defined($cc_len) ? $cc_len : "-")." ".(defined($cc_dup) ? $cc_dup : "-")." CIRCLE_CONFIRM\n";
+					if ($cc_status eq "ok" && $cc_len >= 10000 && $cc_dup > 0)
+					{
+						if ($circle ne "yes")
+						{
+							# the start anchor is there, but the end differs from the start in a few bases: cut where the match puts it
+							$read = substr $read_before_circle, $original_seed_length{$id}, length($read_before_circle)-$cc_dup-$original_seed_length{$id};
+							$circle_save = $original_seed_length{$id};
+							$circle = "yes";
+						}
+					}
+					else
+					{
+						# not confirmed (the end runs along the start for less than 10 kb, as along a repeat): the contig goes on
+						$read = $read_before_circle;
+						$circle = "";
+						$circle_save = "";
+						print {$filehandle{$seed_id2}} "CIRCLE_NOT_CONFIRMED\n";
 					}
 				}
 				# --- corrective full-overlap circular trim -------------------------------------
@@ -26611,7 +27392,7 @@ AFTER_EXT:
 						open(my $CCQ, ">", $cc_query) or die "\nCan't open file $cc_query, $!\n";
 						print $CCQ ">tail\n".$cc_tail."\n";  close $CCQ;
 						syscmd("blastn -query ".$cc_query." -subject ".$cc_ref." -out ".$cc_out.
-						       " -outfmt \"6 length pident qstart qend sstart send\" -strand plus -perc_identity 90 -dust no");
+						       " -outfmt \"6 length pident qstart qend sstart send qseq sseq\" -strand plus -perc_identity 90 -dust no");
 						my $cc_trim = 0;
 						if (-s $cc_out)
 						{
@@ -26619,13 +27400,17 @@ AFTER_EXT:
 							while (my $cl = <$CCR>)
 							{
 								chomp $cl;
-								my ($clen,$cpid,$cqs,$cqe,$css,$cse) = split /\t/, $cl;
-								next unless defined $cse;
+								my ($clen,$cpid,$cqs,$cqe,$css,$cse,$cqa,$csa) = split /\t/, $cl;
+								next unless defined $csa;
 								# junction HSP: aligns the very start of the head (sstart ~ 1) and runs
 								# to the very end of the tail (qend ~ cwin) on the plus strand => the
-								# read's suffix duplicates its prefix by (cwin - qstart + 1) bp
-								next unless ($css <= 25 && $cqe >= $cwin-25);
-								my $t = $cwin - $cqs + 1;
+								# read's suffix duplicates its prefix by (cwin - qstart + sstart) bp, as the
+								# unmatched first (sstart - 1) bp of the head belong to the duplicate too;
+								# sstart - qstart is read 30 aligned bases into the HSP (circle_diag).
+								# Up to 25 bp may stay unmatched at either edge, or up to 100 bp (noisy
+								# contig ends) when the HSP itself is at least 100 bp.
+								next unless (($css <= 25 && $cqe >= $cwin-25) || ($css <= 100 && $cqe >= $cwin-100 && $clen >= 100));
+								my $t = $cwin + circle_diag($cqa, $csa, $cqs, $css, "start");
 								$cc_trim = $t if ($t > $cc_trim);
 							}
 							close $CCR;
@@ -26637,24 +27422,47 @@ AFTER_EXT:
 							print {$filehandle{$seed_id2}} $cc_trim." CIRCLE_CORR_TRIM\n";
 						}
 					}
+					# Exact end = start overlap of 12-200 bp, below what the BLAST above can find. Skipped
+					# when more than one length fits (a tandem repeat across the junction) or the overlap
+					# holds an N or IUPAC code.
+					my @ce_fit;
+					my $ce_max = 200;
+					$ce_max = int(length($read)/2) if ($ce_max > int(length($read)/2));
+					for (my $ce_k = 12; $ce_k <= $ce_max; $ce_k++)
+					{
+						my $ce_end = substr $read, -$ce_k;
+						push @ce_fit, $ce_k if ($ce_end eq substr($read, 0, $ce_k) && $ce_end !~ m/[^ACGT]/);
+					}
+					print {$filehandle{$seed_id2}} "CIRCLE_EXACT fits=".join(",", @ce_fit)."\n";
+					if (@ce_fit == 1)
+					{
+						$read = substr $read, 0, length($read)-$ce_fit[0];
+						print {$filehandle{$seed_id2}} $ce_fit[0]." CIRCLE_EXACT_TRIM\n";
+					}
 				}
 			}
 			if ($circle eq "yes")
 			{
+				if ($circle_below_range eq "yes")
+				{
+					print OUTPUT4 "\n".$id.": closes on its start at ".length($read)." bp, below the genome range\n";
+					print "\n".$id.": closes on its start at ".length($read)." bp, below the genome range\n";
+				}
 				print OUTPUT4 "\n".$id." assembly was circularized.\n\n";
+				$result_circular_contigs{$id} = undef;
 				print "\n".$id." assembly was circularized.\n\n";
 				print {$filehandle{$seed_id2}} "\n".$id." assembly was circularized.\n\n";
                 print {$filehandle{$seed_id2}} length($read)." bp.\n\n";
 				$first_back_assembly = "yes";
 				$assembly_finished = "yes";
-				if ($type eq "plant_mito")
+				if ($type eq "mito_plant")
 				{
 					# Reaching $genome_range_low is not a reason to stop here. The real size of a
 					# plant mitogenome is hard to estimate up front and the genome is often present
 					# as several circular molecules, so every remaining seed still has to be tried
 					# even when this circle is already above the minimum size. The seed and seed-read
 					# checks against the raw assembly discard the seeds that only rebuild this contig.
-					my $seed_count_tmp = keys %plant_mito_seeds;
+					my $seed_count_tmp = keys %mito_plant_seeds;
 					if ($seed_count_tmp > 0)
 					{
 						$assembly_finished = "";
@@ -26973,6 +27781,24 @@ LOWER_DD:
 				if ($first_back_assembly eq "" && $y < 3 && $circle ne "yes")
 				{		
 				}
+				# A contig that never got past its seed (a trim at a start sequence can cut it back into the seed) is empty
+				# once the seed is cut off. It was written as a 0 bp record, and its empty start sequence then matched every
+				# later extension, so each split contig after it stopped in its first round. It is dropped instead, and so
+				# are its branches in the tree: the link from the contig it split from, its END flags and its own splits.
+				if (length($read) > 1500 && $first_back_assembly eq "" && $original_seed_length{$id} >= length($read) && $circle ne "yes")
+				{
+					print {$filehandle{$seed_id2}} $original_seed_length{$id} ." ORGI_SEED_LENGTH\n";
+					print {$filehandle{$seed_id2}} "\nEMPTY_CONTIG, nothing assembled past the seed, contig dropped\n\n";
+					print OUTPUT4 "\n".$id.": nothing assembled past the seed -> no contig\n";
+					print "\n".$id.": nothing assembled past the seed -> no contig\n";
+					foreach my $tree_node_tmp (keys %tree)
+					{
+						delete $tree{$tree_node_tmp}{$id};
+					}
+					delete $tree{$id};
+					$read = "";
+					$original_seed_length{$id} = '0';
+				}
 				if (length($read) > 1500)
 				{
 					print {$filehandle{$seed_id2}} $original_seed_length{$id} ." ORGI_SEED_LENGTH\n";
@@ -26984,7 +27810,19 @@ LOWER_DD:
 					my $output_file7  = $output_path."tmp_assembly_".$project."_".$seed_id2.".fasta";
 					if ($circle eq "yes")
 					{
-						$output_file7  = $output_path."assembly_".$project."_option_1.fasta";
+						# Each circle gets its own option file. They were all written to _option_1, so a second circle
+						# (a plant mitogenome often has several) overwrote the first. Build_tree numbers on after them.
+						if (!exists($result_circle_option{$id}))
+						{
+							my $option_number_tmp = 1;
+							while (exists($result_option_files{$output_path."assembly_".$project."_option_".$option_number_tmp.".fasta"}))
+							{
+								$option_number_tmp++;
+							}
+							$result_circle_option{$id} = $output_path."assembly_".$project."_option_".$option_number_tmp.".fasta";
+						}
+						$output_file7 = $result_circle_option{$id};
+						$result_option_files{$output_file7} = undef;
 					}
 					
 					open(OUTPUT7, ">".$output_file7) or die "Can't open file $output_file7, $!\n";
@@ -27109,9 +27947,9 @@ if ($terminate_early eq "yes")
 }
 
 my $split_contigs_reads_count = keys %split_contigs_reads;
-my $seed_count_tmp = keys %plant_mito_seeds;
+my $seed_count_tmp = keys %mito_plant_seeds;
 
-if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "plant_mito" && $seed_count_tmp > 0) || $terminate_early eq "yes") && $assembly_finished eq "")
+if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "mito_plant" && $seed_count_tmp > 0) || $terminate_early eq "yes") && $assembly_finished eq "")
 {
 	$y = '1';
 	$find_haps_in_seed = "";
@@ -27162,18 +28000,34 @@ if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "
 	delete $exclude_reads_PB_back{$id};
 	delete $exclude_reads_NP_back{$id};
 	delete $track_coverage{$id};
+	delete $overlap_check_from{$id};
+	delete $overlap_check_next{$id};
 	$seed_id2 = "";
 	my $id_tmp5 = $id;
 	$id = "";
 	$assembly_finished = "";
-    undef %plant_mito_read_checked;
+    undef %mito_plant_read_checked;
+    undef %mito_plant_read_failed;
     if ($terminate_early ne "yes")
     {
         # Keep the rejection list when a seed was abandoned: it records both the seed reads
         # already tried (set where the seed read is picked, checked before re-using one) and
-        # the reads the plant-mito terminal check threw out. Wiping it made the next pass
+        # the reads the mito_plant terminal check threw out. Wiping it made the next pass
         # re-select the very same seed read.
         undef %rejected_read_ids;
+    }
+    # A rejected start read is never the query for the next one: the reads that match it best can lie anywhere
+    # on it. CRR1105806: the first start read was chimeric (plastid pieces, then non-plastid sequence), the reads
+    # found with it led to a start read in the inverted repeat without rbcL, and the SSC was never assembled.
+    # The entry goes back to the seed the read was found with: a seed panel votes again, a single seed is searched
+    # again. The reads already tried are in %rejected_read_ids and are skipped.
+    if ($terminate_early eq "yes" && exists($seed_query_of{$id_tmp5}))
+    {
+        my ($query_id_tmp, $query_seq_tmp, $read_id_tmp) = @{$seed_query_of{$id_tmp5}};
+        delete $seed_query_of{$id_tmp5};
+        delete $seeds_list{$id_tmp5};
+        $seeds_list{$query_id_tmp} = $query_seq_tmp;
+        print OUTPUT4 "\nStart read ".$read_id_tmp." rejected: the next start read is searched with ".$query_id_tmp." (reads already tried are skipped)\n";
     }
 
     # "Extend seed directly" skips the whole NEXT_SEED block, so this escape could not fetch a
@@ -27181,7 +28035,7 @@ if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "
     # SEED: and came straight back to END1 with $terminate_early still "yes" - the flag is only
     # cleared at FULL_RESET, past the escape - so it bounced here forever. Carry on with the
     # seeds that are left instead, and clear the flag so a second abandoned seed cannot bounce.
-    if ($terminate_early eq "yes" && $type ne "plant_mito" && $extend_seed_directly ne "")
+    if ($terminate_early eq "yes" && $type ne "mito_plant" && $extend_seed_directly ne "")
     {
         $terminate_early = "";
         $seed_input0 = "";
@@ -27191,15 +28045,23 @@ if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "
             goto FIRST_SEED;
         }
     }
-    elsif ($terminate_early eq "yes" && $type ne "plant_mito")
+    elsif ($terminate_early eq "yes" && $type ne "mito_plant")
     {
         $seed_input0 = "";
         goto NEXT_SEED;
     }
 
-	if ($first_back_assembly eq "" && ($check_start_seq eq "" || $type eq "plant_mito"))
+	# An empty contig (EMPTY_CONTIG above) has no start sequence to register and nothing to extend backward.
+	if ($first_back_assembly eq "" && ($check_start_seq eq "" || $type eq "mito_plant") && $read ne "")
 	{
 		$tree{$id_tmp5."b"}{"START"} = undef;
+		# Only the start sequences of the seed being assembled are kept: a contig no longer stops where it runs
+		# into a contig of another seed (the overlap check stops it once it runs along one for long).
+		if ($check_start_seq eq "")
+		{
+			undef %first_contig_start;
+			undef %first_contig_start_reverse;
+		}
 		my $read_tmp = reverse($read);
 		$read_tmp =~ tr/ACTG/TGAC/;
 		my $fb = '0';
@@ -27275,10 +28137,8 @@ if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "
 
 	foreach my $contig_number_tmp (sort {$a <=> $b} keys %split_contigs_reads)
 	{
-		print $contig_number_tmp." CONTIG_NUMBER\n";
 		foreach my $id_tmp (keys %{$split_contigs_reads{$contig_number_tmp}})
 		{
-			print $id_tmp." ID\n";
 			if (exists($first_back_assembly{$id_tmp}))
 			{
 				foreach my $new_contig_seed (keys %{$split_contigs_reads{$contig_number_tmp}{$id_tmp}})
@@ -27288,6 +28148,7 @@ if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "
 					{
 						#print $nuc_tmp." NEW_NUC_SPLITbbb\n";
 						$seeds_list{$id_tmp."c".$contig_number_tmp} = $new_contig_seed;
+						$split_contig_ids{$id_tmp."c".$contig_number_tmp} = undef;
 						$keep_track_of_reads_number++;
 						$seeds_list_sorted{$keep_track_of_reads_number."c".$contig_number_tmp} = $id_tmp."c".$contig_number_tmp;
 						$y{$id_tmp."c".$contig_number_tmp} = $y;
@@ -27322,7 +28183,11 @@ if (($split_contigs_reads_count > 0 || $first_back_assembly eq "" || ($type eq "
 						
 						my $id_tmp_tmp = $id_tmp;
 						my $contig_n_tmp = $contig_number_tmp-1;
-						my $id_tmp1 = substr $id_tmp_tmp, -1, 1, $contig_n_tmp;
+						# The id with its split number replaced by the one before it. The 4-argument substr returned the
+						# character it replaced, not the new id, so $id_tmp1 was one letter and excluded no contig. The
+						# whole number is replaced, so c10 and up work too.
+						my $id_tmp1 = $id_tmp_tmp;
+						$id_tmp1 =~ s/c\d+$/c$contig_n_tmp/;
 						my $count_contigs_tmp = '0';
 						foreach my $id_contigs (keys %split_contigs_ends)
 						{
@@ -27511,6 +28376,7 @@ NEXT_SEED_ACCEPT2b:
 						#print $id_tmp."c".$contig_number_tmp." NEW_ID2\n";
 						#print $nuc_tmp." NEW_NUC_SPLIT\n";
 						$seeds_list{$id_tmp."c".$contig_number_tmp} = $new_contig_seed;
+						$split_contig_ids{$id_tmp."c".$contig_number_tmp} = undef;
 						$keep_track_of_reads_number++;
 						$seeds_list_sorted{$keep_track_of_reads_number."c".$contig_number_tmp} = $id_tmp."c".$contig_number_tmp;
 						$contig_connections{$id_tmp}{$id_tmp."c".$contig_number_tmp} = undef;
@@ -27545,17 +28411,17 @@ NEXT_SEED_ACCEPT3:
 		}
 	}
 	
-	if ($type eq "plant_mito" && $seed_count_tmp > 0 && $assembly_finished eq "")
+	if ($type eq "mito_plant" && $seed_count_tmp > 0 && $assembly_finished eq "")
 	{
 		$check_start_seq = "";
 		goto NEXT_SEED;
 	}
-	# On the last built-in mito seed %plant_mito_seeds is empty, so the jump above no longer
+	# On the last built-in mito seed %mito_plant_seeds is empty, so the jump above no longer
 	# fires, but %seeds_list can still hold that seed for another read attempt. Keep going while
 	# it does; only leave once it is drained. Falling through instead would empty %seed, find no
 	# seed at SEED: and come straight back here - $terminate_early is cleared further down the
 	# seed setup, past that escape, so it would bounce forever.
-	if ($type eq "plant_mito" && $terminate_early eq "yes" && $assembly_finished eq "")
+	if ($type eq "mito_plant" && $terminate_early eq "yes" && $assembly_finished eq "")
 	{
 		if (keys %seeds_list > 0)
 		{
@@ -27589,6 +28455,14 @@ select(STDOUT); # default
 $| = 1;
 print "\nMerging contigs...";
 print OUTPUT4 "\nMerging contigs...";
+# No raw assembly (no seed read found, or nothing assembled): nothing to merge, and makeblastdb and
+# the open() below would fail on the missing file.
+if (!(-s $final_assembly_file))
+{
+    print "skipped, no assembly\n";
+    print OUTPUT4 "skipped, no assembly\n";
+    goto SKIP_MERGE;
+}
 
 my $length_seq = '1000';
 
@@ -27643,6 +28517,10 @@ if ($contig_id1 ne "")
 	$contigs{$contig_id1} = $contig_seq1;
 }
 close $FILE_ASS1;
+# Build_tree (after the merge) builds its paths from the contigs as assembled. The merge can join a START contig
+# to one of its own children, or drop one as contained, and Build_tree then had no START contig to start a path
+# from (CRR1105804_chloro_1e: b + c2 merged, no option written).
+my %contigs_tree = %contigs;
 my $first_start = "yes";
 my $first_delete = "no";
 my $skip_length = "1500";
@@ -28134,6 +29012,928 @@ BATCH_DUP:foreach my $batch_tmp (sort {$a <=> $b} keys %batch_pos)
 		}
 	}
 	return $informative."_".$not_informative."_".$removed;
+}
+
+# s - q offset of a BLAST HSP, read at its 30th gap-free column from one end ("end": walking back
+# from qend/send, "start": walking on from qstart/sstart), so a gap BLAST places in a noisy sequence
+# end does not count. $qa/$sa are the aligned sequences (outfmt qseq sseq).
+sub circle_diag
+{
+	my ($qa, $sa, $qp, $sp, $from) = @_;
+	my $step = ($from eq "end") ? -1 : 1;
+	my $col = ($from eq "end") ? length($qa)-1 : 0;
+	my $d = $sp - $qp;
+	my $aligned = 0;
+	while ($col >= 0 && $col < length($qa))
+	{
+		my $qc = substr $qa, $col, 1;
+		my $sc = substr $sa, $col, 1;
+		if ($qc ne "-" && $sc ne "-")
+		{
+			$d = $sp - $qp;
+			$aligned++;
+			last if ($aligned >= 30);
+		}
+		$qp += $step if ($qc ne "-");
+		$sp += $step if ($sc ne "-");
+		$col += $step;
+	}
+	return $d;
+}
+
+sub mito_seed_panel
+{
+	# The default mito seeds
+	return resource_seed_fasta("mito_seeds.fasta");
+}
+
+sub resource_seed_fasta
+{
+	# A seed file in resources/ next to the script, or under share/ for an installed copy.
+	# Returns the seeds as one FASTA text, the number of seeds and the file.
+	my ($name_tmp) = @_;
+	foreach my $file_tmp ($RealBin."/resources/".$name_tmp, $RealBin."/../share/nanoplasty/resources/".$name_tmp)
+	{
+		next unless (-s $file_tmp);
+		open(my $fh_tmp, "<", $file_tmp) or next;
+		my @ids_tmp;
+		my %seq_tmp;
+		my $cur_tmp = "";
+		while (my $line_tmp = <$fh_tmp>)
+		{
+			$line_tmp =~ tr/\r\n//d;
+			if (substr($line_tmp, 0, 1) eq ">")
+			{
+				my ($h_tmp) = substr($line_tmp, 1) =~ m/^\s*(\S+)/;
+				$h_tmp = "" unless (defined($h_tmp));
+				$h_tmp =~ s/[^A-Za-z0-9_.\-]/_/g;
+				$cur_tmp = "";
+				if ($h_tmp ne "" && !exists($seq_tmp{$h_tmp}))
+				{
+					$cur_tmp = $h_tmp;
+					push @ids_tmp, $cur_tmp;
+					$seq_tmp{$cur_tmp} = "";
+				}
+			}
+			elsif ($cur_tmp ne "")
+			{
+				$line_tmp =~ s/[^A-Za-z]//g;
+				$seq_tmp{$cur_tmp} .= uc($line_tmp);
+			}
+		}
+		close $fh_tmp;
+		my $panel_tmp = "";
+		my $count_tmp = '0';
+		foreach my $s_id (@ids_tmp)
+		{
+			next if (length($seq_tmp{$s_id}) < 350);
+			$panel_tmp .= ">".$s_id."\n".$seq_tmp{$s_id}."\n";
+			$count_tmp++;
+		}
+		return ($panel_tmp, $count_tmp, $file_tmp) if ($count_tmp > 0);
+	}
+	return ("", 0, "");
+}
+
+sub seed_panel_vote
+{
+	# Start read for a multi-seed query. The candidates are the two best reads of every seed (by
+	# bit score), at most 20 of them. Every read in the DB then votes for the candidate it matches
+	# best around the COI hit, and the candidate with most votes wins, so a contaminant that sits
+	# close to one reference seed cannot outvote the sample's own mito reads.
+	# With $by_origin (the chloro panel) the votes are counted per origin: candidates that are at least
+	# 85 % identical are reads of one genome, and the genome with most votes wins, with its most voted
+	# read. Reads of one genome split its votes between them, so counted per read, a genome with many
+	# candidates could lose to one with a single candidate. Every seed's best read is then a candidate
+	# (at most 40), so a genome close to few seeds is not crowded out by one close to many. Candidates
+	# that carry a mitochondrial gene are left out first (candidate_mito_genes).
+	# Returns a one-hit BLAST table for the winner, which DB_RESULTS_SEED reads like any other.
+	my ($hits_ref, $db_ref, $tmp_dir, $seq_dir, $sep, $id, $by_origin) = @_;
+	$by_origin = "" unless (defined($by_origin));
+	my %read_best;
+	my %score_best;
+	my %cand_tmp;
+	my %seed_top_read;
+	foreach my $seed_tmp (sort keys %$hits_ref)
+	{
+		my @sorted_tmp = sort { (split /\t/, $b)[11] <=> (split /\t/, $a)[11] } @{$hits_ref->{$seed_tmp}};
+		$seed_top_read{(split /\t/, $sorted_tmp[0])[1]} = undef if (@sorted_tmp > 0);
+		my $added_tmp = '0';
+		foreach my $line_tmp (@sorted_tmp)
+		{
+			my @f = split /\t/, $line_tmp;
+			if (!exists($score_best{$f[1]}) || $f[11] > $score_best{$f[1]})
+			{
+				$score_best{$f[1]} = $f[11];
+				$read_best{$f[1]} = $line_tmp;
+			}
+			if ($added_tmp < 2 && !exists($cand_tmp{$f[1]}))
+			{
+				$cand_tmp{$f[1]} = undef;
+				$added_tmp++;
+			}
+		}
+	}
+	my @cands;
+	my $cand_fasta = "";
+	my $max_cands = 20;
+	my @cand_order = sort { $score_best{$b} <=> $score_best{$a} || $a cmp $b } keys %cand_tmp;
+	my $mito_check_log = "";
+	if ($by_origin ne "")
+	{
+		$max_cands = 40;
+		@cand_order = sort { (exists($seed_top_read{$a}) ? 0 : 1) <=> (exists($seed_top_read{$b}) ? 0 : 1) || $score_best{$b} <=> $score_best{$a} || $a cmp $b } keys %cand_tmp;
+		my ($mito_gene_ref, $mito_checked) = candidate_mito_genes(\@cand_order, $tmp_dir, $seq_dir, $sep, $id);
+		my @mito_reads_tmp = grep { exists($mito_gene_ref->{$_}) } @cand_order;
+		if ($mito_checked ne "yes")
+		{
+			$mito_check_log = "Mito-gene check skipped: ".$mito_checked."\n";
+		}
+		elsif (@mito_reads_tmp == 0)
+		{
+			$mito_check_log = "Mito-gene check: no candidate read carries a mitochondrial gene\n";
+		}
+		elsif (@mito_reads_tmp < @cand_order)
+		{
+			$mito_check_log = "Mito-gene check: ".@mito_reads_tmp." of ".@cand_order." candidate reads carry a mitochondrial gene and are skipped:".join("", map { " ".$_." (".$mito_gene_ref->{$_}.")" } @mito_reads_tmp)."\n";
+			@cand_order = grep { !exists($mito_gene_ref->{$_}) } @cand_order;
+		}
+		else
+		{
+			$mito_check_log = "Mito-gene check: all ".@mito_reads_tmp." candidate reads carry a mitochondrial gene, none skipped\n";
+		}
+	}
+	foreach my $read_tmp (@cand_order)
+	{
+		last if (@cands >= $max_cands);
+		my @split_tmp = split /a/, $read_tmp;
+		my $file_tmp = $seq_dir.$sep.$split_tmp[0]."a".$sep.$split_tmp[2].$sep."sequence_tmp_NP_".$read_tmp.".fasta";
+		next unless (-s $file_tmp);
+		open(my $fh_tmp, "<", $file_tmp) or next;
+		my $seq_tmp = <$fh_tmp>;
+		close $fh_tmp;
+		next unless (defined($seq_tmp));
+		chomp($seq_tmp);
+		next if (length($seq_tmp) <= 650);
+		my @f = split /\t/, $read_best{$read_tmp};
+		my $lo_tmp = ($f[8] < $f[9] ? $f[8] : $f[9]) - 200;
+		my $hi_tmp = ($f[8] < $f[9] ? $f[9] : $f[8]) + 200;
+		$lo_tmp = 1 if ($lo_tmp < 1);
+		$hi_tmp = length($seq_tmp) if ($hi_tmp > length($seq_tmp));
+		$cand_fasta .= ">".$read_tmp."\n".substr($seq_tmp, $lo_tmp-1, $hi_tmp-$lo_tmp+1)."\n";
+		push @cands, $read_tmp;
+	}
+	return "" if (@cands == 0);
+	my %votes;
+	my $voters = '0';
+	if (@cands > 1)
+	{
+		my $cand_file = $tmp_dir."seed_panel_candidates_".$id.".fasta";
+		open(my $fo_tmp, ">", $cand_file) or die "\nCan't open file $cand_file, $!\n";
+		print $fo_tmp $cand_fasta;
+		close $fo_tmp;
+		my @commands;
+		my @outs;
+		foreach my $pid_tmp (sort keys %$db_ref)
+		{
+			my $out_tmp = $tmp_dir."seed_panel_vote_".$id."_".$pid_tmp.".txt";
+			unlink $out_tmp;
+			push @outs, $out_tmp;
+			push @commands, "blastn -task dc-megablast -query ".$cand_file." -db ".$db_ref->{$pid_tmp}." -out ".$out_tmp." -outfmt \"6 qseqid sseqid bitscore\" -max_target_seqs 100000 -num_threads 2";
+		}
+		syscmd(join(" & ", @commands)." & wait");
+		my %vote_best;
+		my %vote_cand;
+		foreach my $out_tmp (@outs)
+		{
+			open(my $fv_tmp, "<", $out_tmp) or next;
+			while (my $line_tmp = <$fv_tmp>)
+			{
+				chomp($line_tmp);
+				my ($c_tmp, $r_tmp, $b_tmp) = split /\t/, $line_tmp;
+				next unless (defined($b_tmp));
+				if (!exists($vote_best{$r_tmp}) || $b_tmp > $vote_best{$r_tmp})
+				{
+					$vote_best{$r_tmp} = $b_tmp;
+					$vote_cand{$r_tmp} = $c_tmp;
+				}
+			}
+			close $fv_tmp;
+		}
+		foreach my $r_tmp (keys %vote_cand)
+		{
+			$votes{$vote_cand{$r_tmp}}++;
+			$voters++;
+		}
+	}
+	my @ranked = sort { ($votes{$b} || 0) <=> ($votes{$a} || 0) || $score_best{$b} <=> $score_best{$a} || $a cmp $b } @cands;
+	my %origin_of;
+	my @origin_summary;
+	if ($by_origin ne "")
+	{
+		# Origins: candidates at least 85 % identical over 300 bp or more, linked in a chain. Reads of one
+		# genome were 96-99.7 % identical (R10); the plant and algal rbcL of CRR1105811 are 75 % apart.
+		my %parent;
+		$parent{$_} = $_ foreach (@cands);
+		my $find_tmp = sub { my $x = shift; $x = $parent{$x} while ($parent{$x} ne $x); return $x; };
+		if (@cands > 1)
+		{
+			my $cand_file = $tmp_dir."seed_panel_candidates_".$id.".fasta";
+			my $pair_out = $tmp_dir."seed_panel_origins_".$id.".txt";
+			unlink $pair_out;
+			syscmd("blastn -task dc-megablast -query ".$cand_file." -subject ".$cand_file." -out ".$pair_out." -outfmt \"6 qseqid sseqid pident length\" -dust no");
+			if (open(my $fp_tmp, "<", $pair_out))
+			{
+				while (my $line_tmp = <$fp_tmp>)
+				{
+					chomp($line_tmp);
+					my ($q_tmp, $s_tmp, $p_tmp, $l_tmp) = split /\t/, $line_tmp;
+					next unless (defined($l_tmp) && exists($parent{$q_tmp}) && exists($parent{$s_tmp}) && $q_tmp ne $s_tmp);
+					next if ($p_tmp < 85 || $l_tmp < 300);
+					my $root_q = $find_tmp->($q_tmp);
+					my $root_s = $find_tmp->($s_tmp);
+					$parent{$root_q} = $root_s if ($root_q ne $root_s);
+				}
+				close $fp_tmp;
+			}
+		}
+		my %members;
+		my %origin_votes;
+		my %origin_score;
+		foreach my $c_tmp (@cands)
+		{
+			my $root_tmp = $find_tmp->($c_tmp);
+			push @{$members{$root_tmp}}, $c_tmp;
+			$origin_votes{$root_tmp} += ($votes{$c_tmp} || 0);
+			$origin_score{$root_tmp} = $score_best{$c_tmp} if (!exists($origin_score{$root_tmp}) || $score_best{$c_tmp} > $origin_score{$root_tmp});
+		}
+		my $origin_nr = 0;
+		foreach my $root_tmp (sort { $origin_votes{$b} <=> $origin_votes{$a} || $origin_score{$b} <=> $origin_score{$a} || $a cmp $b } keys %members)
+		{
+			$origin_nr++;
+			my $closest_tmp = "";
+			foreach my $c_tmp (@{$members{$root_tmp}})
+			{
+				$origin_of{$c_tmp} = $origin_nr;
+				$closest_tmp = $c_tmp if ($closest_tmp eq "" || $score_best{$c_tmp} > $score_best{$closest_tmp});
+			}
+			my @f = split /\t/, $read_best{$closest_tmp};
+			push @origin_summary, "    origin ".$origin_nr.": ".$origin_votes{$root_tmp}." votes, ".@{$members{$root_tmp}}." candidates, closest seed ".$f[0]." (".$f[2]." % over ".$f[3]." bp)\n";
+		}
+		@ranked = sort { $origin_of{$a} <=> $origin_of{$b} || ($votes{$b} || 0) <=> ($votes{$a} || 0) || $score_best{$b} <=> $score_best{$a} || $a cmp $b } @cands;
+	}
+	print OUTPUT4 "\nSeed panel: ".(keys %read_best)." reads hit a seed (>= 350 bp, > 70 %), ".@cands." candidates, ".$voters." reads voted\n";
+	print OUTPUT4 $mito_check_log;
+	if ($by_origin ne "")
+	{
+		print OUTPUT4 "Origins (candidates >= 85 % identical count as one genome): ".@origin_summary.", the one with most votes is assembled\n";
+		print OUTPUT4 $_ foreach (@origin_summary);
+	}
+	foreach my $c_tmp (@ranked)
+	{
+		my @f = split /\t/, $read_best{$c_tmp};
+		print OUTPUT4 "    ".$c_tmp."\t".$f[0]."\t".$f[2]." %\t".$f[3]." bp\tvotes ".($votes{$c_tmp} || 0).($by_origin ne "" ? "\torigin ".$origin_of{$c_tmp} : "")."\n";
+	}
+	my $win = $ranked[0];
+	my @w = split /\t/, $read_best{$win};
+	print OUTPUT4 "Start read: ".$win." (best seed ".$w[0].", ".$w[2]." % over ".$w[3]." bp)\n";
+	my $vote_file = $tmp_dir."blast_tmp_DB_seed_".$id."_vote.txt";
+	open(my $fw_tmp, ">", $vote_file) or die "\nCan't open file $vote_file, $!\n";
+	print $fw_tmp "# BLASTN seed panel vote\n# Query: ".$w[0]."\n# 1 hits found\n".$read_best{$win}."\n# BLAST processed 1 queries\n";
+	close $fw_tmp;
+	return $vote_file;
+}
+sub candidate_mito_genes
+{
+	# Candidate start reads of the chloro seed panel that carry a plant mitochondrial gene (read id -> gene).
+	# Such a read is mitochondrial, e.g. with a plastid-derived rbcL copy: a quarter of the angiosperm
+	# mitogenomes in RefSeq hold one that the panel finds. The genes are the mito_plant seeds in resources/
+	# without 18S, 26S, rrn5 and rps7, which also match plastid genes: with them 46 % of the plastid reads of
+	# a wheat test set were flagged, without them none of 286 plastid reads and 47 % of the mito reads (genes
+	# are sparse in plant mitogenomes, so a short mito read often has none). A hit counts from 350 bp at
+	# over 70 %, as for the seeds. Returns the hits and "yes", or the reason the check could not run.
+	my ($reads_ref, $tmp_dir, $seq_dir, $sep, $id) = @_;
+	my %hit;
+	my ($genes_tmp, $count_tmp, $file_tmp) = resource_seed_fasta("mito_plant_seeds.fasta");
+	return (\%hit, "resources/mito_plant_seeds.fasta not found next to the script") if ($count_tmp == 0);
+	my $genes_fasta = "";
+	my $keep_tmp = "";
+	foreach my $line_tmp (split /\n/, $genes_tmp)
+	{
+		if (substr($line_tmp, 0, 1) eq ">")
+		{
+			$keep_tmp = ($line_tmp =~ m/^>(18S|26S|rrn5|rps7)_/) ? "" : "yes";
+		}
+		$genes_fasta .= $line_tmp."\n" if ($keep_tmp ne "");
+	}
+	my $reads_fasta = "";
+	foreach my $read_tmp (@$reads_ref)
+	{
+		my @split_tmp = split /a/, $read_tmp;
+		my $file_tmp2 = $seq_dir.$sep.$split_tmp[0]."a".$sep.$split_tmp[2].$sep."sequence_tmp_NP_".$read_tmp.".fasta";
+		next unless (-s $file_tmp2);
+		open(my $fh_tmp, "<", $file_tmp2) or next;
+		my $seq_tmp = <$fh_tmp>;
+		close $fh_tmp;
+		next unless (defined($seq_tmp));
+		chomp($seq_tmp);
+		$reads_fasta .= ">".$read_tmp."\n".$seq_tmp."\n";
+	}
+	return (\%hit, "no mitochondrial gene seeds left") if ($genes_fasta eq "");
+	return (\%hit, "no candidate read found on disk") if ($reads_fasta eq "");
+	my $genes_file = $tmp_dir."seed_panel_mito_genes_".$id.".fasta";
+	my $reads_file = $tmp_dir."seed_panel_candidate_reads_".$id.".fasta";
+	my $out_file = $tmp_dir."seed_panel_mito_check_".$id.".txt";
+	open(my $fg_tmp, ">", $genes_file) or die "\nCan't open file $genes_file, $!\n";
+	print $fg_tmp $genes_fasta;
+	close $fg_tmp;
+	open(my $fr_tmp, ">", $reads_file) or die "\nCan't open file $reads_file, $!\n";
+	print $fr_tmp $reads_fasta;
+	close $fr_tmp;
+	unlink $out_file;
+	syscmd("blastn -task dc-megablast -query ".$reads_file." -subject ".$genes_file." -out ".$out_file." -outfmt \"6 qseqid sseqid pident length\" -evalue 1e-10 -dust no");
+	if (open(my $fo_tmp, "<", $out_file))
+	{
+		while (my $line_tmp = <$fo_tmp>)
+		{
+			chomp($line_tmp);
+			my ($q_tmp, $s_tmp, $p_tmp, $l_tmp) = split /\t/, $line_tmp;
+			next unless (defined($l_tmp) && $l_tmp >= 350 && $p_tmp > 70);
+			$hit{$q_tmp} = (split /_/, $s_tmp)[0] unless (exists($hit{$q_tmp}));
+		}
+		close $fo_tmp;
+	}
+	return (\%hit, "yes");
+}
+sub join_option_contigs
+{
+	# Adds the next contig of a Build_tree path to the sequence so far. Where the sequence so far already
+	# ends with the start of the next contig, the two overlap, by up to a few kb, and joined end to end an
+	# option carried that stretch twice. The start of the next contig is looked up in the tail of the
+	# sequence so far, which is cut there: the next contig keeps its own copy of the overlap. A match has
+	# to run on to within 500 bp of the end; of several places the one reaching furthest wins. Without a
+	# match they are joined end to end.
+	my ($seq_a, $seq_b) = @_;
+	my $len_a = length($seq_a);
+	my $len_b = length($seq_b);
+	my $probe_length = 40;
+	return $seq_a.$seq_b if ($len_a < $probe_length || $len_b < $probe_length);
+	my $window_start = $len_a-$len_b;
+	$window_start = 0 if $window_start < 0;
+	foreach my $offset (0, 100, 250, 500, 1000)
+	{
+		last if $offset+$probe_length > $len_b;
+		my $probe = substr $seq_b, $offset, $probe_length;
+		next if $probe =~ m/[^ACGT]/;
+		my $best_pos = -1;
+		my $best_reach = -1;
+		my $pos = index($seq_a, $probe, $window_start);
+		while ($pos >= 0)
+		{
+			# Ungapped extension from the probe: +1 for a match, -3 for a mismatch, stop 30 below the best
+			my $score = 0;
+			my $best_score = 0;
+			my $reach = 0;
+			my $max_k = $len_a-$pos;
+			$max_k = $len_b-$offset if $len_b-$offset < $max_k;
+			for (my $k = 0; $k < $max_k; $k++)
+			{
+				if (substr($seq_a, $pos+$k, 1) eq substr($seq_b, $offset+$k, 1))
+				{
+					$score++;
+				}
+				else
+				{
+					$score -= 3;
+				}
+				if ($score > $best_score)
+				{
+					$best_score = $score;
+					$reach = $k+1;
+				}
+				last if $score < $best_score-30;
+			}
+			if ($pos+$reach > $best_reach)
+			{
+				$best_reach = $pos+$reach;
+				$best_pos = $pos;
+			}
+			$pos = index($seq_a, $probe, $pos+1);
+		}
+		if ($best_pos >= 0 && $best_reach >= $len_a-500)
+		{
+			return (substr $seq_a, 0, $best_pos).(substr $seq_b, $offset);
+		}
+	}
+	return $seq_a.$seq_b;
+}
+sub close_option_path
+{
+	# A path reaches END when its last contig runs into the start of a START contig, so in a circle the
+	# path goes on with that start. The path itself begins with its START contig reverse complemented,
+	# which in a chloroplast carries that start too, at the beginning of the second inverted repeat copy:
+	# before it lies the stretch the backward extension ran past the repeat, into one orientation of the
+	# small single copy region. The path is cut to begin at the start of its START contig, found in the
+	# first half of the START contig part (40 bp probes 0, 100, 250, 500 or 1000 bp into it, extended
+	# without gaps for at least 200 bp), so its end leads straight into its start.
+	# Returns the path and the number of bp cut from its start.
+	my ($seq, $start_contig) = @_;
+	my $len = length($seq);
+	my $len_start = length($start_contig);
+	my $probe_length = 40;
+	foreach my $offset (0, 100, 250, 500, 1000)
+	{
+		last if $offset+$probe_length > $len_start;
+		my $probe = substr $start_contig, $offset, $probe_length;
+		next if $probe =~ m/[^ACGT]/;
+		my $pos = index($seq, $probe);
+		while ($pos >= 0 && $pos < $len_start/2)
+		{
+			my $score = 0;
+			my $best_score = 0;
+			my $reach = 0;
+			my $max_k = $len-$pos;
+			$max_k = $len_start-$offset if $len_start-$offset < $max_k;
+			for (my $k = 0; $k < $max_k; $k++)
+			{
+				if (substr($seq, $pos+$k, 1) eq substr($start_contig, $offset+$k, 1))
+				{
+					$score++;
+				}
+				else
+				{
+					$score -= 3;
+				}
+				if ($score > $best_score)
+				{
+					$best_score = $score;
+					$reach = $k+1;
+				}
+				last if $score < $best_score-30;
+			}
+			if ($reach >= 200 && $pos >= $offset)
+			{
+				return ((substr $seq, $pos-$offset), $pos-$offset);
+			}
+			$pos = index($seq, $probe, $pos+1);
+		}
+	}
+	return ($seq, 0);
+}
+sub option_join_support
+{
+	# Counts the reads that span each join of a Build_tree path, with the closing join, from the end of the
+	# path back to its start, as the last count. A join is given by its position in the path. 3 kb on both
+	# sides of it are searched in every read DB part (NP and PB), and a read spans the join when one chain
+	# of its hits covers 1 kb on both sides: hits on the same strand, with diagonals within 300 bp of each
+	# other and at most 300 bp apart along the path. Sequencing errors that break an alignment do not count
+	# against a read that way, but a read that goes on with other sequence after the join does.
+	# Returns ("ok", the counts), ("no_db") without read DBs, or ("failed") when a search failed.
+	my ($path_seq, $joins_ref, $db_ref, $tmp_dir, $tag) = @_;
+	my $window = 3000;
+	my $flank = 1000;
+	my $tol = 300;
+	return ("no_db") if (@{$db_ref} == 0);
+	my $len = length($path_seq);
+	my @queries;
+	foreach my $join_tmp (@{$joins_ref})
+	{
+		my $lo = $join_tmp->[0]-$window;
+		$lo = 0 if ($lo < 0);
+		my $hi = $join_tmp->[0]+$window;
+		$hi = $len if ($hi > $len);
+		push @queries, [substr($path_seq, $lo, $hi-$lo), $join_tmp->[0]-$lo];
+	}
+	my $end_tmp = $len < $window ? $len : $window;
+	push @queries, [substr($path_seq, $len-$end_tmp).substr($path_seq, 0, $end_tmp), $end_tmp];
+	my $query_file = $tmp_dir."option_joins_".$tag.".fasta";
+	open(my $fq_tmp, ">", $query_file) or die "\nCan't open file $query_file, $!\n";
+	for (my $i = 0; $i < @queries; $i++)
+	{
+		print $fq_tmp ">join".$i."\n".$queries[$i][0]."\n";
+	}
+	close $fq_tmp;
+	my @commands;
+	my @outs;
+	my @errs;
+	for (my $i = 0; $i < @{$db_ref}; $i++)
+	{
+		my $out_tmp = $tmp_dir."option_joins_".$tag."_".$i.".txt";
+		my $err_tmp = $tmp_dir."option_joins_".$tag."_".$i."_error.txt";
+		unlink $out_tmp;
+		push @outs, $out_tmp;
+		push @errs, $err_tmp;
+		push @commands, "blastn -query ".$query_file." -db ".$db_ref->[$i]." -out ".$out_tmp." -outfmt \"6 qseqid sseqid qstart qend sstart send\" -max_target_seqs 100000 -num_threads 2 2> ".$err_tmp;
+	}
+	syscmd(join(" & ", @commands)." & wait");
+	my %hsps;
+	my $failed = "";
+	# blastn writes its output file even when it cannot open a DB, so the error output is read as well
+	foreach my $err_tmp (@errs)
+	{
+		if (-s $err_tmp && open(my $fe_tmp, "<", $err_tmp))
+		{
+			while (my $line_tmp = <$fe_tmp>)
+			{
+				$failed = "yes" if ($line_tmp =~ m/error/i);
+			}
+			close $fe_tmp;
+		}
+		unlink $err_tmp;
+	}
+	foreach my $out_tmp (@outs)
+	{
+		if (!(-e $out_tmp))
+		{
+			$failed = "yes";
+			next;
+		}
+		open(my $fo_tmp, "<", $out_tmp) or next;
+		while (my $line_tmp = <$fo_tmp>)
+		{
+			chomp($line_tmp);
+			my ($q_tmp, $s_tmp, $qs_tmp, $qe_tmp, $ss_tmp, $se_tmp) = split /\t/, $line_tmp;
+			next unless (defined($se_tmp));
+			my $strand_tmp = $se_tmp >= $ss_tmp ? 1 : -1;
+			my $diag_tmp = $strand_tmp == 1 ? $ss_tmp-$qs_tmp : $ss_tmp+$qs_tmp;
+			push @{$hsps{$q_tmp}{$s_tmp}}, [$strand_tmp, $diag_tmp, $qs_tmp, $qe_tmp];
+		}
+		close $fo_tmp;
+		unlink $out_tmp;
+	}
+	unlink $query_file;
+	return ("failed") if ($failed eq "yes");
+	my @counts;
+	for (my $i = 0; $i < @queries; $i++)
+	{
+		my $pos_tmp = $queries[$i][1];
+		my $flank_tmp = $flank;
+		$flank_tmp = $pos_tmp if ($pos_tmp < $flank_tmp);
+		$flank_tmp = length($queries[$i][0])-$pos_tmp if (length($queries[$i][0])-$pos_tmp < $flank_tmp);
+		my $count_tmp = '0';
+		foreach my $s_tmp (keys %{$hsps{"join".$i}})
+		{
+			my @h_tmp = @{$hsps{"join".$i}{$s_tmp}};
+			if (@h_tmp > 200)
+			{
+				@h_tmp = (sort { ($b->[3]-$b->[2]) <=> ($a->[3]-$a->[2]) } @h_tmp)[0..199];
+			}
+			my $spans_tmp = "";
+			foreach my $anchor_tmp (@h_tmp)
+			{
+				my $cs_tmp = 0;
+				my $ce_tmp = -2*$tol;
+				foreach my $hsp_tmp (sort { $a->[2] <=> $b->[2] } grep { $_->[0] == $anchor_tmp->[0] && abs($_->[1]-$anchor_tmp->[1]) <= $tol } @h_tmp)
+				{
+					if ($hsp_tmp->[2] > $ce_tmp+$tol)
+					{
+						$spans_tmp = "yes" if ($cs_tmp <= $pos_tmp-$flank_tmp+1 && $ce_tmp >= $pos_tmp+$flank_tmp);
+						$cs_tmp = $hsp_tmp->[2];
+						$ce_tmp = $hsp_tmp->[3];
+					}
+					elsif ($hsp_tmp->[3] > $ce_tmp)
+					{
+						$ce_tmp = $hsp_tmp->[3];
+					}
+				}
+				$spans_tmp = "yes" if ($cs_tmp <= $pos_tmp-$flank_tmp+1 && $ce_tmp >= $pos_tmp+$flank_tmp);
+				last if ($spans_tmp eq "yes");
+			}
+			$count_tmp++ if ($spans_tmp eq "yes");
+		}
+		push @counts, $count_tmp;
+	}
+	return ("ok", @counts);
+}
+sub start_read_fold_part
+{
+	# A foldback read is one molecule read on both strands in a row: a stretch and then its own reverse
+	# complement. Against its own reverse complement it aligns around one point, the fold f: a minus-strand
+	# self-HSP pairs read position q with position 2f-q. When such HSPs, all around one fold and reaching to
+	# within 3 kb of it, cover at least a quarter of the read (and 5 kb) on the side before the fold, the read
+	# is cut there. The gene is then in both halves, and the half with its best seed hit ($best1-$best2) is
+	# kept, without the 500 bp next to the fold: the second strand read is often the worse one. When the
+	# current hit ($pos1-$pos2), whose strand orients the seed, lies in the other half, the kept half is
+	# returned reverse complemented, which is how that copy reads. A side shorter than 5 kb leaves the read
+	# as it is. The fold of a read is looked for once (%$cache_ref: read id -> fold position, "" for none).
+	# Returns the read part to use and the fold position; a read without a fold comes back unchanged.
+	my ($read_seq, $read_id, $pos1, $pos2, $best1, $best2, $cache_ref, $tmp_prefix) = @_;
+	(my $clean_tmp = $read_seq) =~ s/\s+//g;
+	my $len_tmp = length($clean_tmp);
+	if (!exists($cache_ref->{$read_id}))
+	{
+		$cache_ref->{$read_id} = "";
+		if ($len_tmp >= 10000)
+		{
+			my $fa_tmp = $tmp_prefix.".fasta";
+			my $out_tmp = $tmp_prefix.".txt";
+			my @hsps_tmp;
+			if (open(my $fh_tmp, ">", $fa_tmp))
+			{
+				print $fh_tmp ">read\n".$clean_tmp."\n";
+				close $fh_tmp;
+				my $rc_tmp = system("blastn -query ".$fa_tmp." -subject ".$fa_tmp." -strand minus -outfmt \"6 qstart qend sstart send\" -evalue 1e-20 -dust no -out ".$out_tmp." 2> /dev/null");
+				if ($rc_tmp == 0 && open(my $fh_out, "<", $out_tmp))
+				{
+					while (my $line_tmp = <$fh_out>)
+					{
+						chomp $line_tmp;
+						my ($qs, $qe, $ss, $se) = split /\t/, $line_tmp;
+						next unless (defined($se) && $ss > $se && $qe-$qs >= 499);
+						my $fold_hsp = ($qs+$ss)/2;
+						next unless ($qs < $fold_hsp);
+						push @hsps_tmp, [$fold_hsp, $qs, ($qe < $fold_hsp ? $qe : $fold_hsp)];
+					}
+					close $fh_out;
+				}
+				unlink $fa_tmp, $out_tmp;
+			}
+			# HSPs whose fold points lie within 1 kb of each other belong to one fold.
+			my $best_cov = 0;
+			my $best_fold = "";
+			my @sorted_tmp = sort { $a->[0] <=> $b->[0] } @hsps_tmp;
+			my $i_tmp = 0;
+			while ($i_tmp < @sorted_tmp)
+			{
+				my $j_tmp = $i_tmp;
+				while ($j_tmp+1 < @sorted_tmp && $sorted_tmp[$j_tmp+1][0]-$sorted_tmp[$j_tmp][0] <= 1000)
+				{
+					$j_tmp++;
+				}
+				my @group_tmp = @sorted_tmp[$i_tmp..$j_tmp];
+				my $fold_sum = 0;
+				my $weight_sum = 0;
+				my $inner_max = 0;
+				foreach my $hsp_tmp (@group_tmp)
+				{
+					$fold_sum += $hsp_tmp->[0]*($hsp_tmp->[2]-$hsp_tmp->[1]+1);
+					$weight_sum += $hsp_tmp->[2]-$hsp_tmp->[1]+1;
+					$inner_max = $hsp_tmp->[2] if ($hsp_tmp->[2] > $inner_max);
+				}
+				my $fold_group = $fold_sum/$weight_sum;
+				my $cov_group = 0;
+				my ($cur_s, $cur_e);
+				foreach my $hsp_tmp (sort { $a->[1] <=> $b->[1] } @group_tmp)
+				{
+					if (defined($cur_e) && $hsp_tmp->[1] <= $cur_e+1)
+					{
+						$cur_e = $hsp_tmp->[2] if ($hsp_tmp->[2] > $cur_e);
+					}
+					else
+					{
+						$cov_group += $cur_e-$cur_s+1 if (defined($cur_e));
+						($cur_s, $cur_e) = ($hsp_tmp->[1], $hsp_tmp->[2]);
+					}
+				}
+				$cov_group += $cur_e-$cur_s+1 if (defined($cur_e));
+				if ($cov_group > $best_cov && $fold_group-$inner_max <= 3000)
+				{
+					$best_cov = $cov_group;
+					$best_fold = int($fold_group);
+				}
+				$i_tmp = $j_tmp+1;
+			}
+			if ($best_fold ne "" && $best_cov >= 5000 && $best_cov >= $len_tmp/4)
+			{
+				$cache_ref->{$read_id} = $best_fold;
+			}
+		}
+	}
+	my $fold_tmp = $cache_ref->{$read_id};
+	return ($read_seq, "") if ($fold_tmp eq "");
+	my $best_side = ($best1 < $best2 ? $best1 : $best2) < $fold_tmp ? 1 : 2;
+	my $current_side = ($pos1 < $pos2 ? $pos1 : $pos2) < $fold_tmp ? 1 : 2;
+	my $part_tmp = $best_side == 1 ? (substr $clean_tmp, 0, ($fold_tmp > 500 ? $fold_tmp-500 : 0)) : (substr $clean_tmp, ($fold_tmp+500 < $len_tmp ? $fold_tmp+500 : $len_tmp));
+	return ($read_seq, "") if (length($part_tmp) < 5000);
+	if ($current_side != $best_side)
+	{
+		$part_tmp = reverse($part_tmp);
+		$part_tmp =~ tr/ACGTNacgtn/TGCANtgcan/;
+	}
+	return ($part_tmp, $fold_tmp);
+}
+sub contig_tail_overlap
+{
+	# How far back from its end the query (the end of a contig) runs along one sequence of $subject_file
+	# without a break: megablast HSPs of at least 95 % identity and 300 bp on one subject and strand, joined
+	# from the HSP that reaches the query end backwards while they stay on its diagonal (within $tol) and
+	# the gaps between them are at most $tol. With $self_offset (where the query starts in the subject,
+	# which is then the contig itself) only same-strand copies at least 1000 bp before the query's own
+	# position count. Returns ("ok", length, subject, query start, subject start there), ("ok", 0) when
+	# nothing reaches the end, or ("failed"). After those, the query and subject end of the HSP at the query end.
+	# Optional: $min_pid replaces the 95 % identity.
+	my ($query_seq, $subject_file, $self_offset, $tol, $tmp_prefix, $min_pid) = @_;
+	$min_pid = 95 if (!defined($min_pid) || $min_pid eq "");
+	my $query_file = $tmp_prefix."_query.fasta";
+	my $out_file = $tmp_prefix."_blast.txt";
+	my $err_file = $tmp_prefix."_error.txt";
+	open(my $fh_query, ">", $query_file) or return ("failed");
+	print $fh_query ">tail\n".$query_seq."\n";
+	close $fh_query;
+	my $rc_tmp = system("blastn -query ".$query_file." -subject ".$subject_file." -out ".$out_file." -outfmt \"6 sseqid qstart qend sstart send pident length\" -evalue 1e-20 -dust no 2> ".$err_file);
+	my $status_tmp = ($rc_tmp == 0 && -e $out_file) ? "ok" : "failed";
+	my @hits_tmp;
+	if ($status_tmp eq "ok" && open(my $fh_out, "<", $out_file))
+	{
+		while (my $line_tmp = <$fh_out>)
+		{
+			chomp $line_tmp;
+			my ($sid_tmp, $qs_tmp, $qe_tmp, $ss_tmp, $se_tmp, $pid_tmp, $len_tmp) = split /\t/, $line_tmp;
+			next unless (defined($len_tmp) && $pid_tmp >= $min_pid && $len_tmp >= 300);
+			my $strand_tmp = $ss_tmp <= $se_tmp ? "plus" : "minus";
+			next if ($self_offset ne "" && ($strand_tmp ne "plus" || $ss_tmp-$qs_tmp > $self_offset-1000));
+			push @hits_tmp, [$sid_tmp, $strand_tmp, $qs_tmp, $qe_tmp, $ss_tmp, ($strand_tmp eq "plus" ? $ss_tmp-$qs_tmp : $ss_tmp+$qs_tmp), $se_tmp];
+		}
+		close $fh_out;
+	}
+	unlink $query_file, $out_file, $err_file;
+	return ($status_tmp) if ($status_tmp ne "ok");
+	my $qlen_tmp = length($query_seq);
+	my @best_tmp = ("ok", 0);
+	foreach my $anchor_tmp (@hits_tmp)
+	{
+		next if ($anchor_tmp->[3] < $qlen_tmp-$tol);
+		my $chain_qs = $anchor_tmp->[2];
+		my $chain_ss = $anchor_tmp->[4];
+		foreach my $hit_tmp (sort { $b->[3] <=> $a->[3] } grep { $_->[0] eq $anchor_tmp->[0] && $_->[1] eq $anchor_tmp->[1] && abs($_->[5]-$anchor_tmp->[5]) <= $tol } @hits_tmp)
+		{
+			if ($hit_tmp->[3] >= $chain_qs-$tol && $hit_tmp->[2] < $chain_qs)
+			{
+				$chain_qs = $hit_tmp->[2];
+				$chain_ss = $hit_tmp->[4];
+			}
+		}
+		if ($qlen_tmp-$chain_qs+1 > $best_tmp[1])
+		{
+			@best_tmp = ("ok", $qlen_tmp-$chain_qs+1, $anchor_tmp->[0], $chain_qs, $chain_ss, $anchor_tmp->[3], $anchor_tmp->[6]);
+		}
+	}
+	return @best_tmp;
+}
+sub circle_closure_check
+{
+	# A mito_plant contig that closes on its start below the genome range: the closure only counts when the contig
+	# end runs along the contig itself for at least $need_tmp bp without a break, on the diagonal that joins the end
+	# to the start window just after the seed. On the way round, a contig with a seed passes the seed again before
+	# it reaches the start, so the seed's last part counts too (raw read, hence 85 % identity); a contig without one
+	# (a backward contig) has to run that far along its start. A copy of a repeat that also lies at the start only
+	# matches as far as the repeat reaches. Returns ("ok", bp matched, bp of the end that repeats the start window)
+	# or ("failed"); both are 0 when the match from the end does not lead into the start window.
+	my ($read_tmp, $seed_len_tmp, $window_tmp, $need_tmp, $tmp_prefix) = @_;
+	my $len_read_tmp = length($read_tmp);
+	my $qlen_tmp = $need_tmp+$window_tmp+3000;
+	$qlen_tmp = $len_read_tmp if ($qlen_tmp > $len_read_tmp);
+	my $self_file = $tmp_prefix."_self.fasta";
+	open(my $fh_tmp, ">", $self_file) or return ("failed");
+	print $fh_tmp ">contig\n".$read_tmp."\n";
+	close $fh_tmp;
+	my ($status_tmp, $len_tmp, $sid_tmp, $qs_tmp, $ss_tmp, $aqe_tmp, $ase_tmp) = contig_tail_overlap((substr $read_tmp, -$qlen_tmp), $self_file, $len_read_tmp-$qlen_tmp, 500, $tmp_prefix, 85);
+	unlink $self_file;
+	return ("failed") if ($status_tmp ne "ok");
+	return ("ok", 0, 0) if (!$len_tmp || !defined($ase_tmp));
+	my $end_match_tmp = $ase_tmp-1+($qlen_tmp-$aqe_tmp);   # contig position the last base of the contig matches
+	return ("ok", 0, 0) if ($end_match_tmp < $seed_len_tmp || $end_match_tmp >= $seed_len_tmp+$window_tmp+500);
+	return ("ok", $len_tmp, $end_match_tmp-$seed_len_tmp+1);
+}
+sub fasta_seq_lengths
+{
+	# Name, length and number of N of every sequence in a FASTA file, in file order; empty when the file is missing.
+	my ($file_tmp) = @_;
+	my @seqs_tmp;
+	open(my $fh_tmp, "<", $file_tmp) or return @seqs_tmp;
+	while (my $line_tmp = <$fh_tmp>)
+	{
+		chomp($line_tmp);
+		if (substr($line_tmp, 0, 1) eq ">")
+		{
+			push @seqs_tmp, [substr($line_tmp, 1), 0, 0];
+		}
+		elsif (@seqs_tmp > 0)
+		{
+			$line_tmp =~ s/\s+//g;
+			$seqs_tmp[-1][1] += length($line_tmp);
+			$seqs_tmp[-1][2] += ($line_tmp =~ tr/Nn//);
+		}
+	}
+	close $fh_tmp;
+	return @seqs_tmp;
+}
+sub print_results_table
+{
+	# Results table at the end of the log and on screen: contigs and total length of the raw assembly,
+	# the final assembly and every circularized option written in this run, then each contig's length.
+	# The circularized sequences are the option files, so there is no circularized column ($circular_ref unused).
+	my ($raw_file, $final_file, $options_ref, $circular_ref) = @_;
+	my @files_tmp;
+	push @files_tmp, ["Raw (before merging)", $raw_file] if ($raw_file ne "" && -s $raw_file);
+	push @files_tmp, ["Final", $final_file] if ($final_file ne "" && -s $final_file);
+	foreach my $file_tmp (sort { (($a =~ m/_option_(\d+)\.fasta$/)[0] || 0) <=> (($b =~ m/_option_(\d+)\.fasta$/)[0] || 0) || $a cmp $b } keys %$options_ref)
+	{
+		next unless (-s $file_tmp);
+		my ($number_tmp) = $file_tmp =~ m/_option_(\d+)\.fasta$/;
+		push @files_tmp, ["Circularized option ".(defined($number_tmp) ? $number_tmp : "?"), $file_tmp];
+	}
+	my $text_tmp = "\n\nResults\n-----------------------\n";
+	if (@files_tmp == 0)
+	{
+		$text_tmp .= "No contigs were assembled.\n";
+	}
+	else
+	{
+		my @summary_tmp;
+		my @contigs_tmp;
+		# With two or more circularized options the contig table also gives the number of N of each sequence,
+		# which helps to choose between the options.
+		my $option_count_tmp = grep { $_->[0] =~ m/^Circularized option/ } @files_tmp;
+		foreach my $entry_tmp (@files_tmp)
+		{
+			my ($label_tmp, $file_tmp) = @$entry_tmp;
+			my @seqs_tmp = fasta_seq_lengths($file_tmp);
+			my $total_tmp = 0;
+			$total_tmp += $_->[1] foreach (@seqs_tmp);
+			my ($name_tmp) = $file_tmp =~ m/([^\/\\]+)$/;
+			push @summary_tmp, [$label_tmp, scalar(@seqs_tmp), $total_tmp, $name_tmp];
+			# The raw contigs are only counted: the final assembly is what they were merged into.
+			next if ($label_tmp eq "Raw (before merging)");
+			foreach my $seq_tmp (sort { $b->[1] <=> $a->[1] || $a->[0] cmp $b->[0] } @seqs_tmp)
+			{
+				my @row_tmp = ($label_tmp, $seq_tmp->[0], $seq_tmp->[1]);
+				push @row_tmp, $seq_tmp->[2] if ($option_count_tmp > 1);
+				push @contigs_tmp, [@row_tmp];
+			}
+		}
+		$text_tmp .= text_table(["Assembly", "Contigs", "Total length (bp)", "File"], ["l", "r", "r", "l"], \@summary_tmp, "");
+		if (@contigs_tmp > 0)
+		{
+			my @head_tmp = ("Assembly", "Contig", "Length (bp)");
+			my @align_tmp = ("l", "l", "r");
+			if ($option_count_tmp > 1)
+			{
+				push @head_tmp, "N count";
+				push @align_tmp, "r";
+			}
+			$text_tmp .= "\n".text_table(\@head_tmp, \@align_tmp, \@contigs_tmp, "yes");
+		}
+	}
+	$text_tmp .= "\n";
+	print $text_tmp;
+	print OUTPUT4 $text_tmp;
+}
+
+sub text_table
+{
+	# A table with +---+ rules above and below the header and at the end, and | between the columns.
+	# $align_ref: "l" or "r" per column. With $group_by_first ne "", rows that share the first column are
+	# one block: a rule before each new block and the first column only on the block's first row.
+	my ($head_ref, $align_ref, $rows_ref, $group_by_first) = @_;
+	my @width_tmp = map { length($_) } @$head_ref;
+	foreach my $row_tmp (@$rows_ref)
+	{
+		foreach my $i (0..$#width_tmp)
+		{
+			my $cell_tmp = defined($row_tmp->[$i]) ? $row_tmp->[$i] : "";
+			$width_tmp[$i] = length($cell_tmp) if (length($cell_tmp) > $width_tmp[$i]);
+		}
+	}
+	my $rule_tmp = "+".join("+", map { "-" x ($_+2) } @width_tmp)."+\n";
+	my $format_tmp = sub
+	{
+		my @cells_tmp = @_;
+		my $line_tmp = "|";
+		foreach my $i (0..$#width_tmp)
+		{
+			my $cell_tmp = defined($cells_tmp[$i]) ? $cells_tmp[$i] : "";
+			if ($align_ref->[$i] eq "r")
+			{
+				$line_tmp .= sprintf(" %*s |", $width_tmp[$i], $cell_tmp);
+			}
+			else
+			{
+				$line_tmp .= sprintf(" %-*s |", $width_tmp[$i], $cell_tmp);
+			}
+		}
+		return $line_tmp."\n";
+	};
+	my $table_tmp = $rule_tmp.$format_tmp->(@$head_ref).$rule_tmp;
+	my $previous_tmp;
+	foreach my $row_tmp (@$rows_ref)
+	{
+		my @cells_tmp = @$row_tmp;
+		if ($group_by_first ne "")
+		{
+			if (defined($previous_tmp) && $cells_tmp[0] eq $previous_tmp)
+			{
+				$cells_tmp[0] = "";
+			}
+			else
+			{
+				$table_tmp .= $rule_tmp if (defined($previous_tmp));
+				$previous_tmp = $cells_tmp[0];
+			}
+		}
+		$table_tmp .= $format_tmp->(@cells_tmp);
+	}
+	return $table_tmp.$rule_tmp;
 }
 
 # >>> PREPASS-LIB-START (kept self-contained so it can be unit-tested)
@@ -28878,7 +30678,7 @@ BLAST_RESULTS1:   while (my $line_tmp = <BLAST_RESULTS_DB>)
                         close INPUT_SUBJECT3;
                         
                         my $file_tmp2 = $TMP_directory."blast_tmp3_".$subject_id."_".$id_tmp."_".$length_tmp."_".$read_pos_end_tmp."_".$read_pos_start_tmp."_first2_".$first_start.".txt";
-                        my $command_DB = "blastn -query ".$query_file3." -subject ".$subject_file3." -out ".$file_tmp2." -num_threads 2 -outfmt \"7 std qseq sseq\" -perc_identity ".$accuracy_tmp2." -qcov_hsp_perc ".$query_coverage2." -dust no";
+                        my $command_DB = "blastn -query ".$query_file3." -subject ".$subject_file3." -out ".$file_tmp2." -outfmt \"7 std qseq sseq\" -perc_identity ".$accuracy_tmp2." -qcov_hsp_perc ".$query_coverage2." -dust no";
                         syscmd($command_DB);
                         $aligned{$id_tmp.$subject_id}{$reverse_tmp}{$first_start} = undef;
                         $aligned{$subject_id.$id_tmp}{$reverse_tmp}{$first_start} = undef;
@@ -29029,8 +30829,18 @@ BLAST_RESULTS2:     while (my $line_tmp2 = <BLAST_RESULTS_DB2>)
                                     {
                                         my $id_new = $id_tmp."_m_".$subject_id;
 
-                                        my $read_pos_end_tmp5 = $read_pos_start_tmp-$skip_length;
-                                        $merge_matches{$group_id}{$id_tmp}{$accuracy_tmp2}{$alignment_length2} = $subject_end_tmp2."+".$length_tmp."+".$query_end_tmp2."+".$reverse_tmp."+".$read_pos_start_tmp."+".$read_pos_end_tmp."+".$id_new."+".$first_start."+".$N_adjust_subject."+".$N_adjust_query."+";
+                                        # The merged contig is $id_tmp up to where $subject_id starts in it, then all of $subject_id.
+                                        # The end of the probe hit was used as that cut, so the skip and the probe (2.5 kb) were in
+                                        # the merged contig twice. $subject_id starts $skip_used{$subject_id} bases before the probe
+                                        # hit, one base before the query of this alignment starts; a forward alignment on that
+                                        # diagonal gives the exact position.
+                                        my $read_pos_end_tmp5 = $read_pos_start_tmp-$skip_used{$subject_id}-1;
+                                        my $cut_tmp5 = $read_pos_start_tmp-$skip_used{$subject_id}+$query_start_tmp2-$subject_start_tmp2;
+                                        if ($subject_start_tmp2 < $subject_end_tmp2 && abs($cut_tmp5-$read_pos_end_tmp5) < 100)
+                                        {
+                                            $read_pos_end_tmp5 = $cut_tmp5;
+                                        }
+                                        $merge_matches{$group_id}{$id_tmp}{$accuracy_tmp2}{$alignment_length2} = $subject_end_tmp2."+".$length_tmp."+".$query_end_tmp2."+".$reverse_tmp."+".$read_pos_start_tmp."+".$read_pos_end_tmp5."+".$id_new."+".$first_start."+".$N_adjust_subject."+".$N_adjust_query."+";
                                         #print OUTPUT4 $group_id." ".$merge_matches{$group_id}{$id_tmp}{$accuracy_tmp2}{$alignment_length2}." MERGE2\n";
                                     }
                                     elsif ($query_start_tmp2 < 100 && $subject_end_tmp2 > $length_subject_seq_tmp-100 && $reverse_tmp eq "yes" && $first_start eq "yes" && $first_delete eq "yes")
@@ -29359,6 +31169,7 @@ elsif ($first_delete eq "no")
 # else: pass 2 (yes, yes) and (no, yes) are both done — fall through to final write.
 
 my $output_file55  = $output_path."assembly_final_".$project.".fasta";
+$result_final_file = $output_file55;
 open(OUTPUT_MERGED, ">" .$output_file55) or die "\nCan't open file $output_file55, $!\n";
 foreach my $id_tmp (keys %contigs)
 {
@@ -29374,26 +31185,57 @@ close OUTPUT_MERGED;
 
 #Build_tree---------------------------------------
 
+# A START contig is a backward contig: the forward contig reverse complemented, plus the backward extension.
+# The contigs under it come from a split of the forward contig and continue the end of it, which is the start
+# of the START contig reverse complemented, so a path starts with the reverse complement of the START contig.
+# Added to the START contig as stored, the first contig went to the wrong end; in a chloroplast the inverted
+# repeat hid this, since both ends of the START contig carry it. END only says that the last contig ran into
+# the start sequence of a START contig, of any seed, so a path becomes an option only when reads span each of
+# its joins, the closing one from its end back to its start included. The contigs are the ones from before the
+# merge (%contigs_tree).
 my %assembled_trees;
 undef %assembled_trees;
+my %assembled_joins;
+undef %assembled_joins;
+my @option_path_notes;
+my $option_path_count = '0';
+my $option_min_reads = '3';
+my @option_read_DBs;
+foreach my $pid_tmp (sort keys %ret_data_NP)
+{
+	push @option_read_DBs, $ret_data_NP{$pid_tmp};
+}
+foreach my $pid_tmp (sort keys %ret_data_PB)
+{
+	push @option_read_DBs, $ret_data_PB{$pid_tmp};
+}
 my $count_options = '1';
+# The numbers already taken by the circles of this run are skipped, so a path no longer overwrites a circle's file.
+while (exists($result_option_files{$output_path."assembly_".$project."_option_".$count_options.".fasta"}))
+{
+	$count_options++;
+}
 
 foreach my $id_tmp (keys %tree)
 {
 	foreach my $next_tmp (keys %{$tree{$id_tmp}})
 	{
-		if ($next_tmp eq "START")
+		if ($next_tmp eq "START" && exists($contigs_tree{$id_tmp}))
 		{
 			#print OUTPUT4 $id_tmp." START\n";
+			my $start_contig_rc = reverse($contigs_tree{$id_tmp});
+			$start_contig_rc =~ tr/ACTGNactgn/TGACNtgacn/;
 			foreach my $next_tmp2 (keys %{$tree{$id_tmp}})
 			{
 				if ($next_tmp2 ne "START")
 				{
 					#print OUTPUT4 $next_tmp2." START_NEXT\n";
-					if (exists($contigs{$next_tmp2}))
+					if (exists($contigs_tree{$next_tmp2}))
 					{
-						my $cont_tmp = $contigs{$id_tmp}.$contigs{$next_tmp2};
+						my $cont_tmp = join_option_contigs($start_contig_rc, $contigs_tree{$next_tmp2});
 						$assembled_trees{$id_tmp.$next_tmp2} = $cont_tmp;
+						# The joins of a path: where the contig before it ends in the path, and the two contigs
+						$assembled_joins{$id_tmp.$next_tmp2} = [[length($start_contig_rc), "rc(".$id_tmp.")", $next_tmp2]];
 						my $next_tmp3 = $id_tmp.$next_tmp2;
 						my $next_tmp2b = $next_tmp2;
 						my %todo;
@@ -29407,29 +31249,60 @@ NEXT_TREE:
 								#print OUTPUT4 $next_tmp2b." NEXT2B ".$next_tmp4." NEXT4\n";
 								if ($next_tmp4 eq "END")
 								{
-									my $output_file66  = $output_path."assembly_".$project."_option_".$count_options.".fasta";
-									open(OUTPUT_OPTION, ">" .$output_file66) or die "\nCan't open file $output_file66, $!\n";
-									print OUTPUT_OPTION ">Option_".$count_options."\n";
-									my $seq = $assembled_trees{$next_tmp3};
-									while (length($seq) > 0)
+									my ($seq, $cut_tmp) = close_option_path($assembled_trees{$next_tmp3}, $contigs_tree{$id_tmp});
+									my @joins_tmp = grep { $_->[0] > 0 && $_->[0] < length($seq) } map { [$_->[0]-$cut_tmp, $_->[1], $_->[2]] } @{$assembled_joins{$next_tmp3}};
+									my ($check_tmp, @support_tmp) = option_join_support($seq, \@joins_tmp, \@option_read_DBs, $TMP_directory, $option_path_count);
+									$option_path_count++;
+									my $path_text = join(" + ", $assembled_joins{$next_tmp3}[0][1], map { $_->[2] } @{$assembled_joins{$next_tmp3}}).", ".length($seq)." bp";
+									my $option_ok = "yes";
+									if ($check_tmp eq "ok")
 									{
-										my $line_cut = substr $seq, 0, 150, "";
-										print OUTPUT_OPTION $line_cut."\n";
+										my $closing_tmp = pop @support_tmp;
+										$path_text .= "; reads across the joins: ".join(", ", @support_tmp).", closing ".$closing_tmp;
+										foreach my $count_tmp (@support_tmp, $closing_tmp)
+										{
+											if ($count_tmp < $option_min_reads)
+											{
+												$option_ok = "";
+											}
+										}
 									}
-									close OUTPUT_OPTION;
-									$count_options++;
+									else
+									{
+										$path_text .= "; joins not checked (".($check_tmp eq "no_db" ? "no read database" : "BLAST failed").")";
+									}
+									if ($option_ok eq "")
+									{
+										push @option_path_notes, "Not written: ".$path_text;
+									}
+									else
+									{
+										push @option_path_notes, "Option ".$count_options.": ".$path_text;
+										my $output_file66  = $output_path."assembly_".$project."_option_".$count_options.".fasta";
+										$result_option_files{$output_file66} = undef;
+										open(OUTPUT_OPTION, ">" .$output_file66) or die "\nCan't open file $output_file66, $!\n";
+										print OUTPUT_OPTION ">Option_".$count_options."\n";
+										while (length($seq) > 0)
+										{
+											my $line_cut = substr $seq, 0, 150, "";
+											print OUTPUT_OPTION $line_cut."\n";
+										}
+										close OUTPUT_OPTION;
+										$count_options++;
+									}
 								}
 								elsif ($next_tmp4 eq "END_REVERSE")
 								{
 									#print OUTPUT4 $next_tmp3." END_REVERSE\n";
 								}
-								elsif (exists($contigs{$next_tmp4}))
+								elsif (exists($contigs_tree{$next_tmp4}))
 								{
-									my $cont_tmp2 = $cont_tmp.$contigs{$next_tmp4};
-									$cont_tmp = $cont_tmp2;
+									# Each branch continues the path that leads to it. The running sequence and path name were
+									# shared by the branches, so a second branch was built on top of the first one.
+									my $cont_tmp2 = join_option_contigs($assembled_trees{$next_tmp3}, $contigs_tree{$next_tmp4});
 									$assembled_trees{$next_tmp3.$next_tmp4} = $cont_tmp2;
-									$next_tmp3 = $next_tmp3.$next_tmp4;
-									$todo{$next_tmp4} = $next_tmp3;
+									$assembled_joins{$next_tmp3.$next_tmp4} = [@{$assembled_joins{$next_tmp3}}, [length($assembled_trees{$next_tmp3}), $next_tmp2b, $next_tmp4]];
+									$todo{$next_tmp4} = $next_tmp3.$next_tmp4;
 								}
 							}
 							delete $tree{$next_tmp2b};
@@ -29448,14 +31321,34 @@ NEXT_TREE:
 } 
 print "...OK\n";
 print OUTPUT4 "...OK\n";
+if (@option_path_notes > 0)
+{
+	my $notes_tmp = "\nPaths from split contigs that reach a start sequence (an option needs ".$option_min_reads." reads across each join):\n";
+	foreach my $note_tmp (@option_path_notes)
+	{
+		$notes_tmp .= "    ".$note_tmp."\n";
+	}
+	print $notes_tmp;
+	print OUTPUT4 $notes_tmp;
+}
 
+SKIP_MERGE:
+print_results_table($final_assembly_file, $result_final_file, \%result_option_files, \%result_circular_contigs);
+undef %result_option_files;
+undef %result_circular_contigs;
+undef %result_circle_option;
+$result_final_file = "";
 close OUTPUT4;
 
-if ($type0 eq "plant_mito" && $type eq "chloro")
+if ($type0 eq "mito_plant" && $type eq "chloro")
 {
-	$type = "plant_mito";
+	$type = "mito_plant";
 	$project = $project0."_".$type;
 	$chloro_file = $final_assembly_file;
+	if (!(-s $chloro_file))
+	{
+		print "\nNo chloroplast assembly: the mito_plant seed reads are not screened against the chloroplast\n";
+	}
 	$genome_range_low = $genome_range_low0;
     $genome_range_high = $genome_range_high0;
 	$first_back_assembly = "";
@@ -29500,20 +31393,25 @@ if ($type0 eq "plant_mito" && $type eq "chloro")
 	delete $trace_back_split_NP{$id};
 	delete $trace_back_split_NP_exclude{$id};
 	undef %seeds_list;
+	undef %seed_query_of;
 	undef %seeds_list_sorted;
+	undef %start_read_fold;
 	delete $prev_position_hap_compare{$id};
 	delete $exclude_reads_PB{$id};
 	delete $exclude_reads_NP{$id};
 	delete $exclude_reads_PB_back{$id};
 	delete $exclude_reads_NP_back{$id};
 	delete $track_coverage{$id};
+	delete $overlap_check_from{$id};
+	delete $overlap_check_next{$id};
 	$seed_id2 = "";
 	my $id_tmp5 = $id;
 	$id = "";
 	$assembly_finished = "";
 	$check_start_seq = "";
 	undef %assembly_length_prev;
-    undef %plant_mito_read_checked;
+    undef %mito_plant_read_checked;
+    undef %mito_plant_read_failed;
     undef %rejected_read_ids;
 	goto CHLORO_TO_MITO;
 }
@@ -29541,6 +31439,12 @@ if ($TMP_directory ne "" && $TMP_directory ne $output_path && $TMP_directory eq 
 		}
 	}
 	closedir DIR_TMP;
+}
+
+#A run that never got past the depth check still has the unzipped reads it kept for a depth restart
+foreach my $file_tmp (keys %kept_unzipped_reads)
+{
+	unlink $file_tmp;
 }
 
 print "\nThank you for using NANOPlasty!\n\n";
