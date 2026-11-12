@@ -78,12 +78,14 @@ Nanopore reads        =
 Local DB and NP reads = 
 R10                   = 
 Min read length NP    = 
+Use full dataset      =
 
 PacBio reads:
 -----------------------
 PacBio reads          = 
 Local DB and PB reads = 
 Min read length PB    = 
+Use full dataset      = 
 
 </pre>
 
@@ -111,12 +113,16 @@ Nanopore reads:
 Nanopore reads        = Only use this when you run the dataset for the first time. 
 Local DB and NP reads = If you ran the dataset before, you can give the path of the previous output folder to reuse the database
 R10                   = If you are using R10 data, please write "yes" here
-Min read length NP    = Give the minimum read length to be used in the assembly, (default: 1000)
+Min read length NP    = Give the minimum read length to be used in the assembly, (default: 3000)
+Use full dataset      = NANOPlasty will automatically subsample, if you want the full dataset to be used 
+                        (in case of failure and all the longest reads need to be found) put "yes"
 
 PacBio reads:
 -----------------------
 PacBio reads          = Only use this when you run the dataset for the first time. 
 Local DB and NP reads = If you ran the dataset before, you can give the path of the previous output folder to reuse the database
-Min read length PB    = Give the minimum read length to be used in the assembly, (default: 500)
+Min read length PB    = Give the minimum read length to be used in the assembly, (default: 1000)
+Use full dataset      = NANOPlasty will automatically subsample, if you want the full dataset to be used 
+                        (in case of failure and all the longest reads need to be found) put "yes"
 
 </pre>
