@@ -35,7 +35,7 @@ If your assembly was unsuccessful, you could already add the log file and the co
   
   <code>cpan install Parallel::ForkManager</code>
   
-  <code>perl NANOPlasty0.2.pl -c config_nanoplasty.txt</code>
+  <code>perl NANOPlasty0.3.pl -c config_nanoplasty.txt</code>
 
 
 ## How to run
@@ -47,7 +47,7 @@ Every parameter of the configuration file is explained below.
 
 ### 2. Run NANOPlasty
 
-<code>perl NANOPlasty0.2.pl -c config_nanoplasty.txt</code>
+<code>perl NANOPlasty0.3.pl -c config_nanoplasty.txt</code>
 
 ----------------------------------------------------------------------------------------------------------
 
