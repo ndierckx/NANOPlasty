@@ -36,4 +36,4 @@ WORKDIR /opt/nanoplasty
 ENV PATH=/opt/nanoplasty:$PATH
 
 # 8. Default entrypoint
-ENTRYPOINT ["perl", "NANOPlasty0.3.pl"]
+ENTRYPOINT ["perl", "NANOPlasty0.4.pl"]
