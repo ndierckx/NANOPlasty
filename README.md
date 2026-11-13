@@ -43,7 +43,7 @@ If your assembly was unsuccessful, you could already add the log file and the co
   
   <code>cpan install Parallel::ForkManager</code>
   
-  <code>perl NANOPlasty0.3.pl -c config_nanoplasty.txt</code>
+  <code>perl NANOPlasty0.4.pl -c config_nanoplasty.txt</code>
 
 
 ## How to run
@@ -57,7 +57,7 @@ Every parameter of the configuration file is explained below.
 
 Docker      : <code>docker run --rm ndierckx/nanoplasty  -c config_nanoplasty.txt</code>
 
-Local       : <code>perl NANOPlasty0.3.pl -c config_nanoplasty.txt</code>
+Local       : <code>perl NANOPlasty0.4.pl -c config_nanoplasty.txt</code>
 
 ----------------------------------------------------------------------------------------------------------
 
