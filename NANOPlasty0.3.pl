@@ -42,6 +42,7 @@ use IO::Handle;
 use Time::HiRes qw(time);
 use Time::HiRes qw(sleep);
 use FindBin qw($RealBin);
+use Digest::MD5;
 #use POSIX ":sys_wait_h";
 my $config = "";
 GetOptions (
@@ -57,7 +58,14 @@ my $mito_limit       = "900000000";
 my $restart_check = "";
 my $db_precheck_done = 0;
 my %kept_unzipped_reads;   # .gz inputs unzipped in this run, so a depth restart doesn't unzip them again
-my $streamed_reads_NP = "";   # the NP reads were taken from the start of the inputs, so a depth restart does that again
+my $streamed_reads_NP = "";
+my $streamed_reads_PB = "";   # the same for the PacBio reads
+# PacBio depth target: reads per extension round and, for standalone runs, the reads loaded are cut to about
+# this depth (HiFi needs far less than the read limit gives at a plastome: ~850x in an Arabidopsis leaf run).
+my $PB_target_depth = 75;
+my $PB_depth_limit_bp = "";      # PacBio bp to load after the depth restart
+my $PB_depth_restart_done = "";  # the restart down to the target happens once
+my $PB_cap_fraction_round = 1;   # share of the reads kept in the current round (1 = all)   # the NP reads were taken from the start of the inputs, so a depth restart does that again
 RESTART:
 my $y = '1';
 my $y0 = '1';
@@ -2551,6 +2559,8 @@ sub
         my $string7 = $hash_tmp{'7'};
         my $string8 = $hash_tmp{'8'};
         my @string9 = @{$hash_tmp{'9'}};
+        my $string10 = $hash_tmp{'10'};
+        $been_reduced = "yes" if (defined($string10) && $string10 ne "");   # any child that reduced
 
         $ret_data_PB{$pid_PB} = $string;
         $ret_data2_PB{$pid_PB} = $string3;
@@ -2574,6 +2584,9 @@ sub
 });
 
 my $long_id_PB = '0';
+# Estimated bp in the PacBio input, kept when the read limit stopped the loading before the end of the
+# input: "Reduced sequencing depth" is then the share of the input used.
+my $input_estimated_bp_PB = "";
 
 if ($PB_reads ne "" || $input_reads_DB_folder_PB ne "")
 {
@@ -2607,6 +2620,7 @@ if ($PB_reads ne "" || $input_reads_DB_folder_PB ne "")
     
     my %PB_reads;
     undef %PB_reads;
+    my $stream_message_PB = "";
     my $count_files = '1';
    
     if ($PB_reads ne "")
@@ -2644,7 +2658,74 @@ if ($PB_reads ne "" || $input_reads_DB_folder_PB ne "")
         my $total_lines = '0';
         my %file_lines;
         undef %file_lines;
-        
+
+        # As for the Nanopore reads: the assembly uses at most $chloro_limit / $mito_plant_limit / $mito_limit bp of
+        # reads. When the inputs hold well over the limit (estimated from their size and first 8 MB), the reads are
+        # taken from the start of each input, written straight into pieces like the ones split makes, and the rest
+        # of the input is not read.
+        my $stream_limit_PB = "";
+        if ($type eq "chloro" && $chloro_limit ne "")
+        {
+            $stream_limit_PB = $chloro_limit;
+        }
+        elsif ($type eq "mito_plant" && $mito_plant_limit ne "")
+        {
+            $stream_limit_PB = $mito_plant_limit;
+        }
+        elsif ($type eq "mito" && $mito_limit ne "")
+        {
+            $stream_limit_PB = $mito_limit;
+        }
+        if ($PB_depth_limit_bp ne "" && ($stream_limit_PB eq "" || $PB_depth_limit_bp < $stream_limit_PB))
+        {
+            $stream_limit_PB = $PB_depth_limit_bp;
+        }
+        # "Use full dataset = yes": no limit, so no reading from the start only either
+        if ($stream_limit_PB ne "" && $subsample eq "" && $full_dataset_PB eq "")
+        {
+            my %estimated_selected_bp;
+            my $estimated_total_bp = '0';
+            my $estimated_selected_total = '0';
+            foreach my $PB_reads_tmp (sort keys %PB_reads)
+            {
+                my $check_zip_long2 = substr $PB_reads_tmp, -3;
+                if ($check_zip_long2 eq "bz2" || $check_zip_long2 eq "zip")
+                {
+                    $estimated_selected_total = '0';
+                    last;
+                }
+                my ($total_bp_tmp, $selected_bp_tmp) = estimate_read_bp($PB_reads_tmp, $gunzip_tool, $minimum_read_length_PB);
+                unless (defined($selected_bp_tmp))
+                {
+                    $estimated_selected_total = '0';
+                    last;
+                }
+                $estimated_selected_bp{$PB_reads_tmp} = $selected_bp_tmp;
+                $estimated_selected_total += $selected_bp_tmp;
+                $estimated_total_bp += $total_bp_tmp;
+            }
+            $input_estimated_bp_PB = $estimated_total_bp if ($estimated_selected_total > 0);
+            # After a depth restart the raised limit can be close to the whole input: reading from the start
+            # again, up to the new limit or the end of the input, avoids unzipping, counting and splitting it all.
+            if ($estimated_selected_total > $stream_limit_PB*1.5 || ($streamed_reads_PB ne "" && $estimated_selected_total > 0))
+            {
+                $streamed_reads_PB = "yes";
+                my @stream_files = sort keys %PB_reads;
+                my ($left_early_tmp, $pieces_tmp, $streamed_bp_tmp) = stream_read_pieces(\@stream_files, \%estimated_selected_bp, $stream_limit_PB, $minimum_read_length_PB, $maxProcs_tmp, $directory_DB_PB.$output_path_test, $gunzip_tool);
+                # The pieces are picked up from the DB folder below, like split pieces
+                foreach my $PB_reads_tmp (@stream_files)
+                {
+                    delete $PB_reads{$PB_reads_tmp};
+                }
+                $been_reduced = "yes" if ($left_early_tmp ne "");
+                my $taken_tmp = "taken from the start";
+                $taken_tmp = "the whole input" if ($left_early_tmp eq "");
+                my $input_size_tmp = sprintf("%.1f", $estimated_total_bp/1000000000)." Gbp";
+                $input_size_tmp = sprintf("%.1f", $estimated_total_bp/1000000)." Mbp" if ($estimated_total_bp < 1000000000);
+                $stream_message_PB = "Large input, about ".$input_size_tmp." (estimated): ".sprintf("%.1f", $streamed_bp_tmp/1000000)." Mbp of reads >= ".$minimum_read_length_PB." bp, ".$taken_tmp.", in ".$pieces_tmp." pieces\n";
+            }
+        }
+
         foreach my $PB_reads_tmp (keys %PB_reads)
         {
             my $check_zip_long = substr $PB_reads_tmp, -2;
@@ -2848,12 +2929,35 @@ COUNT_LINES_PB:
         close DIR_PB2;
                 
         my $file_count = keys %PB_reads;
-        
+
         if ($file_count > $maxProcs_tmp && $PB_reads_DB eq "")
         {
-            $PB_reads_DB = "yes";   
+            $PB_reads_DB = "yes";
             goto PB_READS_DB;
         }
+
+        # The read limit of the Nanopore reads, shared over the DB pieces. A piece stops loading at its share and
+        # $been_reduced is set, so the depth restart can raise the limit when the depth turns out too low.
+        my $lenght_by_file = "";
+        if ($type eq "chloro" && $chloro_limit ne "")
+        {
+            $lenght_by_file = $chloro_limit/$file_count
+        }
+        elsif ($type eq "mito_plant" && $mito_plant_limit ne "")
+        {
+            $lenght_by_file = $mito_plant_limit/$file_count
+        }
+        elsif ($type eq "mito" && $mito_limit ne "")
+        {
+            $lenght_by_file = $mito_limit/$file_count
+        }
+        if ($PB_depth_limit_bp ne "" && ($lenght_by_file eq "" || $PB_depth_limit_bp/$file_count < $lenght_by_file))
+        {
+            $lenght_by_file = $PB_depth_limit_bp/$file_count;
+        }
+        # "Use full dataset = yes": every read is used. No reads are left out, so $been_reduced stays empty and the
+        # depth restart (which raises the limit) cannot fire.
+        $lenght_by_file = "" if ($full_dataset_PB ne "");
       
 #Build local BLAST databse and save reads to disk---------------------------------------------------------------------------
        
@@ -2873,6 +2977,7 @@ COUNT_LINES_PB:
 
             my $read_count_tmp = '0';
             my $total_read_length_tmp = '0';
+            my $selected_read_length_tmp = '0';
             my $max_read_length_tmp = '0';
             my $min_read_length_tmp = '0';
             my $removed_reads_min_tmp = '0';
@@ -3023,6 +3128,12 @@ FILE_LONG_PB:while (my $line = <$FILE_LONG>)
                     {
                         #substr $line, 0, 40, "";
                         $count_files_in_folder++;
+                        $selected_read_length_tmp += $length_tmp;
+                        if ($selected_read_length_tmp > $lenght_by_file && $lenght_by_file ne "")
+                        {
+                            $been_reduced = "yes";
+                            last FILE_LONG_PB;
+                        }
                         if ($count_files_in_folder > $max_file_count)
                         {
                             $count_files_in_folder = '1';
@@ -3091,6 +3202,7 @@ FILE_LONG_PB:while (my $line = <$FILE_LONG>)
                 $hash_tmp{'7'} = $removed_reads_min_tmp;
                 $hash_tmp{'8'} = $removed_reads_total_length_tmp;
                 $hash_tmp{'9'} = [@read_lengths_tmp];
+                $hash_tmp{'10'} = $been_reduced;   # propagate read-reduction flag to the parent
                 $pm_PB->finish(0, \%hash_tmp);
             }
             else
@@ -3112,6 +3224,11 @@ FILE_LONG_PB:while (my $line = <$FILE_LONG>)
         }
     }
     print "...OK\n\n";
+    if ($stream_message_PB ne "")
+    {
+        print $stream_message_PB."\n";
+        print OUTPUT4 $stream_message_PB."\n";
+    }
 }
 SKIP_PACBIO:
 if ($input_reads_DB_folder_PB ne "")
@@ -3172,6 +3289,7 @@ if ($read_count_PB > 0)
         $N50_filtered_PB = $N50_PB;
     }
     
+    $input_estimated_bp_PB = "" if ($been_reduced eq "");
     open(STATS_PB, ">" .$statistics_PB) or die "\nCan't open file $statistics_PB, $!\n";
     print STATS_PB "PacBio reads\n";
     print STATS_PB "--------------\n";
@@ -3184,7 +3302,9 @@ if ($read_count_PB > 0)
     print STATS_PB "Reads below min length  : ".$removed_reads_min_PB."\n";
     print STATS_PB "Total removed bp        : ".$removed_reads_total_length_PB." bp\n";
     print STATS_PB "Filtered N50            : ".$N50_filtered_PB." bp\n";
-    print STATS_PB "Filtered average length : ".$average_length_filtered_PB." bp\n\n";
+    print STATS_PB "Filtered average length : ".$average_length_filtered_PB." bp\n";
+    print STATS_PB "Input length (estimated): ".int($input_estimated_bp_PB)." bp\n" if ($input_estimated_bp_PB ne "");
+    print STATS_PB "\n";
     close STATS_PB;
     
     print "\n\nPacBio reads\n";
@@ -3255,6 +3375,10 @@ elsif ($PB_reads ne "" || $input_reads_DB_folder_PB ne "")
             my @line_tmp = split ' ', $line_tmp;
             $average_length_filtered_PB = $line_tmp[4];
         }
+        if ($line_tmp =~ m/^Input length \(estimated\)\s*:\s*(\d+) bp/)
+        {
+            $input_estimated_bp_PB = $1;
+        }
     }
     close STATS_PB;
 
@@ -3266,7 +3390,21 @@ elsif ($PB_reads ne "" || $input_reads_DB_folder_PB ne "")
     }
 }
 
-if ($total_read_length_PB > 0 && $removed_reads_total_length_PB > 0)
+# The loaded reads are only the start of each input when the read limit stopped the loading: the share used is
+# then taken of the input's estimated size. Otherwise every read was loaded and the share used is the bp in reads
+# of at least the minimum length.
+if ($total_read_length_PB > 0 && $input_estimated_bp_PB ne "" && $input_estimated_bp_PB > 0)
+{
+    my $used_bp_PB = $total_read_length_PB-$removed_reads_total_length_PB;
+    my $used_percent_PB = $used_bp_PB/$input_estimated_bp_PB*100;
+    $used_percent_PB = 100 if ($used_percent_PB > 100);
+    my $input_size_PB = sprintf("%.1f", $input_estimated_bp_PB/1000000000)." Gbp";
+    $input_size_PB = sprintf("%.1f", $input_estimated_bp_PB/1000000)." Mbp" if ($input_estimated_bp_PB < 1000000000);
+    my $line_PB = "Reduced sequencing depth: ".sprintf("%.2f", $used_percent_PB)."% (".sprintf("%.1f", $used_bp_PB/1000000)." Mbp in reads >= ".$minimum_read_length_PB." bp, of about ".$input_size_PB." in the input)\n\n";
+    print $line_PB;
+    print OUTPUT4 $line_PB;
+}
+elsif ($total_read_length_PB > 0 && $removed_reads_total_length_PB > 0)
 {
     my $reduced_fraction_PB = $removed_reads_total_length_PB/$total_read_length_PB;
     my $reduced_fraction_PB_fraction = (1-$reduced_fraction_PB)*100;
@@ -3617,6 +3755,17 @@ undef %seed_query_of;
 my %seeds_list_sorted;
 undef %seeds_list_sorted;
 my $count_seeds0 = '0';
+# Start reads are searched in the Nanopore reads. A run with PacBio reads only takes them from the PacBio reads;
+# with both, the Nanopore reads are used as before.
+my $seed_reads_tag = "NP";
+my $seed_reads_DB_ref = \%ret_data_NP;
+my $seed_reads_directory = $tmp_sequences_directory_NP;
+if ($NP_reads eq "" && $input_reads_DB_folder_NP eq "" && ($PB_reads ne "" || $input_reads_DB_folder_PB ne ""))
+{
+    $seed_reads_tag = "PB";
+    $seed_reads_DB_ref = \%ret_data_PB;
+    $seed_reads_directory = $tmp_sequences_directory_PB;
+}
 
 if ($seed_input0 ne "")
 {
@@ -3856,12 +4005,12 @@ NEXT_SEED_FINAL_CHECK0:
 
 NEXT_SEED_FINAL_CHECK0b:
 
-    foreach my $pid_tmp (keys %ret_data_NP)
+    foreach my $pid_tmp (keys %$seed_reads_DB_ref)
     {
         my $file_tmp = $TMP_directory."blast_tmp_DB_seed_".$id_tmp."_".$pid_tmp.".txt";
         # A new search for a rejected start read uses the same file names: the previous results must not be read
         unlink $file_tmp;
-        my $command_DB = "blastn -task dc-megablast -query ".$query_seed_DB." -db ".$ret_data_NP{$pid_tmp}." -out ".$file_tmp." -outfmt 7 -num_threads 2 &";
+        my $command_DB = "blastn -task dc-megablast -query ".$query_seed_DB." -db ".$seed_reads_DB_ref->{$pid_tmp}." -out ".$file_tmp." -outfmt 7 -num_threads 2 &";
         syscmd($command_DB);             
         $output_files_DB_seed{$file_tmp} = undef;
     }
@@ -3922,7 +4071,7 @@ DB_RESULTS_SEED1:
                         || ($accuracy_tmp > $highest_accuracy+1 && $alignment_length > $longest_coverage*0.95) || $type eq "mito_plant"))
                     {
                         my @split_tmp = split /a/, $id_tmp;
-                        my $output_file_NP1  = $tmp_sequences_directory_NP.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_NP_".$id_tmp.".fasta";
+                        my $output_file_NP1  = $seed_reads_directory.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_".$seed_reads_tag."_".$id_tmp.".fasta";
                         open(OUTPUT_LONG_NP4, $output_file_NP1) or die "\nCan't open file $output_file_NP1, $!\n";
                         my $seed_input_read_tmp = <OUTPUT_LONG_NP4>;
                         close OUTPUT_LONG_NP4;
@@ -4017,7 +4166,7 @@ DB_RESULTS_SEED1:
         # a contaminant close to one of the reference species would win. The reads decide
         # instead (see seed_panel_vote), and the winner's hit goes through the code above.
         $seed_panel_voted = "yes";
-        my $vote_file_tmp = seed_panel_vote(\%seed_panel_hits, \%ret_data_NP, $TMP_directory, $tmp_sequences_directory_NP, $output_path_test, $id_tmp, ($type eq "chloro" ? "yes" : ""));
+        my $vote_file_tmp = seed_panel_vote(\%seed_panel_hits, $seed_reads_DB_ref, $TMP_directory, $seed_reads_directory, $output_path_test, $id_tmp, ($type eq "chloro" ? "yes" : ""), $seed_reads_tag);
         if ($vote_file_tmp ne "")
         {
             $output_files_DB_seed{$vote_file_tmp} = undef;
@@ -4137,7 +4286,7 @@ CHLORO_SEED_FINAL_CHECK0:
         # stretches count once) is already present in an assembled contig at high identity, this read
         # would only rebuild sequence we already have - drop it and take the next backup read.
         my $ras_min_identity = $seed_read_assembly_id_ONT;
-        if ($high_quality_ONT eq "yes")
+        if ($high_quality_ONT eq "yes" || $seed_reads_tag eq "PB")
         {
             $ras_min_identity = $seed_read_assembly_id_R10;
         }
@@ -4197,7 +4346,7 @@ RAS_BACKUP_READ:
                     {
                         my ($id_tmp, $read_pos_start_tmp, $read_pos_end_tmp) = split /_/, $backup_reads{$alignment_length_tmp}{$accuracy_tmp};
                         my @split_tmp = split /a/, $id_tmp;
-                        my $output_file_NP1  = $tmp_sequences_directory_NP.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_NP_".$id_tmp.".fasta";
+                        my $output_file_NP1  = $seed_reads_directory.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_".$seed_reads_tag."_".$id_tmp.".fasta";
                         open(OUTPUT_LONG_NP4, $output_file_NP1) or die "\nCan't open file $output_file_NP1, $!\n";
                         my $seed_input_read_tmp = <OUTPUT_LONG_NP4>;
                         close OUTPUT_LONG_NP4;
@@ -4320,7 +4469,7 @@ PM_BACKUP_READ:
                     {
                         my ($id_tmp, $read_pos_start_tmp, $read_pos_end_tmp) = split /_/, $backup_reads{$alignment_length_tmp}{$accuracy_tmp};
                         my @split_tmp = split /a/, $id_tmp;
-                        my $output_file_NP1  = $tmp_sequences_directory_NP.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_NP_".$id_tmp.".fasta";
+                        my $output_file_NP1  = $seed_reads_directory.$output_path_test.$split_tmp[0]."a".$output_path_test.$split_tmp[2].$output_path_test."sequence_tmp_".$seed_reads_tag."_".$id_tmp.".fasta";
                         open(OUTPUT_LONG_NP4, $output_file_NP1) or die "\nCan't open file $output_file_NP1, $!\n";
                         my $seed_input_read_tmp = <OUTPUT_LONG_NP4>;
                         close OUTPUT_LONG_NP4;
@@ -5271,7 +5420,26 @@ DB_RESULTS_PB1:
                 
                 my $total_matches = keys %id_matches;
                 print {$filehandle{$seed_id2}} "\n".$total_matches." LAST_1000_matches\n";
-                
+                # PacBio depth cap: with more than 2.5 x $PB_target_depth reads at the end window, a fixed share of them is
+                # aligned. The share is picked by a hash of the read id, so a read kept in one round is kept in the next.
+                $PB_cap_fraction_round = 1;
+                if ($PB_target_depth ne "" && $full_dataset_PB eq "" && $total_matches > $PB_target_depth*2.5)
+                {
+                    $PB_cap_fraction_round = $PB_target_depth*2.5/$total_matches;
+                    foreach my $id_tmp (keys %id_matches)
+                    {
+                        my $u_tmp = hex(substr(Digest::MD5::md5_hex($id_tmp), 0, 8))/4294967296;
+                        next if ($u_tmp < $PB_cap_fraction_round);
+                        delete $id_matches{$id_tmp};
+                        delete $double_matches{$id_tmp};
+                        delete $reverse_list{$id_tmp};
+                        delete $first_pos_read{$id_tmp};
+                    }
+                    my $kept_tmp = keys %id_matches;
+                    print {$filehandle{$seed_id2}} $total_matches." -> ".$kept_tmp." PB_DEPTH_CAP\n";
+                    $total_matches = $kept_tmp;
+                }
+
                 if ($total_matches < 5 && $y eq "1" && $flexible_seed eq "" && $new_contig_check eq "")
                 {
                     $query_coverage = '80';
@@ -5292,8 +5460,14 @@ DB_RESULTS_PB1:
                     print {$filehandle{$seed_id2}} $total_matches." FLEX_SEED\n";
                     goto SKIP_CONFIRMED_PB;
                 }
+                my $retry_PB_tmp = "";
                 if ($total_matches > 900 && $total_matches > $sequencing_depth_PB*4 && $first_length_back_extra < 4000 && $new_contig_check eq "" && length($read) > $first_length_back_extra+2500+$first_length_back)
                 {
+                    # Search again only when the window or the filters change. With 900-2000 matches the window stays
+                    # the same, and HiFi reads all pass 98 %, so the same search gave the same reads on every pass, for ever.
+                    my $extra_before_tmp = $first_length_back_extra;
+                    my $accuracy_before_tmp = $query_accuracy;
+                    my $coverage_before_tmp = $query_coverage;
                     $query_accuracy = '98';
 					$query_coverage = '95';
 					if ($total_matches > 2000)
@@ -5324,6 +5498,21 @@ DB_RESULTS_PB1:
 						$first_length_back_extra = '0';
 						delete $track_tandem_pos{$seed_id};
 					}
+					if ($first_length_back_extra != $extra_before_tmp || $query_accuracy != $accuracy_before_tmp || $query_coverage != $coverage_before_tmp)
+					{
+						$retry_PB_tmp = "yes";
+					}
+					else
+					{
+						print {$filehandle{$seed_id2}} $total_matches." HIGH_MATCHES_NO_RETRY\n";
+					}
+                }
+                elsif ($first_length_back_extra eq '0')
+				{
+					delete $track_tandem_pos{$seed_id};
+				}
+                if ($retry_PB_tmp eq "yes")
+                {
 					undef %id_matches_save;
 					foreach my $id_tmp (keys %id_matches)
 					{
@@ -5339,10 +5528,6 @@ DB_RESULTS_PB1:
 					}
 					goto LONGER_LAST_600_PB;
                 }
-                elsif ($first_length_back_extra eq '0')
-				{
-					delete $track_tandem_pos{$seed_id};
-				}
                 
                 if ($repetitive_detect2 ne "" && $repetitive_detect2 > $first_length_back && $total_matches > 1000 && $total_matches_extra > 9 && $only_saved_reads eq "")
                 {
@@ -6973,16 +7158,42 @@ AVERAGE_LENGTH_PB:
 					$sequencing_depth_PB = $count_matches_with_high_scores;
 					if ($sequencing_depth_PB < 20 && $been_reduced ne "")
 					{
-						my $increase_tmp = 50/$sequencing_depth_PB;
+						my $increase_tmp = '50';
+                        if ($sequencing_depth_PB ne '0')
+                        {
+                            $increase_tmp =  50/$sequencing_depth_PB;
+                        }
+                        print OUTPUT4 "\nNot enough sequencing depth: ".$sequencing_depth_PB."\n";
+                        print OUTPUT4 $increase_tmp." Increase Subsampled Fraction\n";
 						$mito_plant_limit *= $increase_tmp;
 						$chloro_limit *= $increase_tmp;
 						$mito_limit *= $increase_tmp;
+						$PB_depth_limit_bp *= $increase_tmp if ($PB_depth_limit_bp ne "");
 						$sequencing_depth_PB = '50';
 						remove_dir($directory_DB_PB);
 						remove_dir($tmp_sequences_directory_PB);
 						sleep(10);
 						# Shut the MCE worker + channel down before restarting (see NP restart above):
 						# the DB-building fork on re-run must not inherit a live MCE::Child.
+						$chnl->end;
+						MCE::Child->waitall;
+						goto RESTART;
+					}
+					# Far above the PacBio depth target: restart once with the reads cut to about the target. The depth is
+					# estimated from the reads aligned this round and the share the cap kept. Not in the chloroplast step of
+					# a mito_plant run: the mito step reuses these reads, at a far lower depth.
+					my $PB_loaded_bp_tmp = $total_read_length_PB-$removed_reads_total_length_PB;
+					my $PB_depth_estimate_tmp = $count_matches_with_high_scores/$PB_cap_fraction_round;
+					if ($PB_target_depth ne "" && $full_dataset_PB eq "" && $PB_depth_restart_done eq "" && !($type0 eq "mito_plant" && $type eq "chloro")
+						&& $PB_depth_estimate_tmp > $PB_target_depth*1.5 && $PB_loaded_bp_tmp > 0)
+					{
+						$PB_depth_restart_done = "yes";
+						$PB_depth_limit_bp = int($PB_loaded_bp_tmp*$PB_target_depth/$PB_depth_estimate_tmp);
+						print OUTPUT4 "\nPacBio depth about ".int($PB_depth_estimate_tmp)."x: the reads are cut to ".sprintf("%.1f", $PB_depth_limit_bp/1000000)." Mbp for about ".$PB_target_depth."x, restart\n";
+						print "\nPacBio depth about ".int($PB_depth_estimate_tmp)."x: the reads are cut to ".sprintf("%.1f", $PB_depth_limit_bp/1000000)." Mbp for about ".$PB_target_depth."x, restart\n";
+						remove_dir($directory_DB_PB);
+						remove_dir($tmp_sequences_directory_PB);
+						sleep(10);
 						$chnl->end;
 						MCE::Child->waitall;
 						goto RESTART;
@@ -8024,6 +8235,89 @@ INPUT_MAFFT3_PB: while ((keys %subject_list > 2 || $only_2_reads eq "yes") && ((
 							}
                         }
                     }
+					# Anchor clip, the one of the NP path, when the overlap clip above found nothing. A stretch of the contig end
+					# that occurs once in the extension marks where the new sequence starts, so an indel in the overlap (a
+					# homopolymer length) no longer ends the contig. Stricter than NP for PacBio: a 21 bp anchor (NP 15), taken
+					# from the last 200 bp of the contig only, and the clip must fall on a position the consensus has passed.
+					if (length($best_extension) > 120 && $clipped_ext eq "" && $find_haps_in_seed ne "yes")
+					{
+						my $m = '21';
+						my $m3 = '21';
+						my $best_extension_tmp_length = length($best_extension);
+						while ($m < length($best_extension)-10 && $m <= 200 && $clipped_ext eq "")
+						{
+							my $check_start_assembly = substr $read, -$m, $m3;
+							$check_start_assembly =~ tr/N|\./\./;
+							my $best_extension_tmp = $best_extension;
+							my $check_anchor = $best_extension_tmp =~ s/$check_start_assembly//g;
+							if ($check_anchor == 1)
+							{
+								my $best_extension_clip = $best_extension;
+								if ($best_extension_clip =~ m/(.*$check_start_assembly)(.*)/)
+								{
+									$best_extension_clip = $2;
+									my $best_extension_tmp1 = substr $best_extension_clip, 0, $m-$m3+3;
+									my $best_extension_tmp2 = substr $best_extension_clip, $m-$m3+3;
+									my $m2 = '14';
+									my $matched = "";
+									while ($m2 > 5 && $matched eq "" && $m > $m3)
+									{
+										my $check_start_assembly2 = substr $read, -$m2, $m2;
+										if ($best_extension_tmp1 =~ m/(.*$check_start_assembly2)(.*)/)
+										{
+											$best_extension_clip = $2;
+											$best_extension_clip .= $best_extension_tmp2;
+											$matched = "yes";
+											last;
+										}
+										$m2--;
+									}
+									if ($matched ne "yes" && $m > $m3)
+									{
+										substr $best_extension_clip, 0, $m-$m3, "";
+									}
+								}
+								my $diff_tmp = $best_extension_tmp_length-length($best_extension_clip);
+								if (exists($clipped_ext_pos{$diff_tmp}))
+								{
+									print {$filehandle{$seed_id2}} $check_start_assembly." ".$best_extension." BEST_EXT_CLIP_ANCHOR\n";
+									$best_extension = $best_extension_clip;
+									print {$filehandle{$seed_id2}} $m." M\n";
+									print {$filehandle{$seed_id2}} $best_extension." BEST_EXT_CHOPPED\n";
+									$clipped_ext = "yes";
+									$cp = $clipped_ext_pos{$diff_tmp};
+									foreach my $subject_rank (sort {$a <=> $b} keys %subject_list)
+									{
+										my $seq_rank1c = substr $subject_list{$subject_rank}, 0, $cp;
+										$seq_rank1c =~ tr/-//d;
+										$track_length_ext{$subject_rank} = length($seq_rank1c);
+									}
+								}
+								last;
+							}
+							elsif ($check_anchor > 1)
+							{
+								$m3++;
+							}
+							$m++;
+						}
+						if ($clipped_ext eq "yes")
+						{
+							$best_extension = "";
+							$N = '0';
+							undef %SNP_patterns_prev;
+							undef %extensions_seed;
+							undef %quality_scores_tmp;
+							undef %extensions_seed;
+							undef %total_count_prev_patterns;
+							$total_count_prev_patterns = '0';
+							if ($find_haps_in_seed ne "")
+							{
+								$extensions_seed{'HAP1'} = $best_extension;
+								$extensions_seed{'HAP2'} = $best_extension;
+							}
+						}
+					}
 #-------------------------------------------------------------------------------------------------------
 SWITCH_CLIP_PB:                   
                     undef %nucs;
@@ -11828,6 +12122,16 @@ REMAIN_REJ_PB:					foreach my $rank_tmp (sort {$a <=> $b} keys %split_patterns_f
                                 }
 
                                 goto MISMATCH_RETRY_PB;
+                            }
+                            else
+                            {
+                                # As in the Nanopore extension: nothing to realign with (no read was removed, or at most
+                                # one is left). Cancel the removal and call the base. Falling through left the removal
+                                # pending, so a later removal step could ask for the same removal again, for ever.
+                                print {$filehandle{$seed_id2}} $removed_reads_tmp." REMOVE_NOTHING_LEFT\n";
+                                $remove_reads = "";
+                                undef %reads_to_remove;
+                                goto BASECALL2_PB;
                             }
                         }
 						
@@ -27946,6 +28250,31 @@ if ($terminate_early eq "yes")
 	}
 }
 
+# Split entries without a seed left are dropped. The PB extension deletes a split seed that matches the
+# assembly (CONTIG_BREAK_MATCH) but leaves the contig's entry behind, empty. Below, such an entry gave no seed
+# but still jumped to FIRST_SEED, which found nothing to extend and came straight back here, for ever
+# (Arabidopsis HiFi mito_plant run: atp8 split seed matched 18Sc3b; hang after atp8b).
+foreach my $contig_number_tmp (keys %split_contigs_reads)
+{
+	foreach my $id_tmp (keys %{$split_contigs_reads{$contig_number_tmp}})
+	{
+		foreach my $new_contig_seed (keys %{$split_contigs_reads{$contig_number_tmp}{$id_tmp}})
+		{
+			if (keys %{$split_contigs_reads{$contig_number_tmp}{$id_tmp}{$new_contig_seed}} == 0)
+			{
+				delete $split_contigs_reads{$contig_number_tmp}{$id_tmp}{$new_contig_seed};
+			}
+		}
+		if (keys %{$split_contigs_reads{$contig_number_tmp}{$id_tmp}} == 0)
+		{
+			delete $split_contigs_reads{$contig_number_tmp}{$id_tmp};
+		}
+	}
+	if (keys %{$split_contigs_reads{$contig_number_tmp}} == 0)
+	{
+		delete $split_contigs_reads{$contig_number_tmp};
+	}
+}
 my $split_contigs_reads_count = keys %split_contigs_reads;
 my $seed_count_tmp = keys %mito_plant_seeds;
 
@@ -29108,8 +29437,10 @@ sub seed_panel_vote
 	# (at most 40), so a genome close to few seeds is not crowded out by one close to many. Candidates
 	# that carry a mitochondrial gene are left out first (candidate_mito_genes).
 	# Returns a one-hit BLAST table for the winner, which DB_RESULTS_SEED reads like any other.
-	my ($hits_ref, $db_ref, $tmp_dir, $seq_dir, $sep, $id, $by_origin) = @_;
+	my ($hits_ref, $db_ref, $tmp_dir, $seq_dir, $sep, $id, $by_origin, $read_tag) = @_;
 	$by_origin = "" unless (defined($by_origin));
+	# NP or PB: the reads the candidates come from (file names sequence_tmp_NP_/sequence_tmp_PB_)
+	$read_tag = "NP" unless (defined($read_tag) && $read_tag ne "");
 	my %read_best;
 	my %score_best;
 	my %cand_tmp;
@@ -29143,7 +29474,7 @@ sub seed_panel_vote
 	{
 		$max_cands = 40;
 		@cand_order = sort { (exists($seed_top_read{$a}) ? 0 : 1) <=> (exists($seed_top_read{$b}) ? 0 : 1) || $score_best{$b} <=> $score_best{$a} || $a cmp $b } keys %cand_tmp;
-		my ($mito_gene_ref, $mito_checked) = candidate_mito_genes(\@cand_order, $tmp_dir, $seq_dir, $sep, $id);
+		my ($mito_gene_ref, $mito_checked) = candidate_mito_genes(\@cand_order, $tmp_dir, $seq_dir, $sep, $id, $read_tag);
 		my @mito_reads_tmp = grep { exists($mito_gene_ref->{$_}) } @cand_order;
 		if ($mito_checked ne "yes")
 		{
@@ -29167,7 +29498,7 @@ sub seed_panel_vote
 	{
 		last if (@cands >= $max_cands);
 		my @split_tmp = split /a/, $read_tmp;
-		my $file_tmp = $seq_dir.$sep.$split_tmp[0]."a".$sep.$split_tmp[2].$sep."sequence_tmp_NP_".$read_tmp.".fasta";
+		my $file_tmp = $seq_dir.$sep.$split_tmp[0]."a".$sep.$split_tmp[2].$sep."sequence_tmp_".$read_tag."_".$read_tmp.".fasta";
 		next unless (-s $file_tmp);
 		open(my $fh_tmp, "<", $file_tmp) or next;
 		my $seq_tmp = <$fh_tmp>;
@@ -29312,7 +29643,8 @@ sub candidate_mito_genes
 	# a wheat test set were flagged, without them none of 286 plastid reads and 47 % of the mito reads (genes
 	# are sparse in plant mitogenomes, so a short mito read often has none). A hit counts from 350 bp at
 	# over 70 %, as for the seeds. Returns the hits and "yes", or the reason the check could not run.
-	my ($reads_ref, $tmp_dir, $seq_dir, $sep, $id) = @_;
+	my ($reads_ref, $tmp_dir, $seq_dir, $sep, $id, $read_tag) = @_;
+	$read_tag = "NP" unless (defined($read_tag) && $read_tag ne "");
 	my %hit;
 	my ($genes_tmp, $count_tmp, $file_tmp) = resource_seed_fasta("mito_plant_seeds.fasta");
 	return (\%hit, "resources/mito_plant_seeds.fasta not found next to the script") if ($count_tmp == 0);
@@ -29330,7 +29662,7 @@ sub candidate_mito_genes
 	foreach my $read_tmp (@$reads_ref)
 	{
 		my @split_tmp = split /a/, $read_tmp;
-		my $file_tmp2 = $seq_dir.$sep.$split_tmp[0]."a".$sep.$split_tmp[2].$sep."sequence_tmp_NP_".$read_tmp.".fasta";
+		my $file_tmp2 = $seq_dir.$sep.$split_tmp[0]."a".$sep.$split_tmp[2].$sep."sequence_tmp_".$read_tag."_".$read_tmp.".fasta";
 		next unless (-s $file_tmp2);
 		open(my $fh_tmp, "<", $file_tmp2) or next;
 		my $seq_tmp = <$fh_tmp>;
