@@ -31,6 +31,10 @@ If your assembly was unsuccessful, you could already add the log file and the co
 
 <code>docker run --rm ndierckx/nanoplasty  -c config.txt</code>
 
+An automatically built image (amd64 and arm64) is also published to the GitHub Container Registry on every push to `main` and every `v*` tag:
+
+<code>docker pull ghcr.io/ndierckx/nanoplasty:latest</code>
+
 ### OR
 
 ### Install dependencies locally
